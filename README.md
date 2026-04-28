@@ -1,50 +1,144 @@
-🚀 AI-Powered Hiring Platform
+# AI Powered Hiring Platform
 
-An intelligent recruitment and career acceleration platform that connects candidates, recruiters, and mentors into a unified ecosystem. The platform leverages AI to streamline hiring, improve candidate-job matching, and enhance career growth.
+An AI-assisted recruitment and career development platform that connects candidates, recruiters, mentors, and admins in one workflow. The app streamlines job discovery, application tracking, resume analysis, interview management, and skill recommendations.
 
-🔥 Key Features
-👤 Candidate Module
-Create and manage professional profiles
-AI-based resume analysis and scoring
-Smart job recommendations based on skills and interests
-Application tracking dashboard
-Interview scheduling and notifications
-Access to mentorship and career guidance
-🧑‍💼 Recruiter Module
-Recruiter/company profile creation and verification
-Post and manage job listings
-View and filter applicants efficiently
-AI-powered candidate ranking and shortlisting
-Interview scheduling and management
-Dashboard with job, application, and hiring analytics
-🤖 AI Capabilities
-Intelligent candidate-job matching
-Resume parsing and skill extraction
-Candidate scoring based on job fit
-Automated recommendations for both recruiters and candidates
-Insights to improve hiring decisions
-📊 Dashboard & Analytics
-Real-time overview of platform activity
-Recruiter stats: jobs posted, applications received, interviews scheduled
-Candidate stats: applications, profile strength, job matches
-Upcoming interview tracking
-🔐 Verification & Security
-Company verification with document upload
-Secure authentication and role-based access
-Data privacy and protection measures
-📅 Interview Management
-Schedule and manage interviews seamlessly
-Notifications and reminders for both candidates and recruiters
-Centralized interview tracking
-🌐 Additional Features
-Mentor integration for career guidance
-Profile completion tracking
-Document uploads (resume, company proof, etc.)
-User-friendly and responsive UI
-🎯 Objective
+## Highlights
 
-To simplify and enhance the hiring process by:
+### Candidate features
+- Create and manage professional profiles
+- Upload and analyze resumes
+- Track applications and interview status
+- Receive AI-based job and skill recommendations
+- Access mentorship and career guidance
 
-Reducing manual screening effort
-Improving candidate-job fit using AI
-Providing career support beyond just job applications
+### Recruiter features
+- Create recruiter and company profiles
+- Post and manage jobs
+- Review and filter applicants
+- Generate and manage assessment tests
+- Schedule interviews and track hiring activity
+
+### AI and analytics
+- Resume parsing and skill extraction
+- Candidate-job matching and ranking
+- Skill gap analysis and performance breakdowns
+- Personalized recommendations and insights
+- Dashboard analytics for candidates, recruiters, mentors, and admins
+
+### Platform capabilities
+- Role-based authentication
+- Company verification workflows
+- Interview scheduling and notifications
+- File uploads for resumes and verification documents
+- Responsive UI built with Flask templates
+
+## Tech stack
+
+- **Backend:** Flask, Python
+- **Database:** PostgreSQL (`psycopg2-binary`)
+- **Frontend:** HTML templates, CSS, Bootstrap-style components
+- **AI:** Google Generative AI
+- **Auth:** Flask session authentication plus OAuth support via `authlib` and `flask-dance`
+- **Documents:** PyMuPDF, PyPDF2, pdfplumber, reportlab, python-docx, openpyxl
+- **Realtime/async:** Flask-SocketIO, eventlet
+
+## Prerequisites
+
+- Python 3.10+ recommended
+- PostgreSQL database
+- Gmail account or SMTP provider for email features
+- Google API key if you want AI-assisted features enabled
+
+## Setup
+
+### 1) Clone or open the project
+
+```bash
+git clone <your-repo-url>
+cd "AI powered hiring platform"
+```
+
+### 2) Create and activate a virtual environment
+
+Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+### 3) Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4) Configure environment variables
+
+Copy `.env.example` to `.env` and fill in your values.
+
+Common settings:
+
+- `SECRET_KEY`
+- `MAIL_USERNAME`
+- `MAIL_PASSWORD`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `DATABASE_URL` or your local PostgreSQL settings, if applicable
+
+> Never commit `.env` with real secrets.
+
+### 5) Initialize the database
+
+Use whichever setup script fits your environment:
+
+- `python init_database.py`
+- `setup_db.bat`
+- `create_database.ps1`
+
+If you already have a configured database, make sure the schema is present before starting the app.
+
+## Run locally
+
+```bash
+python app.py
+```
+
+The app is usually available at `http://127.0.0.1:5000/`.
+
+## Production entry point
+
+The project includes `wsgi.py` for production servers.
+
+Example:
+
+```bash
+gunicorn wsgi:app
+```
+
+## Project structure
+
+- `app.py` — main Flask application and routes
+- `database.py` — database helpers and connection logic
+- `wsgi.py` — production WSGI entry point
+- `passenger_wsgi.py` — Passenger deployment entry point
+- `templates/` — HTML templates
+- `static/` — images, uploads, and static assets
+- `requirements.txt` — Python dependencies
+- `init_database.py` — database initialization helper
+
+## Notes
+
+- Some AI features depend on a valid Google API key.
+- Email and password reset flows depend on the mail settings in `.env`.
+- Uploaded files are stored under `static/uploads/` in the current project layout.
+
+## Goal of the project
+
+To make hiring faster and smarter by:
+
+- reducing manual screening work
+- improving candidate-job fit with AI
+- helping candidates understand skill gaps
+- giving recruiters better visibility into applicant quality
+- supporting career growth beyond simple job applications
