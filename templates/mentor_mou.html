@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Mentor MOU Agreement - HireHub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h3 class="mb-2">Mentor-Company MOU</h3>
+                    <p class="text-muted">Review and sign the digital agreement between HireHub (Admin) and Mentor.</p>
+
+                    <div class="border rounded p-3 bg-light mb-4">
+                        <h6 class="fw-bold mb-2">Agreement Highlights</h6>
+                        <ul class="mb-0">
+                            <li>Mentor will provide professional guidance as committed in the profile.</li>
+                            <li>All mentoring sessions must follow platform policies and code of conduct.</li>
+                            <li>Payments are processed via the platform, with a 40% mentor share on completed payments.</li>
+                            <li>Any disputes will be handled through platform support and documented feedback.</li>
+                        </ul>
+                    </div>
+
+                    <div class="alert alert-info mb-4">
+                        <strong>ℹ️ Important:</strong> You must accept this MOU agreement to complete your profile registration. Your profile will be submitted to the admin for verification and approval after you sign this agreement.
+                    </div>
+
+                        {% if profile and profile.agreement_accepted %}
+                            <div class="alert alert-success">
+                            <div class="fw-semibold">Agreement Accepted</div>
+                            {% if profile.agreement_signature_name %}
+                                <div class="small">Signed by {{ profile.agreement_signature_name }}</div>
+                            {% endif %}
+                            {% if profile.agreement_signature_at %}
+                                <div class="small">Signed at {{ profile.agreement_signature_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                            {% elif profile.agreement_accepted_at %}
+                                <div class="small">Accepted at {{ profile.agreement_accepted_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                            {% endif %}
+                            </div>
+                            {% if profile.agreement_pdf %}
+                                <a href="/mentor/mou/pdf" class="btn btn-outline-primary" target="_blank">View Signed PDF</a>
+                            {% else %}
+                                <form method="POST" action="/mentor/mou/generate" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-primary">Generate PDF</button>
+                                </form>
+                            {% endif %}
+                            <a href="/mentor-dashboard#profile" class="btn btn-primary">Back to Dashboard</a>
+                    {% else %}
+                        <form method="POST" action="/mentor/mou" class="mt-3" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label class="fw-bold">Digital Signature (Full Name)</label>
+                                <input type="text" name="signature_name" class="form-control" placeholder="Your full name" required>
+                                <div class="form-text">Your name and timestamp will be stored as the digital signature.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="fw-bold">Signature Image (Optional)</label>
+                                <input type="file" name="signature_image" class="form-control" accept="image/*">
+                                <div class="form-text">Upload a drawn signature image (PNG/JPG). Optional.</div>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input type="checkbox" class="form-check-input" id="accept_agreement" name="accept_agreement" required>
+                                <label class="form-check-label" for="accept_agreement">I accept the Mentor-Company MOU</label>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-lg w-100">Accept Agreement & Continue</button>
+                            <a href="/mentor-dashboard#profile" class="btn btn-link w-100">Cancel</a>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

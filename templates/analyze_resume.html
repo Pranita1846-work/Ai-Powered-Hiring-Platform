@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Analyzer | HireHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0F2A44;
+            --accent: #4FB6E8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --background: #F6F8FB;
+            --border: #E5EAF0;
+            --dark: #0F2A44;
+            --gray: #6B7280;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+            background: var(--background);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+
+        .container {
+            max-width: 900px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+
+        .upload-card {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem 2.5rem;
+            box-shadow: 0 20px 60px rgba(15, 42, 68, 0.15);
+            border: 2px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .upload-zone {
+            border: 3px dashed var(--border);
+            border-radius: 16px;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--primary);
+            background: rgba(15, 42, 68, 0.02);
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: var(--warning);
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 0.9rem 2.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 24px rgba(15, 42, 68, 0.3);
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(15, 42, 68, 0.4);
+        }
+
+        .history-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(15, 42, 68, 0.1);
+            border: 2px solid var(--border);
+        }
+
+        .history-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .history-item {
+            padding: 1rem;
+            border-radius: 12px;
+            background: var(--background);
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .history-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(15, 42, 68, 0.1);
+        }
+
+        .score-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .score-excellent {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+
+        .score-good {
+            background: rgba(79, 182, 232, 0.15);
+            color: var(--accent);
+        }
+
+        .score-average {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+        }
+
+        .score-poor {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            transform: translateX(-5px);
+            color: var(--accent);
+        }
+        /* ================= MOBILE RESPONSIVE ================= */
+        @media (max-width: 768px) {
+        
+            body {
+                padding: 1rem 0;
+            }
+        
+            .container {
+                padding: 0 1rem;
+            }
+        
+            .page-title {
+                font-size: 1.8rem;
+            }
+        
+            .page-subtitle {
+                font-size: 1rem;
+            }
+        
+            .upload-card {
+                padding: 1.5rem;
+                border-radius: 16px;
+            }
+        
+            .upload-zone {
+                padding: 2rem 1rem;
+            }
+        
+            .upload-icon {
+                font-size: 3rem;
+            }
+        
+            .upload-text {
+                font-size: 1rem;
+            }
+        
+            .btn-primary-custom {
+                width: 100%;
+                padding: 0.8rem;
+                font-size: 0.95rem;
+            }
+        
+            .history-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+        
+            .history-item:hover {
+                transform: none;
+            }
+        
+            .score-badge {
+                font-size: 0.9rem;
+            }
+        
+            .back-btn {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/candidate-dashboard" class="back-btn">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+
+        <div class="page-header">
+            <h1 class="page-title"><i class="bi bi-file-earmark-text"></i> AI Resume Analyzer</h1>
+            <p class="page-subtitle">Get instant, AI-powered feedback to improve your resume</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{% if category == 'error' %}danger{% elif category == 'success' %}success{% elif category == 'warning' %}warning{% elif category == 'info' %}info{% else %}{{ category }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-{% if category == 'error' or category == 'danger' %}exclamation-circle-fill{% elif category == 'success' %}check-circle-fill{% elif category == 'warning' %}exclamation-triangle-fill{% else %}info-circle-fill{% endif %} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div class="upload-card">
+            <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                <div class="upload-zone" id="uploadZone">
+                    <div class="upload-icon"><i class="bi bi-cloud-upload"></i></div>
+                    <div class="upload-text">Drag & Drop your resume here</div>
+                    <div class="upload-hint">or click to browse files (PDF, DOC, DOCX - Max 5MB)</div>
+                    <input type="file" name="resume" id="resumeInput" accept=".pdf,.doc,.docx" style="display: none;" required>
+                </div>
+
+                <div id="fileInfo" style="margin-top: 1.5rem; display: none; text-align: center;">
+                    <div style="color: var(--success); font-weight: 600; margin-bottom: 1rem;">
+                        <i class="bi bi-check-circle-fill"></i> <span id="fileName"></span>
+                    </div>
+                    <button type="submit" class="btn-primary-custom" id="analyzeBtn">
+                        <i class="bi bi-cpu"></i> Analyze Resume
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        {% if previous_analyses %}
+        <div class="history-card">
+            <h2 class="history-title"><i class="bi bi-clock-history"></i> Recent Analyses</h2>
+            {% for analysis in previous_analyses %}
+            <div class="history-item">
+                <div>
+                    <div style="font-weight: 600; color: var(--dark);">
+                        {{ analysis.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--gray); margin-top: 0.3rem;">
+                        ATS: {{ analysis.ats_score }}% • Keywords: {{ analysis.keyword_score }}% • Format: {{ analysis.formatting_score }}%
+                    </div>
+                </div>
+                <div>
+                    {% if analysis.overall_score >= 80 %}
+                    <span class="score-badge score-excellent">
+                        <i class="bi bi-trophy-fill"></i> {{ analysis.overall_score }}%
+                    </span>
+                    {% elif analysis.overall_score >= 60 %}
+                    <span class="score-badge score-good">
+                        <i class="bi bi-star-fill"></i> {{ analysis.overall_score }}%
+                    </span>
+                    {% elif analysis.overall_score >= 40 %}
+                    <span class="score-badge score-average">
+                        <i class="bi bi-exclamation-triangle-fill"></i> {{ analysis.overall_score }}%
+                    </span>
+                    {% else %}
+                    <span class="score-badge score-poor">
+                        <i class="bi bi-x-circle-fill"></i> {{ analysis.overall_score }}%
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const uploadZone = document.getElementById('uploadZone');
+        const resumeInput = document.getElementById('resumeInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const uploadForm = document.getElementById('uploadForm');
+
+        // Click to browse
+        uploadZone.addEventListener('click', () => resumeInput.click());
+
+        // File input change
+        resumeInput.addEventListener('change', handleFileSelect);
+
+        // Drag and drop
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                resumeInput.files = e.dataTransfer.files;
+                handleFileSelect();
+            }
+        });
+
+        function handleFileSelect() {
+            const file = resumeInput.files[0];
+            if (file) {
+                fileName.textContent = file.name;
+                fileInfo.style.display = 'block';
+            }
+        }
+
+        // Show loading state on submit
+        uploadForm.addEventListener('submit', function() {
+            analyzeBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Analyzing...';
+            analyzeBtn.disabled = true;
+        });
+    </script>
+{% raw %}
+<script>
+    (function () {
+        if (window.__professionalAlertInstalled) return;
+        window.__professionalAlertInstalled = true;
+        const style = document.createElement('style');
+        style.textContent = `#pro-alert-container{position:fixed;top:20px;right:20px;z-index:99999;display:flex;flex-direction:column;gap:12px;max-width:min(420px,calc(100vw - 24px));}.pro-alert{background:#fff;border-radius:14px;box-shadow:0 16px 40px rgba(15,42,68,.18);border-left:5px solid #4FB6E8;padding:14px 14px 14px 16px;color:#1F2933;font:500 14px/1.45 Inter,Segoe UI,sans-serif;transform:translateY(-10px);opacity:0;transition:all .22s ease;white-space:pre-line;display:flex;gap:10px;align-items:flex-start;}.pro-alert.show{opacity:1;transform:translateY(0);}.pro-alert.success{border-left-color:#10b981;}.pro-alert.error{border-left-color:#ef4444;}.pro-alert.warning{border-left-color:#f59e0b;}.pro-alert .icon{font-size:16px;margin-top:1px;}.pro-alert .content{flex:1;}.pro-alert .close-btn{border:0;background:transparent;color:#64748b;font-size:18px;line-height:1;cursor:pointer;padding:0 2px;}@media (max-width:768px){#pro-alert-container{left:10px;right:10px;top:10px;max-width:none;}}`;
+        document.head.appendChild(style);
+        const typeOf = (message) => { const text = String(message || '').toLowerCase(); if (text.includes('error') || text.includes('failed') || text.includes('not found') || text.includes('could not')) return 'error'; if (text.includes('warning') || text.includes('please') || text.includes('required') || text.includes('invalid')) return 'warning'; if (text.includes('success') || text.includes('submitted') || text.includes('saved') || text.includes('generated') || text.includes('approved')) return 'success'; return 'info'; };
+        const iconOf = (type) => type === 'success' ? '✅' : (type === 'error' || type === 'warning') ? '⚠️' : 'ℹ️';
+        window.alert = function (message) { let container = document.getElementById('pro-alert-container'); if (!container) { container = document.createElement('div'); container.id = 'pro-alert-container'; document.body.appendChild(container); } const type = typeOf(message); const toast = document.createElement('div'); toast.className = `pro-alert ${type}`; toast.innerHTML = `<div class="icon">${iconOf(type)}</div><div class="content">${String(message || '')}</div><button class="close-btn" aria-label="Close">×</button>`; container.appendChild(toast); requestAnimationFrame(() => toast.classList.add('show')); const close = () => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 220); }; toast.querySelector('.close-btn').addEventListener('click', close); setTimeout(close, 5000); };
+    })();
+</script>
+{% endraw %}
+</body>
+</html>

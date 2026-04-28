@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+
+{% block title %}My Mentorship Sessions{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4"><i class="fas fa-users"></i> My Mentorship Sessions</h2>
+        </div>
+    </div>
+
+    <!-- Session Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <h3 class="text-primary">{{ session_stats.get('Pending', 0) }}</h3>
+                    <p class="mb-0">Pending Requests</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <h3 class="text-success">{{ session_stats.get('Accepted', 0) }}</h3>
+                    <p class="mb-0">Active Sessions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <h3 class="text-info">{{ session_stats.get('Completed', 0) }}</h3>
+                    <p class="mb-0">Completed</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <h3 class="text-warning">{{ sessions|length }}</h3>
+                    <p class="mb-0">Total Sessions</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Sessions -->
+    {% if upcoming %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Upcoming Sessions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Days Until</th>
+                                    <th>Link</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in upcoming %}
+                                <tr>
+                                    <td>{{ session.candidate_name }}</td>
+                                    <td>{{ session.meeting_date }}</td>
+                                    <td>{{ session.meeting_time }}</td>
+                                    <td>
+                                        <span class="badge badge-info">
+                                            {{ session.days_until }} day(s)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if session.meeting_link %}
+                                        <a href="{{ session.meeting_link }}" target="_blank" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-video"></i> Join
+                                        </a>
+                                        {% else %}
+                                        <span class="text-muted">No link</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Session Filters -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="form-inline">
+                        <label class="mr-2">Filter by Status:</label>
+                        <select name="status" class="form-control mr-2" onchange="this.form.submit()">
+                            <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Sessions</option>
+                            <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="Accepted" {% if status_filter == 'Accepted' %}selected{% endif %}>Accepted</option>
+                            <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
+                            <option value="Rejected" {% if status_filter == 'Rejected' %}selected{% endif %}>Rejected</option>
+                        </select>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sessions Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">All Mentorship Sessions</h5>
+                </div>
+                <div class="card-body">
+                    {% if sessions %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>Skills</th>
+                                    <th>Status</th>
+                                    <th>Meetings</th>
+                                    <th>Requested On</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in sessions %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ session.candidate_name }}</strong><br>
+                                        <small class="text-muted">{{ session.candidate_email }}</small>
+                                    </td>
+                                    <td>
+                                        {% if session.primary_skills %}
+                                        <span class="badge badge-secondary">{{ session.primary_skills }}</span>
+                                        {% else %}
+                                        <span class="text-muted">Not specified</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if session.status == 'Pending' %}
+                                        <span class="badge badge-warning">{{ session.status }}</span>
+                                        {% elif session.status == 'Accepted' %}
+                                        <span class="badge badge-success">{{ session.status }}</span>
+                                        {% elif session.status == 'Completed' %}
+                                        <span class="badge badge-info">{{ session.status }}</span>
+                                        {% else %}
+                                        <span class="badge badge-danger">{{ session.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-primary">{{ session.total_meetings }} meetings</span>
+                                    </td>
+                                    <td>{{ session.created_at.strftime('%Y-%m-%d') if session.created_at else 'N/A' }}</td>
+                                    <td>
+                                        {% if session.status == 'Accepted' %}
+                                        <a href="/mentor-chat/{{ session.id }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-comments"></i> Chat
+                                        </a>
+                                        <a href="/mentor/rate-session/{{ session.id }}" class="btn btn-sm btn-success">
+                                            <i class="fas fa-star"></i> Rate
+                                        </a>
+                                        {% elif session.status == 'Pending' %}
+                                        <a href="/mentor/respond-request/{{ session.id }}/accept" class="btn btn-sm btn-success">
+                                            <i class="fas fa-check"></i> Accept
+                                        </a>
+                                        <a href="/mentor/respond-request/{{ session.id }}/reject" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-times"></i> Reject
+                                        </a>
+                                        {% elif session.status == 'Completed' %}
+                                        <a href="/mentor-chat/{{ session.id }}" class="btn btn-sm btn-secondary">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No sessions found</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <a href="/mentor/availability" class="btn btn-primary mx-2">
+                        <i class="fas fa-calendar"></i> Manage Availability
+                    </a>
+                    <a href="/mentor/analytics" class="btn btn-success mx-2">
+                        <i class="fas fa-chart-line"></i> View Analytics
+                    </a>
+                    <a href="/mentor-dashboard" class="btn btn-secondary mx-2">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

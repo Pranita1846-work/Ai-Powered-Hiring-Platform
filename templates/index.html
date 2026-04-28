@@ -1,0 +1,3251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        {% if maintenance_mode %}
+        <div style="background: #f59e0b; color: #222; text-align: center; padding: 8px 0; font-weight: 600;">
+            The platform is currently under maintenance. Some features may be unavailable.
+        </div>
+        {% endif %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HireHub | Connecting Talent, Opportunity & Mentorship</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #0F2A44;
+            --primary-dark: #0A1F33;
+            --primary-light: #1A3A5A;
+            --secondary: #2E3A46;
+            --secondary-dark: #1F2933;
+            --secondary-light: #3D4A56;
+            --accent: #4FB6E8;
+            --accent-dark: #3A9FD5;
+            --accent-light: #6BC5ED;
+            --dark: #0F2A44;
+            --gray: #6B7280;
+            --light-gray: #F6F8FB;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: rgba(15, 23, 42, 0.95);
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 0.8rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ===== NAVBAR LOGO – CLEAN & PROFESSIONAL ===== */
+        .navbar-brand {
+            font-size: clamp(1.25rem, 3vw, 1.6rem);
+            font-weight: 700;
+            color: #ffffff !important;
+        
+            /* REMOVE gradient & glow */
+            background: none !important;
+            -webkit-background-clip: unset !important;
+            -webkit-text-fill-color: unset !important;
+            text-shadow: none !important;
+            filter: none !important;
+            transition: none !important;
+        }
+        
+        /* Hover pe bhi koi glow nahi */
+        .navbar-brand:hover {
+            color: #e5e7eb !important;
+            transform: none !important;
+        }
+
+        /* Navbar Toggler (Hamburger) - Make it visible on dark background */
+        .navbar-toggler {
+            border-color: rgba(255, 255, 255, 0.5);
+            padding: 0.5rem 0.75rem;
+        }
+
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem !important;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #0F2A44, #4FB6E8);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: white !important;
+        }
+
+        .nav-link:hover::after {
+            width: 70%;
+        }
+
+        .btn-login {
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(15, 42, 68, 0.5);
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login:hover {
+            background: linear-gradient(135deg, #0F2A44, #4FB6E8);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(15, 42, 68, 0.4);
+        }
+
+        .btn-register {
+            background: linear-gradient(135deg, #0F2A44 0%, #4FB6E8 50%, #3A9FD5 100%);
+            color: white;
+            padding: 10px 32px;
+            border-radius: 50px;
+            font-weight: 700;
+            border: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(15, 42, 68, 0.3);
+        }
+
+        .btn-register:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 50px rgba(15, 42, 68, 0.5);
+        }
+
+        /* ===== HERO SECTION (PREMIUM SHOWCASE) ===== */
+        .hero.hero-showcase {
+            position: relative;
+            min-height: 84vh;
+            display: flex;
+            align-items: center;
+            padding: 96px 0 88px;
+            background:
+                radial-gradient(circle at 15% 20%, rgba(79, 182, 232, 0.28), transparent 30%),
+                radial-gradient(circle at 85% 18%, rgba(99, 102, 241, 0.18), transparent 28%),
+                linear-gradient(135deg, #071522 0%, #0F2A44 42%, #17385A 100%);
+            overflow: hidden;
+            animation: none;
+        }
+
+        .hero.hero-showcase::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(115deg, rgba(7, 21, 34, 0.18), rgba(7, 21, 34, 0.72)),
+                radial-gradient(circle at top right, rgba(126, 211, 245, 0.25), transparent 25%);
+            z-index: 1;
+        }
+
+        .hero.hero-showcase::after {
+            content: "";
+            position: absolute;
+            inset: auto -120px -140px auto;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: rgba(126, 211, 245, 0.12);
+            filter: blur(20px);
+            z-index: 1;
+        }
+
+        .hero.hero-showcase .container {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            color: #EAF2FF;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(16px);
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+        }
+
+        .hero.hero-showcase h1 {
+            font-size: clamp(2.4rem, 5vw, 4.8rem);
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -1.8px;
+            color: #ffffff;
+            margin-bottom: 1rem;
+            text-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+            max-width: 12ch;
+            padding: 0;
+        }
+
+        .hero.hero-showcase h1 span {
+            color: #7ED3F5;
+            -webkit-text-fill-color: #7ED3F5;
+        }
+
+        .hero.hero-showcase p {
+            max-width: 34rem;
+            font-size: clamp(1rem, 2vw, 1.15rem);
+            line-height: 1.8;
+            color: rgba(234, 242, 255, 0.88);
+            padding: 0;
+            margin-bottom: 1.8rem;
+        }
+
+        .hero.hero-showcase .hero-btn {
+            border-radius: 999px;
+            padding: 0.9rem 1.35rem;
+        }
+
+        .hero-visual {
+            position: relative;
+            min-height: 460px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .hero-visual-card {
+            width: min(100%, 440px);
+            border-radius: 28px;
+            padding: 28px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 28px 80px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(22px);
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-visual-card::before {
+            content: "";
+            position: absolute;
+            inset: -40px auto auto -40px;
+            width: 160px;
+            height: 160px;
+            background: rgba(126, 211, 245, 0.14);
+            border-radius: 50%;
+            filter: blur(10px);
+        }
+
+        .hero-visual-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .visual-pill {
+            display: inline-flex;
+            padding: 0.42rem 0.8rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+
+        .visual-score {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.42rem 0.8rem;
+            border-radius: 999px;
+            background: rgba(126, 211, 245, 0.18);
+            color: #EAFBFF;
+            font-size: 0.88rem;
+            font-weight: 700;
+        }
+
+        .visual-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1.35rem;
+        }
+
+        .visual-metrics div {
+            border-radius: 18px;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .visual-metrics strong {
+            display: block;
+            font-size: 1.15rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .visual-metrics span {
+            display: block;
+            color: rgba(234, 242, 255, 0.82);
+            font-size: 0.84rem;
+            line-height: 1.4;
+        }
+
+        .visual-feed {
+            display: grid;
+            gap: 0.85rem;
+        }
+
+        .visual-feed-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.9rem 1rem;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .visual-feed-item small {
+            color: rgba(234, 242, 255, 0.74);
+        }
+
+        .visual-feed-item strong {
+            display: block;
+            font-size: 0.95rem;
+            margin-bottom: 0.1rem;
+        }
+
+        .hero-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(8px);
+            z-index: 0;
+            opacity: 0.8;
+        }
+
+        .hero-orb.orb-1 {
+            width: 180px;
+            height: 180px;
+            top: 12%;
+            left: -3%;
+            background: rgba(79, 182, 232, 0.18);
+        }
+
+        .hero-orb.orb-2 {
+            width: 240px;
+            height: 240px;
+            right: 2%;
+            bottom: 5%;
+            background: rgba(99, 102, 241, 0.12);
+        }
+
+        .hero-orb.orb-3 {
+            width: 110px;
+            height: 110px;
+            right: 28%;
+            top: 15%;
+            background: rgba(126, 211, 245, 0.18);
+        }
+
+        @media (max-width: 991px) {
+            .hero.hero-showcase {
+                padding: 72px 0 64px;
+            }
+
+            .hero.hero-showcase h1 {
+                max-width: none;
+            }
+
+            .hero-visual {
+                min-height: 0;
+                padding: 0;
+            }
+
+            .visual-metrics {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.2;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+            padding: 0 15px;
+
+            /* REMOVE glow/shadow */
+            text-shadow: none;
+        }
+
+        /* Remove special glow/shimmer from span */
+        .hero h1 span {
+            color: #facc15;   /* simple highlight color (yellow) */
+            background: none;
+            -webkit-text-fill-color: unset;
+            animation: none;
+            text-shadow: none;
+        }
+
+
+
+
+        @keyframes shimmer {
+            0%, 100% { 
+                background-position: 0% 50%;
+                filter: brightness(1) saturate(1.2);
+            }
+            50% { 
+                background-position: 100% 50%;
+                filter: brightness(1.25) saturate(1.4);
+            }
+        }
+
+       .hero p {
+    font-size: clamp(0.95rem, 2.5vw, 1.05rem);
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.7;
+    max-width: 650px;
+    margin-bottom: 28px;
+    padding: 0 15px;
+
+    /* REMOVE glow */
+    text-shadow: none;
+}
+
+
+       /* ===== HERO BUTTONS – CLEAN OVERRIDE ===== */
+        .hero-btn {
+            padding: 12px 28px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 15px;
+
+            box-shadow: none !important;
+            animation: none !important;
+            transform: none !important;
+        }
+
+        .hero-btn::before {
+            display: none !important;
+        }
+
+        /* Primary */
+        .hero-btn-primary {
+            background: #2563eb !important;
+            color: #ffffff !important;
+            border: none !important;
+        }
+
+        .hero-btn-primary:hover {
+            background: #1d4ed8 !important;
+        }
+
+        /* Outline */
+        .hero-btn-outline {
+            background: transparent !important;
+            color: #ffffff !important;
+            border: 1.5px solid #ffffff !important;
+        }
+
+        .hero-btn-outline:hover {
+            background: rgba(255,255,255,0.12) !important;
+        }
+
+        /* Stats Counter */
+        .hero-stats {
+            margin-top: 35px;
+            display: flex;
+            gap: 3rem;
+            flex-wrap: nowrap;
+            flex-direction: row;
+            animation: slideDown 1s ease 0.5s both;
+            align-items: center;
+        }
+
+        .stat-item {
+            text-align: left;
+            border-left: 3px solid;
+            border-image: linear-gradient(180deg, #60a5fa, #8b5cf6, #ec4899) 1;
+            padding-left: 20px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateX(5px);
+        }
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            left: -14px;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            background: linear-gradient(135deg, #60a5fa, #8b5cf6);
+            border-radius: 50%;
+            box-shadow: 0 0 25px rgba(96, 165, 250, 0.8), 0 0 50px rgba(139, 92, 246, 0.4);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 25px rgba(96, 165, 250, 0.8), 0 0 50px rgba(139, 92, 246, 0.4); }
+            50% { box-shadow: 0 0 35px rgba(96, 165, 250, 1), 0 0 70px rgba(139, 92, 246, 0.6); }
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: white;
+            display: block;
+            line-height: 1;
+            background: linear-gradient(135deg, #60a5fa 0%, #fbbf24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+            margin-top: 5px;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        /* ===== SECTIONS ===== */
+        section {
+            padding: 80px 0;
+        }
+
+        .section-title {
+            font-size: clamp(1.75rem, 4vw, 2.75rem);
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 1rem;
+            color: var(--dark);
+            letter-spacing: -1px;
+            line-height: 1.2;
+            padding: 0 15px;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+            color: var(--gray);
+            margin-bottom: 50px;
+            font-weight: 500;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 0 15px;
+        }
+
+        /* How It Works */
+        .how-it-works {
+            background: linear-gradient(135deg, var(--light-gray) 0%, #ffffff 100%);
+            position: relative;
+        }
+
+        .journey-role-switch {
+            display: inline-flex;
+            gap: 0.45rem;
+            padding: 0.35rem;
+            background: #ffffff;
+            border: 1px solid rgba(15, 42, 68, 0.15);
+            border-radius: 999px;
+            margin: -0.3rem auto 1.45rem;
+            box-shadow: 0 12px 30px rgba(15, 42, 68, 0.08);
+        }
+
+        .journey-role-btn {
+            border: none;
+            border-radius: 999px;
+            padding: 0.56rem 1rem;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--primary);
+            background: transparent;
+            transition: all 0.28s ease;
+        }
+
+        .journey-role-btn i {
+            margin-right: 0.38rem;
+        }
+
+        .journey-role-btn:hover {
+            background: rgba(15, 42, 68, 0.08);
+        }
+
+        .journey-role-btn.is-active {
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary), #2d5f8d);
+            box-shadow: 0 10px 22px rgba(15, 42, 68, 0.24);
+        }
+
+        .step-card {
+            text-align: center;
+            position: relative;
+            padding: 38px 30px;
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.5);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            height: 100%;
+            border: 2px solid rgba(99, 102, 241, 0.2);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .step-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            opacity: 0;
+            transition: all 0.5s ease;
+            z-index: 0;
+        }
+
+        .step-card:hover {
+            transform: translateY(-20px) scale(1.02);
+            box-shadow: 0 35px 80px rgba(99, 102, 241, 0.3), 0 0 40px rgba(139, 92, 246, 0.2);
+            border-color: rgba(99, 102, 241, 0.6);
+            background: linear-gradient(135deg, #ffffff 0%, rgba(249, 250, 251, 1) 100%);
+        }
+
+        .step-card:hover::before {
+            opacity: 0.1;
+        }
+
+        .step-number {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 900;
+            margin: 0 auto 32px;
+            box-shadow: 0 20px 50px rgba(99, 102, 241, 0.4);
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-card h4 {
+            font-weight: 800;
+            margin-bottom: 18px;
+            color: var(--dark);
+            font-size: 1.4rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-card p {
+            color: var(--gray);
+            line-height: 1.8;
+            font-size: 1.05rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .journey-shell {
+            margin-top: 2.4rem;
+            border-radius: 28px;
+            padding: 1.2rem;
+            background: linear-gradient(145deg, rgba(15, 42, 68, 0.1), rgba(79, 182, 232, 0.08));
+            border: 1px solid rgba(15, 42, 68, 0.12);
+            box-shadow: 0 30px 70px rgba(15, 42, 68, 0.12);
+        }
+
+        .journey-grid {
+            display: grid;
+            grid-template-columns: minmax(280px, 0.9fr) minmax(0, 1.1fr);
+            gap: 1.25rem;
+            align-items: stretch;
+        }
+
+        .journey-rail {
+            border-radius: 22px;
+            padding: 1.2rem;
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(15, 42, 68, 0.08);
+            display: grid;
+            gap: 0.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .journey-rail::before {
+            content: '';
+            position: absolute;
+            top: 1.35rem;
+            bottom: 1.35rem;
+            left: 2.2rem;
+            width: 2px;
+            background: linear-gradient(180deg, rgba(15, 42, 68, 0.2), rgba(79, 182, 232, 0.7));
+            z-index: 0;
+        }
+
+        .journey-step {
+            border: 1px solid transparent;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 0.8rem 0.9rem;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.75rem;
+            align-items: center;
+            text-align: left;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .journey-step:hover {
+            transform: translateX(5px);
+            border-color: rgba(15, 42, 68, 0.2);
+            box-shadow: 0 12px 25px rgba(15, 42, 68, 0.12);
+        }
+
+        .journey-step.is-active {
+            border-color: rgba(15, 42, 68, 0.45);
+            background: linear-gradient(135deg, rgba(15, 42, 68, 0.08), rgba(79, 182, 232, 0.16));
+            box-shadow: 0 16px 30px rgba(15, 42, 68, 0.16);
+        }
+
+        .journey-step-num {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary), #2d5f8d);
+            box-shadow: 0 8px 16px rgba(15, 42, 68, 0.22);
+        }
+
+        .journey-step-title {
+            margin: 0;
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: var(--dark);
+            display: block;
+        }
+
+        .journey-step-sub {
+            margin: 0.1rem 0 0;
+            font-size: 0.84rem;
+            color: #5f6c7b;
+            line-height: 1.45;
+            display: block;
+        }
+
+        .journey-preview {
+            border-radius: 22px;
+            padding: 1.4rem;
+            background: linear-gradient(150deg, #0d2238 0%, #163b5e 52%, #245a87 100%);
+            color: #f4f9ff;
+            position: relative;
+            overflow: hidden;
+            min-height: 100%;
+            display: grid;
+            gap: 1rem;
+            align-content: start;
+        }
+
+        .journey-preview::before {
+            content: '';
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            right: -70px;
+            top: -70px;
+            background: rgba(126, 211, 245, 0.22);
+            filter: blur(10px);
+        }
+
+        .journey-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.45rem 0.85rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 0.82rem;
+            font-weight: 700;
+            width: max-content;
+            position: relative;
+            z-index: 1;
+        }
+
+        .journey-preview-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .journey-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            font-size: 1.55rem;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+        }
+
+        .journey-preview h4 {
+            margin: 0;
+            font-size: clamp(1.2rem, 2vw, 1.45rem);
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            position: relative;
+            z-index: 1;
+            color: #f4f9ff;
+        }
+
+        .journey-preview p {
+            margin: 0;
+            color: rgba(244, 249, 255, 0.9);
+            line-height: 1.7;
+            font-size: 0.98rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .journey-points {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            gap: 0.55rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .journey-points li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.92rem;
+            color: rgba(244, 249, 255, 0.96);
+        }
+
+        .journey-points i {
+            color: #7ed3f5;
+        }
+
+        .journey-kpis {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.65rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .journey-kpi {
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.12);
+            padding: 0.68rem 0.75rem;
+        }
+
+        .journey-kpi strong {
+            display: block;
+            font-size: 1.02rem;
+            margin-bottom: 0.15rem;
+            color: #fff;
+        }
+
+        .journey-kpi span {
+            font-size: 0.77rem;
+            color: rgba(244, 249, 255, 0.85);
+        }
+
+        .journey-progress {
+            height: 7px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.16);
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .journey-progress-fill {
+            width: 25%;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #7ed3f5, #ffffff);
+            transition: width 0.4s ease;
+        }
+
+        @media (max-width: 991px) {
+            .journey-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .journey-shell {
+                padding: 0.9rem;
+            }
+
+            .journey-rail::before {
+                left: 1.95rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .journey-kpis {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Why Choose Us */
+        .feature-card {
+            background: white;
+            padding: 38px 30px;
+            border-radius: 22px;
+            text-align: center;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            height: 100%;
+            border: 2.5px solid rgba(99, 102, 241, 0.1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.08);
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: -60%;
+            right: -60%;
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            opacity: 0;
+            transition: all 0.5s ease;
+            filter: blur(30px);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-18px) scale(1.02);
+            box-shadow: 0 40px 90px rgba(99, 102, 241, 0.25), 0 0 50px rgba(139, 92, 246, 0.15);
+            border-color: rgba(99, 102, 241, 0.5);
+            background: linear-gradient(135deg, #ffffff 0%, rgba(249, 250, 251, 1) 100%);
+        }
+
+        .feature-card:hover::before {
+            opacity: 0.12;
+        }
+
+        .feature-icon {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 28px;
+            font-size: 2.5rem;
+            color: white;
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.35);
+            position: relative;
+            z-index: 2;
+        }
+
+        .feature-card h5 {
+            font-weight: 800;
+            margin-bottom: 18px;
+            color: var(--dark);
+            font-size: 1.3rem;
+        }
+
+        .feature-card p {
+            color: var(--gray);
+            line-height: 1.8;
+            margin: 0;
+            font-size: 1.05rem;
+        }
+
+        /* Roles We Serve */
+        .roles-section {
+            background: linear-gradient(140deg, #0b1e32 0%, #133657 48%, #1f4b73 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .roles-section::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            top: -250px;
+            right: -250px;
+            filter: blur(50px);
+        }
+
+        .roles-section::after {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            bottom: -200px;
+            left: -200px;
+            filter: blur(50px);
+        }
+
+        .roles-section .section-title,
+        .roles-section .section-subtitle {
+            color: white;
+            position: relative;
+            z-index: 2;
+        }
+
+        .roles-grid {
+            position: relative;
+            z-index: 2;
+        }
+
+        .roles-grid .col {
+            display: flex;
+        }
+
+        .role-card {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 36px 30px;
+            border-radius: 22px;
+            text-align: center;
+            transition: all 0.35s ease;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            box-shadow: 0 16px 45px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .role-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), #f093fb);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.5s ease;
+        }
+
+        .role-card:hover {
+            background: white;
+            transform: translateY(-10px);
+            box-shadow: 0 28px 70px rgba(0, 0, 0, 0.25);
+            border-color: rgba(255, 255, 255, 0.7);
+        }
+
+        .role-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .role-icon {
+            font-size: 4.5rem;
+            margin-bottom: 28px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 10px 25px rgba(99, 102, 241, 0.3));
+        }
+
+        .role-card h4 {
+            font-weight: 800;
+            margin-bottom: 18px;
+            color: var(--dark);
+            font-size: 1.4rem;
+        }
+
+        .role-card p {
+            color: var(--gray);
+            margin-bottom: 22px;
+            line-height: 1.7;
+            font-size: 1rem;
+        }
+
+        .role-meta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            border-radius: 999px;
+            padding: 0.35rem 0.8rem;
+            background: rgba(15, 42, 68, 0.08);
+            color: var(--primary);
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 0.95rem;
+        }
+
+        .btn-role {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 10px 26px;
+            border-radius: 50px;
+            font-weight: 700;
+            border: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+            margin-top: auto;
+        }
+
+        .btn-role:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        /* CTA Section */
+        /* ===== CTA SECTION – CLEAN & PROFESSIONAL ===== */
+        .cta-section {
+            background: #eef2f7;   /* soft light gray */
+            padding: 100px 0;
+            text-align: center;
+        }
+        
+        .cta-section h2 {
+            color: #0f172a;        /* dark navy */
+            font-weight: 700;
+        }
+        
+        .cta-section p {
+            color: #475569;        /* soft gray text */
+            font-size: 1.05rem;
+        }
+        
+        .cta-section .btn {
+            background: #1e3a8a;   /* deep blue */
+            color: #ffffff;
+            font-weight: 600;
+            padding: 12px 28px;
+            border-radius: 6px;
+        }
+        
+        .cta-section .btn:hover {
+            background: #1e40af;
+        }
+
+
+        /* Footer */
+        footer {
+            background: linear-gradient(180deg, #0a0f1e 0%, #0f1927 50%, #1a1a2e 100%);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 80px 0 40px;
+            border-top: 2px solid rgba(99, 102, 241, 0.15);
+            position: relative;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            top: 0;
+            right: -100px;
+            filter: blur(40px);
+        }
+
+        .footer-brand {
+            font-weight: 900;
+            font-size: 32px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+        
+
+        .footer-links h5 {
+            font-weight: 700;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 10px;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .social-links a {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            color: white;
+            margin-right: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 40px;
+            padding-top: 30px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Responsive */
+        /* Large Desktop (1400px and above) */
+        @media (min-width: 1400px) {
+            .hero h1 {
+                font-size: 4rem;
+            }
+
+            .hero p {
+                font-size: 1.25rem;
+            }
+
+            .stat-number {
+                font-size: 3rem;
+            }
+
+            .section-title {
+                font-size: 3.2rem;
+            }
+        }
+
+        /* Desktop (992px to 1399px) */
+        @media (min-width: 992px) and (max-width: 1399px) {
+            .hero h1 {
+                font-size: 3.2rem;
+            }
+
+            .hero p {
+                font-size: 1.05rem;
+            }
+
+            .stat-number {
+                font-size: 2.3rem;
+            }
+
+            .section-title {
+                font-size: 2.5rem;
+            }
+        }
+
+        /* Large Devices (992px to 1400px) */
+        @media (min-width: 992px) and (max-width: 1400px) {
+            .navbar {
+                padding: 0.7rem 0;
+            }
+
+            .navbar-brand {
+                font-size: 1.6rem;
+            }
+
+            .nav-link {
+                font-size: 0.9rem;
+                padding: 0.4rem 0.9rem !important;
+            }
+
+            .hero {
+                padding: 50px 0 60px;
+                min-height: 70vh;
+            }
+
+            .hero h1 {
+                font-size: 3.2rem;
+                margin-bottom: 16px;
+            }
+
+            .hero-badge {
+                padding: 9px 20px;
+                font-size: 14px;
+                margin-bottom: 16px;
+            }
+
+            .hero p {
+                font-size: 1.05rem;
+                margin-bottom: 28px;
+            }
+
+            .hero-btn {
+                padding: 13px 35px;
+                font-size: 15px;
+            }
+
+            .hero-stats {
+                margin-top: 30px;
+                gap: 2.5rem;
+                flex-direction: row;
+                align-items: center;
+                flex-wrap: nowrap;
+            }
+
+            .stat-number {
+                font-size: 2.3rem;
+            }
+
+            .stat-label {
+                font-size: 0.8rem;
+                margin-top: 5px;
+            }
+
+            .section-title {
+                font-size: 2.5rem;
+                margin-bottom: 0.9rem;
+            }
+
+            .section-subtitle {
+                font-size: 1.05rem;
+                margin-bottom: 45px;
+            }
+
+            .step-card,
+            .feature-card,
+            .role-card {
+                padding: 30px 22px;
+            }
+
+            .step-number {
+                width: 72px;
+                height: 72px;
+                font-size: 1.9rem;
+                margin: 0 auto 18px;
+            }
+
+            .feature-icon {
+                width: 70px;
+                height: 70px;
+                font-size: 1.9rem;
+                margin: 0 auto 18px;
+            }
+
+            .role-icon {
+                font-size: 3.2rem;
+                margin-bottom: 18px;
+            }
+
+            .btn-role {
+                padding: 10px 22px;
+                font-size: 13.8px;
+            }
+
+            .cta-section h2 {
+                font-size: 2.5rem;
+                margin-bottom: 18px;
+            }
+
+            .cta-section p {
+                font-size: 1.05rem;
+                margin-bottom: 32px;
+            }
+
+            section {
+                padding: 70px 0;
+            }
+        }
+
+      /* ===== SINGLE STATS BOX ===== */
+        .stats-section {
+            padding: 70px 0;
+        }
+        
+        .stats-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 30px;
+        
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            border-radius: 14px;
+            padding: 40px 50px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-item h3 {
+            font-family: "Times New Roman", Times, serif;
+            font-size: clamp(1.8rem, 4vw, 2.6rem);
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 6px;
+        }
+        
+        .stat-item p {
+            font-family: "Times New Roman", Times, serif;
+            font-size: clamp(0.85rem, 2vw, 1rem);
+            font-weight: 700;
+            color: #cbd5f5;
+            margin: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-box {
+                flex-direction: column;
+                padding: 30px 20px;
+                gap: 20px;
+            }
+        
+            .stat-item {
+                width: 100%;
+                padding: 15px 0;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+        
+            .stat-item:last-child {
+                border-bottom: none;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .stats-box {
+                padding: 25px 15px;
+            }
+        }
+
+
+
+        /* Laptop Condensed (max-width: 1280px) */
+        @media (max-width: 1280px) and (min-width: 992px) {
+            .hero {
+                padding: 45px 0 55px;
+                min-height: 68vh;
+            }
+
+            .hero h1 {
+                font-size: 3rem;
+                margin-bottom: 14px;
+            }
+
+            .hero p {
+                font-size: 1rem;
+                margin-bottom: 26px;
+            }
+
+            .hero-stats {
+                margin-top: 28px;
+                gap: 2.2rem;
+                flex-direction: row;
+                align-items: center;
+                flex-wrap: nowrap;
+            }
+
+            .stat-number {
+                font-size: 2.2rem;
+            }
+
+            .stat-label {
+                font-size: 0.8rem;
+                margin-top: 5px;
+            }
+
+            section {
+                padding: 65px 0;
+            }
+
+            .section-title {
+                font-size: 2.4rem;
+                margin-bottom: 0.9rem;
+            }
+
+            .section-subtitle {
+                font-size: 1rem;
+                margin-bottom: 40px;
+            }
+
+            .step-card,
+            .feature-card,
+            .role-card {
+                padding: 26px 20px;
+            }
+
+            .step-number {
+                width: 66px;
+                height: 66px;
+                font-size: 1.75rem;
+                margin: 0 auto 16px;
+            }
+
+            .feature-icon {
+                width: 64px;
+                height: 64px;
+                font-size: 1.75rem;
+                margin: 0 auto 16px;
+            }
+
+            .role-icon {
+                font-size: 3rem;
+                margin-bottom: 16px;
+            }
+
+            .btn-role {
+                padding: 10px 20px;
+                font-size: 13.5px;
+            }
+
+            .cta-section h2 {
+                font-size: 2.3rem;
+                margin-bottom: 16px;
+            }
+
+            .cta-section p {
+                font-size: 1.02rem;
+                margin-bottom: 28px;
+            }
+        }
+
+        /* Tablet Landscape (768px to 991px) */
+        @media (min-width: 768px) and (max-width: 991px) {
+            .navbar-brand {
+                font-size: 24px;
+            }
+
+            .navbar .d-flex {
+                flex-direction: column;
+                width: 100%;
+                margin-top: 1rem;
+            }
+
+            .btn-login,
+            .btn-register {
+                width: 100%;
+                margin: 0.25rem 0;
+            }
+
+            .hero {
+                padding: 40px 0 60px;
+                min-height: 70vh;
+            }
+
+            .hero h1 {
+                font-size: 3.2rem;
+                margin-bottom: 12px;
+            }
+
+            .hero-badge {
+                padding: 8px 20px;
+                font-size: 13px;
+                margin-bottom: 14px;
+            }
+
+            .hero p {
+                font-size: 1rem;
+                margin-bottom: 28px;
+            }
+
+            .hero-btn {
+                padding: 12px 32px;
+                font-size: 15px;
+            }
+
+            .hero-stats {
+                margin-top: 32px;
+                gap: 2.5rem;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stat-number {
+                font-size: 2.4rem;
+            }
+
+            .stat-label {
+                font-size: 13px;
+                margin-top: 6px;
+            }
+
+            .section-title {
+                font-size: 2.3rem;
+                margin-bottom: 1rem;
+            }
+
+            .section-subtitle {
+                font-size: 1rem;
+                margin-bottom: 50px;
+            }
+
+            .step-card,
+            .feature-card,
+            .role-card {
+                padding: 35px 25px;
+            }
+
+            .step-number {
+                width: 80px;
+                height: 80px;
+                font-size: 2rem;
+                margin: 0 auto 20px;
+            }
+
+            .feature-icon {
+                width: 75px;
+                height: 75px;
+                font-size: 2rem;
+                margin: 0 auto 20px;
+            }
+
+            .role-icon {
+                font-size: 3.5rem;
+                margin-bottom: 20px;
+            }
+
+            .btn-role {
+                padding: 10px 24px;
+                font-size: 14px;
+            }
+
+            .cta-section h2 {
+                font-size: 2.8rem;
+                margin-bottom: 20px;
+            }
+
+            .cta-section p {
+                font-size: 1.15rem;
+                margin-bottom: 40px;
+            }
+        }
+
+        /* Mobile Tablet (481px to 767px) */
+        @media (max-width: 767px) {
+            .navbar {
+                padding: 1rem 0;
+            }
+
+            .navbar-brand {
+                font-size: 22px;
+            }
+
+            .nav-link {
+                margin: 0.5rem 0;
+                font-size: 1rem;
+                text-align: center;
+            }
+
+            .navbar .d-flex {
+                flex-direction: column;
+                width: 100%;
+                margin-top: 1rem;
+            }
+
+            .btn-login,
+            .btn-register {
+                padding: 10px 20px;
+                font-size: 14px;
+                margin: 0.25rem 0;
+                width: 100%;
+                min-height: 44px;
+            }
+
+            .hero {
+                padding: 35px 0 50px;
+                min-height: unset;
+            }
+
+            .hero h1 {
+                font-size: 2.8rem;
+                margin-bottom: 12px;
+                letter-spacing: -1px;
+            }
+
+            .hero-badge {
+                padding: 8px 16px;
+                font-size: 12px;
+                margin-bottom: 12px;
+            }
+
+            .hero-badge i {
+                font-size: 14px;
+            }
+
+            .hero p {
+                font-size: 0.95rem;
+                margin-bottom: 24px;
+                line-height: 1.6;
+            }
+
+            .hero .d-flex {
+                flex-direction: column;
+            }
+
+            .hero-btn {
+                padding: 12px 28px;
+                font-size: 14px;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .hero-stats {
+                margin-top: 30px;
+                gap: 2rem;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stat-item {
+                padding-left: 28px;
+            }
+
+            .stat-number {
+                font-size: 2.2rem;
+            }
+
+            .stat-label {
+                font-size: 12px;
+                margin-top: 4px;
+            }
+
+            section {
+                padding: 70px 0;
+            }
+
+            .section-title {
+                font-size: 2rem;
+                margin-bottom: 0.8rem;
+            }
+
+            .section-subtitle {
+                font-size: 0.95rem;
+                margin-bottom: 40px;
+            }
+
+            .how-it-works .row {
+                flex-direction: column-reverse;
+            }
+
+            .how-it-works .col-md-6 {
+                margin-bottom: 20px;
+            }
+
+            .how-it-works img {
+                max-width: 100%;
+                height: auto;
+            }
+
+            .step-card,
+            .feature-card,
+            .role-card {
+                padding: 30px 20px;
+                margin-bottom: 20px;
+            }
+
+            .how-it-works .row {
+                flex-direction: column-reverse;
+            }
+
+            .how-it-works .col-md-6 {
+                margin-bottom: 20px;
+            }
+
+            .step-number {
+                width: 70px;
+                height: 70px;
+                font-size: 1.8rem;
+                margin: 0 auto 18px;
+            }
+
+            .step-card h4 {
+                font-size: 1.15rem;
+                margin-bottom: 12px;
+            }
+
+            .step-card p {
+                font-size: 0.95rem;
+            }
+
+            .feature-icon {
+                width: 65px;
+                height: 65px;
+                font-size: 1.8rem;
+                margin: 0 auto 18px;
+            }
+
+            .feature-card h5 {
+                font-size: 1.1rem;
+                margin-bottom: 10px;
+            }
+
+            .feature-card p {
+                font-size: 0.95rem;
+            }
+
+            .role-icon {
+                font-size: 3rem;
+                margin-bottom: 15px;
+            }
+
+            .role-card h4 {
+                font-size: 1.15rem;
+                margin-bottom: 10px;
+            }
+
+            .role-card p {
+                font-size: 0.95rem;
+                margin-bottom: 20px;
+            }
+
+            .btn-role {
+                padding: 10px 20px;
+                font-size: 13px;
+                width: 100%;
+            }
+
+            .cta-section {
+                padding: 80px 0;
+            }
+
+            .cta-section h2 {
+                font-size: 2.2rem;
+                margin-bottom: 16px;
+            }
+
+            .cta-section p {
+                font-size: 1rem;
+                margin-bottom: 32px;
+            }
+
+            footer {
+                padding: 60px 0 30px;
+            }
+
+            .footer-brand {
+                font-size: 24px;
+                margin-bottom: 15px;
+            }
+
+            .footer-links {
+                margin-bottom: 30px;
+                text-align: center;
+            }
+
+            .footer-links h5 {
+                font-size: 1rem;
+                margin-bottom: 12px;
+            }
+
+            .footer-links a {
+                font-size: 0.9rem;
+            }
+
+            .social-links {
+                margin-bottom: 20px;
+                text-align: center;
+            }
+
+            .col-md-4,
+            .col-md-2 {
+                text-align: center;
+            }
+        }
+
+        /* Small Mobile (320px to 480px) */
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 0.8rem 0;
+            }
+
+            .navbar-brand {
+                font-size: 20px;
+            }
+
+            .navbar-toggler {
+                padding: 0.5rem;
+                font-size: 1.1rem;
+            }
+
+            .nav-link {
+                margin: 0.4rem 0;
+                font-size: 0.9rem;
+            }
+
+            .btn-login,
+            .btn-register {
+                padding: 6px 12px;
+                font-size: 11px;
+                margin: 0.2rem 0.1rem;
+            }
+
+            .hero {
+                padding: 25px 0 40px;
+                min-height: unset;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+                margin-bottom: 10px;
+                letter-spacing: 0;
+            }
+
+            .hero-badge {
+                padding: 6px 12px;
+                font-size: 11px;
+                margin-bottom: 10px;
+            }
+
+            .hero-badge i {
+                font-size: 12px;
+            }
+
+            .hero p {
+                font-size: 0.85rem;
+                margin-bottom: 18px;
+                line-height: 1.5;
+            }
+
+            .hero .d-flex {
+                flex-direction: column;
+            }
+
+            .hero-btn {
+                padding: 10px 20px;
+                font-size: 13px;
+                width: 100%;
+                margin-bottom: 8px;
+            }
+
+            .hero-stats {
+                margin-top: 24px;
+                gap: 1.5rem;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stat-item {
+                padding-left: 20px;
+            }
+
+            .stat-number {
+                font-size: 1.8rem;
+            }
+
+            .stat-label {
+                font-size: 11px;
+                margin-top: 3px;
+            }
+
+            section {
+                padding: 50px 0;
+            }
+
+            .section-title {
+                font-size: 1.6rem;
+                margin-bottom: 0.6rem;
+            }
+
+            .section-subtitle {
+                font-size: 0.85rem;
+                margin-bottom: 30px;
+            }
+
+            .step-card,
+            .feature-card,
+            .role-card {
+                padding: 20px 15px;
+                margin-bottom: 15px;
+            }
+
+            .how-it-works .row {
+                flex-direction: column-reverse;
+            }
+
+            .how-it-works img {
+                max-width: 100%;
+                height: auto;
+            }
+
+            .step-number {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+                margin: 0 auto 14px;
+            }
+
+            .step-card h4 {
+                font-size: 1rem;
+                margin-bottom: 8px;
+            }
+
+            .step-card p {
+                font-size: 0.85rem;
+                line-height: 1.5;
+            }
+
+            .feature-icon {
+                width: 55px;
+                height: 55px;
+                font-size: 1.5rem;
+                margin: 0 auto 14px;
+            }
+
+            .feature-card h5 {
+                font-size: 1rem;
+                margin-bottom: 8px;
+            }
+
+            .feature-card p {
+                font-size: 0.85rem;
+            }
+
+            .role-icon {
+                font-size: 2.5rem;
+                margin-bottom: 12px;
+            }
+
+            .role-card h4 {
+                font-size: 1rem;
+                margin-bottom: 8px;
+            }
+
+            .role-card p {
+                font-size: 0.85rem;
+                margin-bottom: 15px;
+            }
+
+            .btn-role {
+                padding: 8px 16px;
+                font-size: 12px;
+                width: 100%;
+            }
+
+            .cta-section {
+                padding: 60px 0;
+            }
+
+            .cta-section h2 {
+                font-size: 1.8rem;
+                margin-bottom: 12px;
+            }
+
+            .cta-section p {
+                font-size: 0.9rem;
+                margin-bottom: 24px;
+            }
+
+            footer {
+                padding: 50px 0 25px;
+            }
+
+            .footer-brand {
+                font-size: 20px;
+                margin-bottom: 12px;
+            }
+
+            .footer-links h5 {
+                font-size: 0.9rem;
+                margin-bottom: 8px;
+            }
+
+            .footer-links a {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* ===== FORCE REMOVE UNWANTED LINES / DOTS ===== */
+        .stats-box::before,
+        .stats-box::after,
+        .stat-item::before,
+        .stat-item::after,
+        .stats-section::before,
+        .stats-section::after {
+            content: none !important;
+            display: none !important;
+            background: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
+        
+        /* ===== HEADER LOGIN & REGISTER – CLEAN ===== */
+        
+        /* Login button (text style) */
+        .navbar .btn-login,
+        .navbar a[href*="login"] {
+            background: transparent !important;
+            color: #ffffff !important;   /* agar dark header */
+            border: none !important;
+        
+            box-shadow: none !important;
+            text-shadow: none !important;
+            filter: none !important;
+            animation: none !important;
+            transform: none !important;
+        }
+        
+        /* Register button (simple solid) */
+        .navbar .btn-register,
+        .navbar a[href*="register"] {
+            background: #2563eb !important;  /* simple blue */
+            color: #ffffff !important;
+            border-radius: 6px;
+            padding: 8px 18px;
+        
+            box-shadow: none !important;
+            text-shadow: none !important;
+            filter: none !important;
+            animation: none !important;
+            transform: none !important;
+        }
+        
+        /* Hover – very minimal */
+        .navbar .btn-register:hover,
+        .navbar a[href*="register"]:hover {
+            background: #1e40af !important;
+        }
+        
+        /* ===== FOOTER BRAND / NAME – CLEAN ===== */
+        footer .footer-brand,
+        footer .brand,
+        footer h3,
+        footer h4,
+        footer a.footer-logo {
+            background: none !important;
+            -webkit-background-clip: unset !important;
+            -webkit-text-fill-color: unset !important;
+            color: #e5e7eb !important;   /* soft white / gray */
+        
+            text-shadow: none !important;
+            filter: none !important;
+            animation: none !important;
+            transform: none !important;
+        }
+        
+        /* Footer links hover – simple */
+        footer a:hover {
+            color: #ffffff !important;
+            text-decoration: none;
+        }
+                /* ===== AI CHATBOT ===== */
+        #ai-chatbot {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        @media (max-width: 768px) {
+            #ai-chatbot {
+                bottom: 15px;
+                right: 15px;
+            }
+        
+            .chat-toggle {
+                width: 55px;
+                height: 55px;
+            }
+        
+            .chat-toggle img {
+                width: 28px;
+            }
+        
+            .chat-box {
+                width: calc(100vw - 30px);
+                height: calc(100vh - 150px);
+                max-width: 360px;
+                bottom: 70px;
+                right: -7.5px;
+            }
+        }
+        
+        /* Toggle Button */
+        .chat-toggle {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        }
+        
+        .chat-toggle img {
+            width: 32px;
+        }
+        
+        /* Chat Box */
+        .chat-box {
+            width: 360px;
+            height: 520px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            animation: chatOpen 0.3s ease;
+        }
+        
+        @keyframes chatOpen {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        /* Header */
+        .chat-header {
+            background: #1e3a8a;
+            color: #fff;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chat-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+        
+        .chat-title img {
+            width: 28px;
+        }
+        
+        #chat-close {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        
+        /* Body */
+        .chat-body {
+            flex: 1;
+            padding: 14px;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+        
+        .chat-message {
+            max-width: 85%;
+            margin-bottom: 10px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+        
+        .chat-message.bot {
+            background: #e0e7ff;
+            color: #1e3a8a;
+        }
+        
+        .chat-message.user {
+            background: #2563eb;
+            color: #fff;
+            margin-left: auto;
+        }
+        
+        /* Footer */
+        .chat-footer {
+            display: flex;
+            padding: 12px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .chat-footer input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            outline: none;
+        }
+        
+        .chat-footer button {
+            margin-left: 8px;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0 16px;
+            cursor: pointer;
+        }
+        
+        .slider-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #1e293b;
+            color: #fff;
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            font-size: 22px;
+            cursor: pointer;
+            z-index: 10;
+        }
+        
+        .slider-btn.left { left: -15px; }
+        .slider-btn.right { right: -15px; }
+        
+        @media (max-width: 768px) {
+            .slider-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+            }
+        
+            .slider-btn.left { left: 5px; }
+            .slider-btn.right { right: 5px; }
+        }
+        
+        .step-card.active {
+            padding: 30px;
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+        }
+
+
+    </style>
+</head>
+
+<body>
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar navbar-expand-lg" id="mainNav">
+        <div class="container">
+            <a class="navbar-brand" href="#home">HireHub</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Toggle navigation" title="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/about">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/contact">Contact Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#roles">Explore Opportunities</a></li>
+                </ul>
+
+                <div class="d-flex gap-2">
+                    <a href="/login" class="btn btn-login">Login</a>
+                    <a href="/register" class="btn btn-register">Register</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== HERO SECTION ===== -->
+    <section class="hero hero-showcase" id="home">
+        <div class="container">
+            <span class="hero-orb orb-1" aria-hidden="true"></span>
+            <span class="hero-orb orb-2" aria-hidden="true"></span>
+            <span class="hero-orb orb-3" aria-hidden="true"></span>
+
+            <div class="row align-items-center g-5">
+                <div class="col-lg-7" data-aos="fade-right">
+                    <div class="hero-badge"><i class="bi bi-stars"></i> AI-powered hiring, mentorship, and career growth</div>
+                    <h1>Hire smarter. Grow faster. <span>Build careers</span> that stand out.</h1>
+                    <p>HireHub brings candidates, recruiters, and mentors into one elegant workspace with AI matching, skill insights, interview flow, and verified guidance.</p>
+                    
+                    <div class="d-flex flex-wrap gap-3 mb-4">
+                        <a href="/register?role=candidate" class="btn hero-btn hero-btn-primary">Start as Candidate</a>
+                        <a href="/register?role=recruiter" class="btn hero-btn hero-btn-outline">Start Hiring</a>
+                    </div>
+
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">AI</span>
+                            <div class="stat-label">Smart Matching</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">24/7</span>
+                            <div class="stat-label">Career Support</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">3</span>
+                            <div class="stat-label">Verified Roles</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-5" data-aos="fade-left">
+                    <div class="hero-visual">
+                        <div class="hero-visual-card">
+                            <div class="hero-visual-top">
+                                <span class="visual-pill">Live hiring intelligence</span>
+                                <div class="visual-score"><i class="bi bi-lightning-charge-fill"></i> 98% Match</div>
+                            </div>
+
+                            <div class="visual-metrics">
+                                <div>
+                                    <strong>Verified</strong>
+                                    <span>Recruiters & mentors</span>
+                                </div>
+                                <div>
+                                    <strong>AI</strong>
+                                    <span>Resume insights</span>
+                                </div>
+                                <div>
+                                    <strong>Fast</strong>
+                                    <span>Interview flow</span>
+                                </div>
+                            </div>
+
+                            <div class="visual-feed">
+                                <div class="visual-feed-item">
+                                    <div>
+                                        <strong>Candidate match ready</strong>
+                                        <small>Top skills aligned with live roles</small>
+                                    </div>
+                                    <i class="bi bi-arrow-up-right-circle-fill fs-4 text-info"></i>
+                                </div>
+                                <div class="visual-feed-item">
+                                    <div>
+                                        <strong>Mentor review pending</strong>
+                                        <small>Career guidance queued in minutes</small>
+                                    </div>
+                                    <i class="bi bi-chat-dots-fill fs-4 text-warning"></i>
+                                </div>
+                                <div class="visual-feed-item">
+                                    <div>
+                                        <strong>Recruiter pipeline active</strong>
+                                        <small>Applications, tests, and interviews in one place</small>
+                                    </div>
+                                    <i class="bi bi-kanban-fill fs-4 text-success"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== HOW IT WORKS (IMMERSIVE JOURNEY) ===== -->
+<section class="how-it-works" id="how-it-works">
+    <div class="container">
+        <h2 class="section-title text-center" data-aos="fade-up">How It Works</h2>
+        <p class="section-subtitle text-center" data-aos="fade-up">
+            Clear journeys for both candidates and recruiters
+        </p>
+
+        <div class="d-flex justify-content-center" data-aos="fade-up" data-aos-delay="40">
+            <div class="journey-role-switch" role="tablist" aria-label="Select journey role">
+                <button class="journey-role-btn is-active" type="button" data-role="candidate" role="tab" aria-selected="true">
+                    <i class="bi bi-person-workspace"></i> Candidate
+                </button>
+                <button class="journey-role-btn" type="button" data-role="recruiter" role="tab" aria-selected="false">
+                    <i class="bi bi-briefcase-fill"></i> Recruiter
+                </button>
+            </div>
+        </div>
+
+        <div class="journey-shell" data-aos="fade-up" data-aos-delay="80">
+            <div class="journey-grid">
+                <div class="journey-rail" id="journeyRail">
+                    <button class="journey-step is-active" type="button" data-step-index="0">
+                        <span class="journey-step-num">01</span>
+                        <span>
+                            <span class="journey-step-title">Build your profile</span>
+                            <span class="journey-step-sub">Upload resume and highlight your strongest skills.</span>
+                        </span>
+                    </button>
+                </div>
+
+                <div class="journey-preview" id="journeyPreview">
+                    <div class="journey-preview-top">
+                        <span class="journey-badge" id="journeyBadge"><i class="bi bi-stars"></i> Start here</span>
+                        <span class="journey-icon" id="journeyIcon"><i class="bi bi-person-vcard"></i></span>
+                    </div>
+
+                    <h4 id="journeyTitle">Build Your Candidate Profile</h4>
+                    <p id="journeyDesc">Create your profile, upload resume, and set your job preferences to start getting matched.</p>
+
+                    <ul class="journey-points" id="journeyPoints">
+                        <li><i class="bi bi-check-circle-fill"></i><span>Resume + skills onboarding in minutes</span></li>
+                        <li><i class="bi bi-check-circle-fill"></i><span>Personalized role preferences</span></li>
+                        <li><i class="bi bi-check-circle-fill"></i><span>Profile that attracts verified recruiters</span></li>
+                    </ul>
+
+                    <div class="journey-kpis" id="journeyKpis">
+                        <div class="journey-kpi"><strong>2 min</strong><span>Profile setup time</span></div>
+                        <div class="journey-kpi"><strong>AI Match</strong><span>Personalized opportunities</span></div>
+                    </div>
+
+                    <div class="journey-progress" aria-label="Journey progress">
+                        <div class="journey-progress-fill" id="journeyProgress"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <!-- ===== WHY CHOOSE US ===== -->
+    <section id="why-choose-us">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Why Choose HireHub?</h2>
+            <p class="section-subtitle" data-aos="fade-up">A polished all-in-one platform for modern hiring and mentorship</p>
+
+            <div class="row g-4">
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-robot"></i>
+                        </div>
+                        <h5>AI-Based Matching</h5>
+                        <p>Advanced algorithms connect you with opportunities that perfectly match your skills and career goals</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <h5>Verified Recruiters & Mentors</h5>
+                        <p>Every recruiter and mentor is thoroughly verified to ensure trust, authenticity, and quality connections</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-speedometer2"></i>
+                        </div>
+                        <h5>End-to-End Hiring</h5>
+                        <p>From job posting to candidate selection—manage your entire recruitment process on one powerful platform</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                        <h5>Skill Gap Analysis</h5>
+                        <p>Identify your strengths and weaknesses with AI-driven insights and personalized learning recommendations</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <h5>Expert Mentorship</h5>
+                        <p>Connect with industry professionals who provide career guidance, resume reviews, and interview prep</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-lightning-charge"></i>
+                        </div>
+                        <h5>Real-Time Updates</h5>
+                        <p>Stay informed with instant notifications about applications, interviews, and new opportunities</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== ROLES WE SERVE ===== -->
+    <section class="roles-section" id="roles">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Explore Opportunities by Role</h2>
+            <p class="section-subtitle" data-aos="fade-up">Choose your path and unlock role-specific tools built for growth</p>
+
+            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-2 g-4 roles-grid">
+                <div class="col" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="role-card">
+                        <div class="role-icon">
+                            <i class="bi bi-person-badge"></i>
+                        </div>
+                        <span class="role-meta"><i class="bi bi-stars"></i> Skill-first journey</span>
+                        <h4>Candidates</h4>
+                        <p>Build your professional profile, showcase skills through AI tests, track applications, and connect with opportunities</p>
+                        <a href="/register?role=candidate" class="btn btn-role">Get Started</a>
+                    </div>
+                </div>
+
+                <div class="col" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="role-card">
+                        <div class="role-icon">
+                            <i class="bi bi-briefcase"></i>
+                        </div>
+                        <span class="role-meta"><i class="bi bi-graph-up-arrow"></i> Faster hiring stack</span>
+                        <h4>Recruiters</h4>
+                        <p>Post jobs, discover top talent, manage applications, and streamline your hiring process with AI-powered tools</p>
+                        <a href="/register?role=recruiter" class="btn btn-role">Start Hiring</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CTA SECTION ===== -->
+    <section class="cta-section">
+        <div class="container">
+            <h2 data-aos="fade-up">Ready to Start Your Journey?</h2>
+            <p data-aos="fade-up" data-aos-delay="100">Join thousands of candidates, recruiters, and mentors transforming careers on HireHub</p>
+            <a href="/register" class="btn hero-btn hero-btn-primary" data-aos="fade-up" data-aos-delay="200">Create Your Account</a>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer>
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="footer-brand">HireHub</div>
+                    <p>Connecting talent, opportunity, and mentorship through AI-powered solutions for the modern workforce.</p>
+                    <div class="social-links mt-3">
+                        <a href="https://www.facebook.com/people/Sudeshm-Jobs/61577750073920/" target="_blank" title="Facebook" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                        <a href="https://www.instagram.com/hirehub" target="_blank" title="Instagram" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                        <a href="https://www.linkedin.com/in/sudeshm-jobs-0754a2399/" target="_blank" title="LinkedIn" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="footer-links">
+                        <h5>Platform</h5>
+                        <a href="#how-it-works">How It Works</a>
+                        <a href="#why-choose-us">Features</a>
+                        <a href="#roles">For Candidates</a>
+                        <a href="#roles">For Recruiters</a>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="footer-links">
+                        <h5>Company</h5>
+                        <a href="/about">About Us</a>
+                        <a href="/contact">Contact</a>
+                        <a href="{{ url_for('careers') }}">Careers</a>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="footer-links">
+                        <h5>Contact</h5>
+                        <a href="mailto:hello@hirehub.com">hello@hirehub.com</a>
+                        <a href="tel:+91 8655568655">+91-8655-56-8655</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 HireHub. All rights reserved. Built with passion for connecting talent.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ===== AI CHATBOT WIDGET ===== -->
+<div id="ai-chatbot">
+    <div class="chat-toggle">
+        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="AI">
+    </div>
+
+    <div class="chat-box">
+        <div class="chat-header">
+            <div class="chat-title">
+                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png">
+                <span>Chat with AI</span>
+            </div>
+            <button id="chat-close">✕</button>
+        </div>
+
+        <div class="chat-body" id="chat-body">
+            <div class="chat-message bot">
+                👋 Hi! I’m your AI assistant.  
+                Ask me anything about <b>HireHub</b>.
+            </div>
+        </div>
+
+        <div class="chat-footer">
+            <input type="text" id="chat-input" placeholder="Type your question..." />
+            <button id="chat-send">➤</button>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const toggle = document.querySelector('.chat-toggle');
+    const chatBox = document.querySelector('.chat-box');
+    const closeBtn = document.getElementById('chat-close');
+    const sendBtn = document.getElementById('chat-send');
+    const input = document.getElementById('chat-input');
+    const body = document.getElementById('chat-body');
+
+    toggle.addEventListener('click', () => {
+        chatBox.style.display = 'flex';
+    });
+
+    closeBtn.addEventListener('click', () => {
+        chatBox.style.display = 'none';
+    });
+
+    sendBtn.addEventListener('click', sendMessage);
+
+    input.addEventListener("keypress", e => {
+        if (e.key === "Enter") sendMessage();
+    });
+
+    function sendMessage() {
+        const text = input.value.trim();
+        if (!text) return;
+
+        addMessage(text, 'user');
+        input.value = '';
+
+        botReply(text);
+    }
+
+    function addMessage(text, type) {
+        const msg = document.createElement('div');
+        msg.className = `chat-message ${type}`;
+        msg.innerText = text;
+        body.appendChild(msg);
+        body.scrollTop = body.scrollHeight;
+    }
+
+    // 🔥 REAL AI BACKEND CALL (ROLE-AWARE)
+    async function botReply(text) {
+        addMessage("Typing...", "bot");
+
+        try {
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: text })
+            });
+
+            const data = await res.json();
+
+            // remove "Typing..."
+            const typingMsg = body.querySelector(".chat-message.bot:last-child");
+            if (typingMsg) typingMsg.remove();
+
+            addMessage(data.reply, "bot");
+
+        } catch (error) {
+            console.error("Chatbot error:", error);
+            addMessage("Sorry, something went wrong. Please try again.", "bot");
+        }
+    }
+});
+</script>
+
+<script>
+const howJourneyByRole = {
+    candidate: [
+        {
+            railTitle: "Build your profile",
+            railSub: "Upload resume and highlight your strongest skills.",
+            badge: "Candidate step 1",
+            icon: "bi-person-vcard",
+            title: "Build Your Candidate Profile",
+            desc: "Create your profile, upload resume, and set your job preferences to start getting matched.",
+            points: [
+                "Resume + skills onboarding in minutes",
+                "Personalized role preferences",
+                "Profile that attracts verified recruiters"
+            ],
+            kpis: [
+                { value: "2 min", label: "Profile setup time" },
+                { value: "AI Match", label: "Personalized opportunities" }
+            ]
+        },
+        {
+            railTitle: "Get smart matches",
+            railSub: "AI recommends jobs based on fit and growth goals.",
+            badge: "Candidate step 2",
+            icon: "bi-cpu-fill",
+            title: "Receive AI Job Matches",
+            desc: "Our matching engine scans roles and recommends openings aligned to your experience and intent.",
+            points: [
+                "Skill-to-role fit scoring",
+                "Better matches with less manual searching",
+                "Suggestions updated as your profile improves"
+            ],
+            kpis: [
+                { value: "24/7", label: "Continuous role discovery" },
+                { value: "High-fit", label: "Quality recommendations" }
+            ]
+        },
+        {
+            railTitle: "Complete assessments",
+            railSub: "Show practical strengths with guided tests.",
+            badge: "Candidate step 3",
+            icon: "bi-journal-check",
+            title: "Prove Skills with Assessments",
+            desc: "Take role-based tests and interview simulations to showcase your capabilities confidently.",
+            points: [
+                "Adaptive tests for relevant roles",
+                "Instant insights on strengths and gaps",
+                "Confidence before real interviews"
+            ],
+            kpis: [
+                { value: "Instant", label: "Feedback insights" },
+                { value: "Role-ready", label: "Interview preparation" }
+            ]
+        },
+        {
+            railTitle: "Apply and get hired",
+            railSub: "Track progress from application to offer.",
+            badge: "Candidate step 4",
+            icon: "bi-rocket-takeoff-fill",
+            title: "Apply, Interview, and Grow",
+            desc: "Move from applications to interviews with real-time tracking and optional mentor guidance.",
+            points: [
+                "One flow from apply to interview",
+                "Status visibility at every stage",
+                "Mentorship support when needed"
+            ],
+            kpis: [
+                { value: "End-to-end", label: "Candidate journey" },
+                { value: "Faster", label: "Hiring response cycles" }
+            ]
+        }
+    ],
+    recruiter: [
+        {
+            railTitle: "Set hiring goals",
+            railSub: "Create recruiter profile and define role requirements.",
+            badge: "Recruiter step 1",
+            icon: "bi-briefcase-fill",
+            title: "Create Recruiter Workspace",
+            desc: "Set up your recruiter profile, company details, and hiring objectives in one clean dashboard.",
+            points: [
+                "Company and recruiter verification",
+                "Role templates for faster setup",
+                "Clear hiring objective alignment"
+            ],
+            kpis: [
+                { value: "2 min", label: "Workspace setup" },
+                { value: "Verified", label: "Trusted hiring presence" }
+            ]
+        },
+        {
+            railTitle: "Post jobs quickly",
+            railSub: "Launch openings with AI-assisted job descriptions.",
+            badge: "Recruiter step 2",
+            icon: "bi-megaphone-fill",
+            title: "Publish Smart Job Posts",
+            desc: "Create role descriptions faster and attract better candidates using AI-guided posting flow.",
+            points: [
+                "Structured job posting wizard",
+                "AI-assisted requirement clarity",
+                "Targeted visibility to matching candidates"
+            ],
+            kpis: [
+                { value: "Minutes", label: "Job publishing time" },
+                { value: "Higher", label: "Relevant applicant quality" }
+            ]
+        },
+        {
+            railTitle: "Screen with confidence",
+            railSub: "Use tests and AI scoring to shortlist faster.",
+            badge: "Recruiter step 3",
+            icon: "bi-funnel-fill",
+            title: "Evaluate and Shortlist",
+            desc: "Review candidate profiles, test outcomes, and fit scores to quickly identify the best talent.",
+            points: [
+                "AI fit scores with evidence",
+                "Assessment-backed screening",
+                "Shortlist pipeline in one view"
+            ],
+            kpis: [
+                { value: "Faster", label: "Shortlisting decisions" },
+                { value: "Data-led", label: "Evaluation quality" }
+            ]
+        },
+        {
+            railTitle: "Interview and close",
+            railSub: "Schedule interviews and complete offers seamlessly.",
+            badge: "Recruiter step 4",
+            icon: "bi-kanban-fill",
+            title: "Manage Pipeline to Offer",
+            desc: "Coordinate interviews, track each stage, and close candidates efficiently with a unified hiring pipeline.",
+            points: [
+                "Interview scheduling from dashboard",
+                "Pipeline visibility for every role",
+                "Offer flow integrated with candidate updates"
+            ],
+            kpis: [
+                { value: "End-to-end", label: "Recruitment control" },
+                { value: "Streamlined", label: "Time-to-hire" }
+            ]
+        }
+    ]
+};
+
+let activeJourneyRole = "candidate";
+let stepIndex = 0;
+let journeyAutoRotateTimer = null;
+
+function getActiveJourneySteps() {
+    return howJourneyByRole[activeJourneyRole] || howJourneyByRole.candidate;
+}
+
+function renderJourneyRail() {
+    const rail = document.getElementById("journeyRail");
+    if (!rail) {
+        return;
+    }
+
+    const steps = getActiveJourneySteps();
+    rail.innerHTML = steps
+        .map((step, idx) => {
+            const stepNum = String(idx + 1).padStart(2, "0");
+            return `
+                <button class="journey-step ${idx === stepIndex ? "is-active" : ""}" type="button" data-step-index="${idx}">
+                    <span class="journey-step-num">${stepNum}</span>
+                    <span>
+                        <span class="journey-step-title">${step.railTitle}</span>
+                        <span class="journey-step-sub">${step.railSub}</span>
+                    </span>
+                </button>
+            `;
+        })
+        .join("");
+
+    rail.querySelectorAll('.journey-step').forEach((stepBtn) => {
+        stepBtn.addEventListener('click', () => {
+            const targetIndex = Number(stepBtn.getAttribute('data-step-index'));
+            if (Number.isNaN(targetIndex)) {
+                return;
+            }
+
+            stepIndex = targetIndex;
+            updateHowItWorks();
+            resetJourneyAutoRotate();
+        });
+    });
+}
+
+function updateHowItWorks() {
+    const activeSteps = getActiveJourneySteps();
+    const step = activeSteps[stepIndex];
+    if (!step) {
+        return;
+    }
+
+    const badge = document.getElementById("journeyBadge");
+    const icon = document.getElementById("journeyIcon");
+    const title = document.getElementById("journeyTitle");
+    const desc = document.getElementById("journeyDesc");
+    const points = document.getElementById("journeyPoints");
+    const kpis = document.getElementById("journeyKpis");
+    const progress = document.getElementById("journeyProgress");
+
+    if (!badge || !icon || !title || !desc || !points || !kpis || !progress) {
+        return;
+    }
+
+    badge.innerHTML = `<i class="bi bi-stars"></i> ${step.badge}`;
+    icon.innerHTML = `<i class="bi ${step.icon}"></i>`;
+    title.innerText = step.title;
+    desc.innerText = step.desc;
+
+    points.innerHTML = step.points
+        .map(point => `<li><i class="bi bi-check-circle-fill"></i><span>${point}</span></li>`)
+        .join("");
+
+    kpis.innerHTML = step.kpis
+        .map(kpi => `<div class="journey-kpi"><strong>${kpi.value}</strong><span>${kpi.label}</span></div>`)
+        .join("");
+
+    const progressPct = ((stepIndex + 1) / activeSteps.length) * 100;
+    progress.style.width = `${progressPct}%`;
+
+    renderJourneyRail();
+}
+
+function nextStep() {
+    const activeSteps = getActiveJourneySteps();
+    stepIndex = (stepIndex + 1) % activeSteps.length;
+    updateHowItWorks();
+}
+
+function prevStep() {
+    const activeSteps = getActiveJourneySteps();
+    stepIndex = (stepIndex - 1 + activeSteps.length) % activeSteps.length;
+    updateHowItWorks();
+}
+
+function resetJourneyAutoRotate() {
+    if (journeyAutoRotateTimer) {
+        clearInterval(journeyAutoRotateTimer);
+    }
+
+    journeyAutoRotateTimer = setInterval(() => {
+        nextStep();
+    }, 5000);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const roleButtons = document.querySelectorAll('.journey-role-btn');
+    if (!roleButtons.length) {
+        return;
+    }
+
+    roleButtons.forEach((roleBtn) => {
+        roleBtn.addEventListener('click', () => {
+            const selectedRole = roleBtn.getAttribute('data-role');
+            if (!selectedRole || !howJourneyByRole[selectedRole]) {
+                return;
+            }
+
+            activeJourneyRole = selectedRole;
+            stepIndex = 0;
+
+            roleButtons.forEach((btn) => {
+                const isActive = btn.getAttribute('data-role') === activeJourneyRole;
+                btn.classList.toggle('is-active', isActive);
+                btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            });
+
+            updateHowItWorks();
+            resetJourneyAutoRotate();
+        });
+    });
+
+    updateHowItWorks();
+    resetJourneyAutoRotate();
+});
+</script>
+
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- AOS Animation -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('mainNav');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Counter Animation (fires immediately on page load)
+        function animateCounter(element) {
+            const rawTarget = element.getAttribute('data-count');
+            const target = parseInt(rawTarget, 10);
+            if (Number.isNaN(target)) {
+                return;
+            }
+            const duration = 2500;
+            const startTime = performance.now();
+
+            const step = (now) => {
+                const progress = Math.min((now - startTime) / duration, 1);
+                const eased = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                const value = Math.floor(eased * target);
+                if (progress >= 1) {
+                    element.textContent = target.toLocaleString() + '+';
+                } else {
+                    element.textContent = value.toLocaleString();
+                    requestAnimationFrame(step);
+                }
+            };
+
+            requestAnimationFrame(step);
+        }
+
+        // Trigger counter animation immediately on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.querySelectorAll('.stat-number').forEach(animateCounter);
+            }, 600);
+        });
+    </script>
+
+<script>
+    const counters = document.querySelectorAll('.counter');
+    let started = false;
+
+    function startCounters() {
+        if (!counters.length) {
+            return;
+        }
+        counters.forEach(counter => {
+            const target = parseInt(counter.getAttribute('data-count'), 10);
+            if (Number.isNaN(target)) {
+                return;
+            }
+            let count = 0;
+            const speed = target / 100; // smooth speed
+
+            const updateCount = () => {
+                if (count < target) {
+                    count += speed;
+                    counter.innerText = Math.ceil(count);
+                    requestAnimationFrame(updateCount);
+                } else {
+                    counter.innerText = target.toLocaleString() + '+';
+                }
+            };
+
+            updateCount();
+        });
+    }
+
+    // Trigger when stats section is visible
+    window.addEventListener('scroll', () => {
+        const statsSection = document.querySelector('.stats-section');
+        if (!statsSection) {
+            return;
+        }
+        const sectionTop = statsSection.getBoundingClientRect().top;
+        const screenHeight = window.innerHeight;
+
+        if (!started && sectionTop < screenHeight - 100) {
+            started = true;
+            startCounters();
+        }
+    });
+
+    
+</script>
+{% raw %}
+<script>
+    (function () {
+        if (window.__professionalAlertInstalled) return;
+        window.__professionalAlertInstalled = true;
+        const style = document.createElement('style');
+        style.textContent = `#pro-alert-container{position:fixed;top:20px;right:20px;z-index:99999;display:flex;flex-direction:column;gap:12px;max-width:min(420px,calc(100vw - 24px));}.pro-alert{background:#fff;border-radius:14px;box-shadow:0 16px 40px rgba(15,42,68,.18);border-left:5px solid #4FB6E8;padding:14px 14px 14px 16px;color:#1F2933;font:500 14px/1.45 Inter,Segoe UI,sans-serif;transform:translateY(-10px);opacity:0;transition:all .22s ease;white-space:pre-line;display:flex;gap:10px;align-items:flex-start;}.pro-alert.show{opacity:1;transform:translateY(0);}.pro-alert.success{border-left-color:#10b981;}.pro-alert.error{border-left-color:#ef4444;}.pro-alert.warning{border-left-color:#f59e0b;}.pro-alert .icon{font-size:16px;margin-top:1px;}.pro-alert .content{flex:1;}.pro-alert .close-btn{border:0;background:transparent;color:#64748b;font-size:18px;line-height:1;cursor:pointer;padding:0 2px;}@media (max-width:768px){#pro-alert-container{left:10px;right:10px;top:10px;max-width:none;}}`;
+        document.head.appendChild(style);
+        const typeOf = (message) => { const text = String(message || '').toLowerCase(); if (text.includes('error') || text.includes('failed') || text.includes('not found') || text.includes('could not')) return 'error'; if (text.includes('warning') || text.includes('please') || text.includes('required') || text.includes('invalid')) return 'warning'; if (text.includes('success') || text.includes('submitted') || text.includes('saved') || text.includes('generated') || text.includes('approved')) return 'success'; return 'info'; };
+        const iconOf = (type) => type === 'success' ? '✅' : (type === 'error' || type === 'warning') ? '⚠️' : 'ℹ️';
+        window.alert = function (message) { let container = document.getElementById('pro-alert-container'); if (!container) { container = document.createElement('div'); container.id = 'pro-alert-container'; document.body.appendChild(container); } const type = typeOf(message); const toast = document.createElement('div'); toast.className = `pro-alert ${type}`; toast.innerHTML = `<div class="icon">${iconOf(type)}</div><div class="content">${String(message || '')}</div><button class="close-btn" aria-label="Close">×</button>`; container.appendChild(toast); requestAnimationFrame(() => toast.classList.add('show')); const close = () => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 220); }; toast.querySelector('.close-btn').addEventListener('click', close); setTimeout(close, 5000); };
+    })();
+</script>
+{% endraw %}
+</body>
+</html>

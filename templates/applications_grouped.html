@@ -1,0 +1,820 @@
+{% extends "recruiter_dashboard.html" %}
+
+{% block dashboard_content %}
+<div class="container-fluid mt-2">
+    <h3 class="fw-bold mb-4">Applications</h3>
+
+    {% if jobs_grouped %}
+    <div id="jobTitlesSection" class="space-y-3">
+        {% for job in jobs_grouped %}
+        <div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-3">
+            <div class="card-header bg-light py-3 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-3 flex-grow-1">
+                    <i class="bi bi-briefcase text-primary" style="font-size: 1.3rem;"></i>
+                    <div>
+                        <h5 class="mb-0 fw-bold">{{ job.job_title }}</h5>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-see-applications"
+                        data-job-id="{{ job.job_id }}"
+                        data-job-title="{{ job.job_title }}"
+                        data-application-count="{{ job.applications|length }}">
+                    <i class="bi bi-eye me-1"></i>See Applications (<span class="app-count">{{ job.applications|length }}</span>)
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div id="jobApplicationsSection" class="d-none">
+        <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+            <div class="card-header bg-light py-3 d-flex align-items-center justify-content-between border-bottom-0">
+                <div class="d-flex align-items-center gap-3">
+                    <button id="backToJobsBtn" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left me-1"></i>Back
+                    </button>
+                    <div>
+                        <h5 class="mb-0 fw-bold" id="selectedJobTitle"></h5>
+                        <small class="text-muted" id="selectedJobSubtitle"></small>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-sm btn-success" id="generateTestInlineBtn">
+                        <i class="bi bi-pencil-square me-1"></i>Generate Test for All
+                    </button>
+                    <button class="btn btn-sm btn-primary" id="bestFitShortlistBtn">
+                        <i class="bi bi-stars me-1"></i>Shortlist Top Openings
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" id="saveSelectionPoolBtn">
+                        <i class="bi bi-bookmark-plus me-1"></i>Save Future Pool
+                    </button>
+                    <button class="btn btn-sm btn-info" id="shortlistAllInlineBtn">
+                        <i class="bi bi-check me-1"></i>Shortlist All Applied
+                    </button>
+                </div>
+            </div>
+
+            <div class="px-3 pt-3" id="selectionPoolSummary"></div>
+
+            <!-- Tab Navigation -->
+            <div class="card-header border-bottom bg-white p-3">
+                <ul class="nav nav-tabs mb-0" id="statusTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-status" type="button" role="tab">
+                            <i class="bi bi-inbox me-2"></i>Applications <span class="badge bg-secondary ms-2" id="count-all">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="shortlisted-tab" data-bs-toggle="tab" data-bs-target="#shortlisted-status" type="button" role="tab">
+                            <i class="bi bi-star me-2"></i>Shortlisted <span class="badge bg-info ms-2" id="count-shortlisted">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="interview-tab" data-bs-toggle="tab" data-bs-target="#interview-status" type="button" role="tab">
+                            <i class="bi bi-calendar-event me-2"></i>Interview <span class="badge bg-warning ms-2" id="count-interview">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="selected-tab" data-bs-toggle="tab" data-bs-target="#selected-status" type="button" role="tab">
+                            <i class="bi bi-check-circle me-2"></i>Selected <span class="badge bg-success ms-2" id="count-selected">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected-status" type="button" role="tab">
+                            <i class="bi bi-x-circle me-2"></i>Rejected <span class="badge bg-danger ms-2" id="count-rejected">0</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="statusTabsContent">
+                <!-- All Applications Tab -->
+                <div class="tab-pane fade show active" id="all-status" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-muted small">
+                                <tr>
+                                    <th class="ps-4">Candidate</th>
+                                    <th class="py-3">Applied Date</th>
+                                    <th class="py-3">AI Score</th>
+                                    <th class="py-3">Overall Match</th>
+                                    <th class="py-3">Skill Match</th>
+                                    <th class="py-3">Priority</th>
+                                    <th class="py-3">AI Insight</th>
+                                    <th class="py-3">Status</th>
+                                    <th class="py-3">Assessment</th>
+                                    <th class="py-3">Resume</th>
+                                    <th class="pe-4 text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="applicationsTableBody-all"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Shortlisted Tab -->
+                <div class="tab-pane fade" id="shortlisted-status" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-muted small">
+                                <tr>
+                                    <th class="ps-4">Candidate</th>
+                                    <th class="py-3">Applied Date</th>
+                                    <th class="py-3">AI Score</th>
+                                    <th class="py-3">Overall Match</th>
+                                    <th class="py-3">Skill Match</th>
+                                    <th class="py-3">Priority</th>
+                                    <th class="py-3">AI Insight</th>
+                                    <th class="py-3">Status</th>
+                                    <th class="py-3">Assessment</th>
+                                    <th class="py-3">Resume</th>
+                                    <th class="pe-4 text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="applicationsTableBody-shortlisted"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Interview Tab -->
+                <div class="tab-pane fade" id="interview-status" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-muted small">
+                                <tr>
+                                    <th class="ps-4">Candidate</th>
+                                    <th class="py-3">Applied Date</th>
+                                    <th class="py-3">AI Score</th>
+                                    <th class="py-3">Overall Match</th>
+                                    <th class="py-3">Priority</th>
+                                    <th class="py-3">AI Insight</th>
+                                    <th class="py-3">Status</th>
+                                    <th class="py-3">Assessment</th>
+                                    <th class="pe-4 text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="applicationsTableBody-interview"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Selected Tab -->
+                <div class="tab-pane fade" id="selected-status" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-muted small">
+                                <tr>
+                                    <th class="ps-4">Candidate</th>
+                                    <th class="py-3">Applied Date</th>
+                                    <th class="py-3">AI Score</th>
+                                    <th class="py-3">Status</th>
+                                    <th class="py-3">Resume</th>
+                                    <th class="pe-4 text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="applicationsTableBody-selected"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Rejected Tab -->
+                <div class="tab-pane fade" id="rejected-status" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-muted small">
+                                <tr>
+                                    <th class="ps-4">Candidate</th>
+                                    <th class="py-3">Applied Date</th>
+                                    <th class="py-3">AI Score</th>
+                                    <th class="py-3">Status</th>
+                                    <th class="pe-4 text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="applicationsTableBody-rejected"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">No applications received yet.</div>
+    {% endif %}
+</div>
+
+<!-- Generate Test Modal -->
+<div class="modal fade" id="generateTestModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Generate Test for Candidates</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">Job: <strong id="testJobTitle"></strong></p>
+
+                <div class="alert alert-info py-2 mb-3">
+                    This will generate one AI test with 3 sections: <strong>Technical</strong>, <strong>Aptitude</strong>, and <strong>General Knowledge</strong>.
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Number of Questions</label>
+                    <input type="number" class="form-control" id="numQuestions" value="20" min="10" max="100">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Test Duration (minutes)</label>
+                    <input type="number" class="form-control" id="testDuration" value="60" min="15" max="180">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Test Instructions</label>
+                    <textarea class="form-control" id="testInstructions" rows="3" placeholder="Enter instructions for candidates..."></textarea>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="notifyCheckbox" checked>
+                    <label class="form-check-label" for="notifyCheckbox">
+                        Send email notification to all candidates
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="submitTestBtn">Generate & Send Test</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recruiter AI Insight Modal -->
+<div class="modal fade" id="aiInsightModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="aiInsightTitle">AI Candidate Insight</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <pre id="aiInsightContent" class="mb-0" style="white-space: pre-wrap; font-family: Inter, sans-serif; font-size: 0.92rem;"></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Job data embedded in page
+const jobsData = {
+    {% for job in jobs_grouped %}
+    "{{ job.job_id }}": {
+        "job_id": "{{ job.job_id }}",
+        "job_title": "{{ job.job_title }}",
+        "job_openings": {{ job.job_openings or 0 }},
+        "best_fit_limit": {{ job.best_fit_limit or 0 }},
+        "reserve_limit": {{ job.reserve_limit or 0 }},
+        "selection_summary": {{ job.selection_summary|tojson }},
+        "applications": [
+            {% for app in job.applications %}
+            {
+                "id": {{ (app.id|string)|tojson }},
+                "candidate_name": {{ (app.candidate_name or '')|tojson }},
+                "candidate_email": {{ (app.candidate_email or '')|tojson }},
+                "applied_at": {{ (app.applied_at.strftime('%d %b %Y') if app.applied_at else '-')|tojson }},
+                "ai_score": {{ app.ai_score }},
+                "skill_match": {{ app.skill_match }},
+                "status": {{ (app.status or 'Applied')|tojson }},
+                "assessment_status": {{ (app.assessment_status or 'not_assigned')|tojson }},
+                "assessment_obtained_marks": {{ app.assessment_obtained_marks if app.assessment_obtained_marks is not none else 'null' }},
+                "assessment_total_marks": {{ app.assessment_total_marks if app.assessment_total_marks is not none else 'null' }},
+                "assessment_percentage": {{ app.assessment_percentage if app.assessment_percentage is not none else 'null' }},
+                "resume_file": {{ (app.resume_file or '')|tojson }},
+                "ai_dashboard_text": {{ (app.ai_dashboard_text or '')|tojson }},
+                "ai_match_score": {{ app.ai_match_score if app.ai_match_score is not none else 0 }},
+                "ai_next_action": {{ (app.ai_next_action or 'Review')|tojson }},
+                "ai_priority": {{ (app.ai_priority or 'Medium')|tojson }},
+                "selection_rank": {{ app.selection_rank if app.selection_rank is not none else 0 }},
+                "selection_bucket": {{ (app.selection_bucket or 'backlog')|tojson }},
+                "selection_score": {{ app.selection_score if app.selection_score is not none else 0 }}
+            }{{ "," if not loop.last }}
+            {% endfor %}
+        ]
+    }{{ "," if not loop.last }}
+    {% endfor %}
+};
+
+const aiInsightsStore = {};
+
+let selectedJobId = null;
+
+// Helper functions for badges
+function getStatusBadge(status) {
+    const badges = {
+        'Applied': '<span class="badge bg-secondary-subtle text-secondary">Applied</span>',
+        'Shortlisted': '<span class="badge bg-info-subtle text-info">Shortlisted</span>',
+        'Interview': '<span class="badge bg-warning-subtle text-warning">Interview</span>',
+        'Selected': '<span class="badge bg-success-subtle text-success">Selected</span>',
+        'Rejected': '<span class="badge bg-danger-subtle text-danger">Rejected</span>'
+    };
+    return badges[status] || `<span class="badge bg-light text-dark">${status}</span>`;
+}
+
+function getSkillMatchBadge(skillMatch) {
+    if (skillMatch >= 70) {
+        return `<span class="badge bg-success-subtle text-success">${skillMatch}% Match</span>`;
+    } else if (skillMatch >= 40) {
+        return `<span class="badge bg-warning-subtle text-warning">${skillMatch}% Match</span>`;
+    } else {
+        return `<span class="badge bg-danger-subtle text-danger">${skillMatch}% Match</span>`;
+    }
+}
+
+function getOverallMatchBadge(matchScore) {
+    const score = Number(matchScore || 0);
+    if (score >= 80) {
+        return `<span class="badge bg-success">${score}%</span>`;
+    } else if (score >= 60) {
+        return `<span class="badge bg-warning text-dark">${score}%</span>`;
+    }
+    return `<span class="badge bg-danger">${score}%</span>`;
+}
+
+function getPriorityBadge(priority) {
+    const p = String(priority || 'Medium').toLowerCase();
+    if (p === 'high') return '<span class="badge bg-success-subtle text-success">High</span>';
+    if (p === 'low') return '<span class="badge bg-danger-subtle text-danger">Low</span>';
+    return '<span class="badge bg-warning-subtle text-warning">Medium</span>';
+}
+
+function getAssessmentBadge(app) {
+    const status = app.assessment_status || 'not_assigned';
+
+    if (status === 'completed') {
+        const obtained = app.assessment_obtained_marks ?? 0;
+        const total = app.assessment_total_marks ?? 0;
+        const percent = app.assessment_percentage ?? 0;
+        return `<span class="badge bg-success-subtle text-success">Completed</span><div class="small text-muted mt-1">${obtained}/${total} (${Number(percent).toFixed(1)}%)</div>`;
+    }
+    if (status === 'sent') {
+        return '<span class="badge bg-info-subtle text-info">Test Assigned</span>';
+    }
+    if (status === 'pending_review') {
+        return '<span class="badge bg-warning-subtle text-warning">Pending Review</span>';
+    }
+    if (status === 'not_assigned') {
+        return '<span class="badge bg-light text-dark border">Not Assigned</span>';
+    }
+    return `<span class="badge bg-secondary-subtle text-secondary">${status}</span>`;
+}
+
+function renderApplications(job) {
+    // Clear all tab bodies
+    ['all', 'shortlisted', 'interview', 'selected', 'rejected'].forEach(status => {
+        const tbody = document.getElementById(`applicationsTableBody-${status}`);
+        if (tbody) tbody.innerHTML = '';
+    });
+
+    // Count applications by status (cumulative for progression tabs)
+    const counts = {
+        all: 0,
+        shortlisted: 0,
+        interview: 0,
+        selected: 0,
+        rejected: 0
+    };
+
+    job.applications.forEach(app => {
+        counts.all++;
+        const status = app.status.toLowerCase();
+        
+        // Cumulative counting: if an app reaches a stage, it counts in all previous stages too
+        if (status === 'shortlisted' || status === 'interview' || status === 'selected') {
+            counts.shortlisted++;
+        }
+        if (status === 'interview' || status === 'selected') {
+            counts.interview++;
+        }
+        if (status === 'selected') {
+            counts.selected++;
+        }
+        if (status === 'rejected') {
+            counts.rejected++;
+        }
+    });
+
+    // Update badge counts
+    document.getElementById('count-all').textContent = counts.all;
+    document.getElementById('count-shortlisted').textContent = counts.shortlisted;
+    document.getElementById('count-interview').textContent = counts.interview;
+    document.getElementById('count-selected').textContent = counts.selected;
+    document.getElementById('count-rejected').textContent = counts.rejected;
+
+    const openings = Number(job.job_openings || job.applications.length || 0);
+    const bestFitLimit = openings > 0 ? Math.min(openings, job.applications.length) : job.applications.length;
+    const reserveLimit = Number(job.reserve_limit || Math.max(20, Math.floor(bestFitLimit / 2) || 20));
+    const bestFitCount = Math.min(bestFitLimit, job.applications.length);
+    const reserveCount = Math.max(0, Math.min(job.applications.length - bestFitCount, reserveLimit));
+    const summaryEl = document.getElementById('selectionPoolSummary');
+    if (summaryEl) {
+        summaryEl.innerHTML = `
+            <div class="alert alert-light border d-flex flex-wrap align-items-center justify-content-between gap-3 mb-0">
+                <div>
+                    <div class="fw-semibold mb-1">Best-fit selection pool</div>
+                    <div class="small text-muted">
+                        Openings: <strong>${openings || '—'}</strong> •
+                        Best-fit candidates: <strong>${bestFitCount}</strong> •
+                        Reserve pool: <strong>${reserveCount}</strong> •
+                        Ranked by fit score and job readiness
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-sm btn-primary" id="bestFitShortlistBtnInline">
+                        <i class="bi bi-stars me-1"></i>Shortlist Top ${bestFitCount || 0}
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" id="saveSelectionPoolBtnInline">
+                        <i class="bi bi-bookmark-plus me-1"></i>Save Pool
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('bestFitShortlistBtnInline')?.addEventListener('click', () => {
+            document.getElementById('bestFitShortlistBtn')?.click();
+        });
+        document.getElementById('saveSelectionPoolBtnInline')?.addEventListener('click', () => {
+            document.getElementById('saveSelectionPoolBtn')?.click();
+        });
+    }
+
+    // Render applications
+    job.applications.forEach(app => {
+        const appId = String(app.id || '');
+        const insightText = (app.ai_dashboard_text && String(app.ai_dashboard_text).trim())
+            ? String(app.ai_dashboard_text)
+            : `Match Score: ${Number(app.ai_match_score || 0)}/100\n\nScore Breakdown:\n- Skills: ${Number(app.skill_match || 0)}%\n- AI Test: ${Number(app.ai_score || 0)}%\n\nNext Action: ${app.ai_next_action || 'Review'}\nPriority: ${app.ai_priority || 'Medium'}`;
+
+        aiInsightsStore[appId] = {
+            candidateName: app.candidate_name,
+            text: insightText
+        };
+
+        const statusBadge = getStatusBadge(app.status);
+        const skillBadge = getSkillMatchBadge(app.skill_match);
+        const overallMatchBadge = getOverallMatchBadge(app.ai_match_score);
+        const priorityBadge = getPriorityBadge(app.ai_priority);
+        const selectionBucket = String(app.selection_bucket || 'backlog');
+        const selectionBadge = selectionBucket === 'best-fit'
+            ? `<span class="badge bg-success-subtle text-success">Best Fit #${app.selection_rank || ''}</span>`
+            : selectionBucket === 'reserve'
+                ? `<span class="badge bg-warning-subtle text-warning">Reserve #${app.selection_rank || ''}</span>`
+                : `<span class="badge bg-secondary-subtle text-secondary">Future #${app.selection_rank || ''}</span>`;
+        const assessmentBadge = getAssessmentBadge(app);
+        const resumeLink = app.resume_file
+            ? `<a href="{{ url_for('static', filename='uploads/') }}${app.resume_file}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-file-earmark-pdf"></i> View
+               </a>`
+            : '<span class="text-muted small">No Resume</span>';
+
+        // Full row for All, Shortlisted tabs
+        const rowFull = `
+            <tr>
+                <td class="ps-4">
+                    <div class="fw-semibold text-dark">${app.candidate_name}</div>
+                    <div class="small text-muted">${app.candidate_email}</div>
+                    <div class="mt-1">${selectionBadge}</div>
+                </td>
+                <td>${app.applied_at}</td>
+                <td>
+                    <div class="fw-semibold text-dark">${app.ai_score}%</div>
+                    <div class="progress mt-1" style="height:6px;">
+                        <div class="progress-bar bg-primary" style="width: ${app.ai_score}%"></div>
+                    </div>
+                </td>
+                <td>${overallMatchBadge}</td>
+                <td>${skillBadge}</td>
+                <td>${priorityBadge}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-dark" type="button" onclick="openAiInsight('${appId}')">
+                        <i class="bi bi-robot me-1"></i>View AI
+                    </button>
+                </td>
+                <td>${statusBadge}</td>
+                <td>${assessmentBadge}</td>
+                <td>${resumeLink}</td>
+                <td class="text-end pe-4">
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">Update</button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                            <li><a class="dropdown-item" href="/update-application/${app.id}/shortlist"><i class="bi bi-check-circle"></i> Shortlist</a></li>
+                            <li><a class="dropdown-item" href="/update-application/${app.id}/interview"><i class="bi bi-calendar-event"></i> Schedule Interview</a></li>
+                            <li><a class="dropdown-item" href="/update-application/${app.id}/offer"><i class="bi bi-envelope"></i> Send Offer</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="/update-application/${app.id}/reject"><i class="bi bi-x-circle"></i> Reject</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        `;
+
+        // Interview row (no skill match, no resume)
+        const rowInterview = `
+            <tr>
+                <td class="ps-4">
+                    <div class="fw-semibold text-dark">${app.candidate_name}</div>
+                    <div class="small text-muted">${app.candidate_email}</div>
+                    <div class="mt-1">${selectionBadge}</div>
+                </td>
+                <td>${app.applied_at}</td>
+                <td>
+                    <div class="fw-semibold text-dark">${app.ai_score}%</div>
+                    <div class="progress mt-1" style="height:6px;">
+                        <div class="progress-bar bg-primary" style="width: ${app.ai_score}%"></div>
+                    </div>
+                </td>
+                <td>${overallMatchBadge}</td>
+                <td>${priorityBadge}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-dark" type="button" onclick="openAiInsight('${appId}')">
+                        <i class="bi bi-robot me-1"></i>View AI
+                    </button>
+                </td>
+                <td>${statusBadge}</td>
+                <td>${assessmentBadge}</td>
+                <td class="text-end pe-4">
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">Actions</button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                            <li><a class="dropdown-item" href="/update-application/${app.id}/interview"><i class="bi bi-calendar-event"></i> Update Interview</a></li>
+                            <li><a class="dropdown-item" href="/update-application/${app.id}/offer"><i class="bi bi-envelope"></i> Send Offer</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="/update-application/${app.id}/reject"><i class="bi bi-x-circle"></i> Reject</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        `;
+
+        // Selected row (no skill match, no assessment)
+        const rowSelected = `
+            <tr>
+                <td class="ps-4">
+                    <div class="fw-semibold text-dark">${app.candidate_name}</div>
+                    <div class="small text-muted">${app.candidate_email}</div>
+                    <div class="mt-1">${selectionBadge}</div>
+                </td>
+                <td>${app.applied_at}</td>
+                <td>
+                    <div class="fw-semibold text-dark">${app.ai_score}%</div>
+                    <div class="progress mt-1" style="height:6px;">
+                        <div class="progress-bar bg-primary" style="width: ${app.ai_score}%"></div>
+                    </div>
+                </td>
+                <td>${statusBadge}</td>
+                <td>${resumeLink}</td>
+                <td class="text-end pe-4">
+                    <a class="btn btn-sm btn-outline-success" href="/recruiter/offer-letter/${app.id}">
+                        <i class="bi bi-download me-1"></i>Download Offer
+                    </a>
+                </td>
+            </tr>
+        `;
+
+        // Rejected row (minimal)
+        const rowRejected = `
+            <tr>
+                <td class="ps-4">
+                    <div class="fw-semibold text-dark">${app.candidate_name}</div>
+                    <div class="small text-muted">${app.candidate_email}</div>
+                    <div class="mt-1">${selectionBadge}</div>
+                </td>
+                <td>${app.applied_at}</td>
+                <td>
+                    <div class="fw-semibold text-dark">${app.ai_score}%</div>
+                    <div class="progress mt-1" style="height:6px;">
+                        <div class="progress-bar bg-primary" style="width: ${app.ai_score}%"></div>
+                    </div>
+                </td>
+                <td>${statusBadge}</td>
+                <td class="text-end pe-4">
+                    <span class="text-muted small">No actions</span>
+                </td>
+            </tr>
+        `;
+
+        // Add to All tab
+        const tbodyAll = document.getElementById('applicationsTableBody-all');
+        if (tbodyAll) tbodyAll.insertAdjacentHTML('beforeend', rowFull);
+
+        // Add to respective status tabs (cumulative view)
+        const status = app.status.toLowerCase();
+        
+        // Shortlisted tab: show Shortlisted, Interview, and Selected applications
+        if (status === 'shortlisted' || status === 'interview' || status === 'selected') {
+            const tbody = document.getElementById('applicationsTableBody-shortlisted');
+            if (tbody) tbody.insertAdjacentHTML('beforeend', rowFull);
+        }
+        
+        // Interview tab: show Interview and Selected applications
+        if (status === 'interview' || status === 'selected') {
+            const tbody = document.getElementById('applicationsTableBody-interview');
+            if (tbody) tbody.insertAdjacentHTML('beforeend', rowInterview);
+        }
+        
+        // Selected tab: show only Selected applications
+        if (status === 'selected') {
+            const tbody = document.getElementById('applicationsTableBody-selected');
+            if (tbody) tbody.insertAdjacentHTML('beforeend', rowSelected);
+        }
+        
+        // Rejected tab: show only Rejected applications
+        if (status === 'rejected') {
+            const tbody = document.getElementById('applicationsTableBody-rejected');
+            if (tbody) tbody.insertAdjacentHTML('beforeend', rowRejected);
+        }
+    });
+}
+
+function openAiInsight(appId) {
+    const data = aiInsightsStore[String(appId)] || aiInsightsStore[appId];
+    const titleEl = document.getElementById('aiInsightTitle');
+    const contentEl = document.getElementById('aiInsightContent');
+
+    if (!data || !contentEl || !titleEl) {
+        alert('AI insight not available for this application yet.');
+        return;
+    }
+
+    titleEl.textContent = `AI Candidate Insight — ${data.candidateName || 'Candidate'}`;
+    contentEl.textContent = data.text || 'AI insight not available for this application yet.';
+
+    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+        const modal = new bootstrap.Modal(document.getElementById('aiInsightModal'));
+        modal.show();
+    } else {
+        alert(contentEl.textContent);
+    }
+}
+
+// Handle See Applications button click
+document.querySelectorAll('.btn-see-applications').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const jobId = this.getAttribute('data-job-id');
+        const jobTitle = this.getAttribute('data-job-title');
+        const appCount = this.getAttribute('data-application-count');
+        const job = jobsData[jobId];
+
+        selectedJobId = jobId;
+        document.getElementById('selectedJobTitle').textContent = jobTitle;
+        document.getElementById('selectedJobSubtitle').textContent = `${appCount} Application(s)`;
+        renderApplications(job);
+
+        document.getElementById('jobTitlesSection').classList.add('d-none');
+        document.getElementById('jobApplicationsSection').classList.remove('d-none');
+    });
+});
+
+// Back to job titles
+document.getElementById('backToJobsBtn').addEventListener('click', function() {
+    selectedJobId = null;
+    document.getElementById('jobApplicationsSection').classList.add('d-none');
+    document.getElementById('jobTitlesSection').classList.remove('d-none');
+});
+
+// Handle generate test button click
+document.getElementById('generateTestInlineBtn').addEventListener('click', function() {
+    if (!selectedJobId) return;
+    const job = jobsData[selectedJobId];
+    
+    document.getElementById('testJobTitle').textContent = job.job_title;
+    document.getElementById('submitTestBtn').setAttribute('data-job-id', selectedJobId);
+
+    const testModal = new bootstrap.Modal(document.getElementById('generateTestModal'));
+    testModal.show();
+});
+
+// Submit test generation
+document.getElementById('submitTestBtn').addEventListener('click', async function() {
+    const jobId = this.getAttribute('data-job-id');
+    const numQuestions = document.getElementById('numQuestions').value;
+    const testDuration = document.getElementById('testDuration').value;
+    const testInstructions = document.getElementById('testInstructions').value;
+    const notifyAll = document.getElementById('notifyCheckbox').checked;
+
+    if (!numQuestions || !testDuration || Number(numQuestions) <= 0 || Number(testDuration) <= 0) {
+        alert('Please enter valid values for number of questions and duration.');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/generate-test-for-job/${jobId}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                num_questions: numQuestions,
+                test_duration: testDuration,
+                instructions: testInstructions,
+                notify_candidates: notifyAll
+            })
+        });
+
+        const responseText = await response.text();
+        let data = null;
+        try {
+            data = JSON.parse(responseText);
+        } catch (e) {
+            data = { success: false, error: responseText || 'Unexpected server response' };
+        }
+        
+        if (data.success) {
+            alert(`Test generated successfully!\nRedirecting to review page...`);
+            const modal = bootstrap.Modal.getInstance(document.getElementById('generateTestModal'));
+            modal.hide();
+            // Redirect to review page instead of reloading
+            if (data.redirect) {
+                window.location.href = data.redirect;
+            } else {
+                location.reload();
+            }
+        } else {
+            alert('Error: ' + (data.error || `Failed to generate test (HTTP ${response.status})`));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to generate test. Check server logs for details.');
+    }
+});
+
+// Handle shortlist all button
+document.getElementById('shortlistAllInlineBtn').addEventListener('click', async function() {
+    if (!selectedJobId) return;
+    const jobId = selectedJobId;
+    
+    if (!confirm('Shortlist all applied candidates for this job?')) return;
+    
+    try {
+        const response = await fetch(`/shortlist-all-for-job/${jobId}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(`${data.count} candidates shortlisted successfully!`);
+            location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'Failed to shortlist candidates'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to shortlist candidates');
+    }
+});
+
+async function runJobSelectionAction(endpoint, confirmMessage, successHandler) {
+    if (!selectedJobId) {
+        alert('Please open a job first.');
+        return;
+    }
+
+    if (confirmMessage && !confirm(confirmMessage)) return;
+
+    try {
+        const response = await fetch(endpoint.replace(':jobId', selectedJobId), {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        });
+        const data = await response.json();
+        if (data.success) {
+            if (typeof successHandler === 'function') successHandler(data);
+        } else {
+            alert('Error: ' + (data.error || 'Request failed'));
+        }
+    } catch (error) {
+        console.error('Selection action failed:', error);
+        alert('Failed to complete the action.');
+    }
+}
+
+document.getElementById('bestFitShortlistBtn')?.addEventListener('click', async function() {
+    await runJobSelectionAction(
+        '/bulk-shortlist-best-fit/:jobId',
+        'Shortlist the top best-fit candidates up to the opening count for this job?',
+        (data) => {
+            alert(`${data.shortlisted_count || 0} best-fit candidate(s) shortlisted successfully!`);
+            location.reload();
+        }
+    );
+});
+
+document.getElementById('saveSelectionPoolBtn')?.addEventListener('click', async function() {
+    await runJobSelectionAction(
+        '/save-selection-pool/:jobId',
+        'Save the ranked best-fit and reserve pool for future recruiter use?',
+        (data) => {
+            alert(`Selection pool saved successfully with ${data.saved_candidates || 0} candidates.`);
+        }
+    );
+});
+</script>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Job Details | HireHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0">Job Details</h3>
+        {% if session.get('role') == 'admin' %}
+        <a href="/admin-dashboard#jobs" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Back to Job Moderation
+        </a>
+        {% else %}
+        <a href="/recruiter-dashboard?tab=jobs" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Back to Jobs
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+            <div class="row mb-3">
+                <div class="col-md-8">
+                    <h4 class="fw-bold text-primary">{{ job.title }}</h4>
+                    <p class="text-muted mb-0">{{ job.department }} • {{ job.location }}</p>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-2">{{ job.job_type }}</span>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2">{{ job.employment_mode }}</span>
+                </div>
+            </div>
+
+            <hr class="text-muted opacity-25">
+
+            <div class="row mt-4">
+                <div class="col-md-8">
+                    <h5 class="fw-bold mb-3">Job Description</h5>
+                    <p class="text-muted" style="white-space: pre-line;">{{ job.description }}</p>
+
+                    <h5 class="fw-bold mb-3 mt-4">Required Skills</h5>
+                    <p class="text-muted">{{ job.skills }}</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="bg-light p-3 rounded-3">
+                        <h6 class="fw-bold mb-3">Job Overview</h6>
+                        
+                        <div class="mb-3">
+                            <small class="text-muted d-block text-uppercase fw-bold">Salary</small>
+                            <span class="fw-semibold">
+                                {% if job.salary_min and job.salary_max %}
+                                    ${{ job.salary_min }} - ${{ job.salary_max }}
+                                {% else %}
+                                    Not Disclosed
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <div class="mb-3">
+                            <small class="text-muted d-block text-uppercase fw-bold">Experience</small>
+                            <span class="fw-semibold">{{ job.min_experience }} - {{ job.max_experience }} Years</span>
+                        </div>
+
+                        <div class="mb-3">
+                            <small class="text-muted d-block text-uppercase fw-bold">Education</small>
+                            <span class="fw-semibold">{{ job.education }}</span>
+                        </div>
+
+                        <div class="mb-3">
+                            <small class="text-muted d-block text-uppercase fw-bold">Openings</small>
+                            <span class="fw-semibold">{{ job.openings }}</span>
+                        </div>
+
+                        <div class="mb-3">
+                            <small class="text-muted d-block text-uppercase fw-bold">Deadline</small>
+                            <span class="fw-semibold">{{ job.deadline }}</span>
+                        </div>
+                        
+                        <div class="mb-0">
+                            <small class="text-muted d-block text-uppercase fw-bold">Interview Mode</small>
+                            <span class="fw-semibold">{{ job.interview_mode }}</span>
+                        </div>
+                    </div>
+                    
+                    {% if not is_candidate %}
+                        <div class="mt-3 d-grid gap-2">
+                            <a href="/edit-job/{{ job.id }}" class="btn btn-outline-primary">
+                                <i class="bi bi-pencil me-2"></i>Edit Job
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

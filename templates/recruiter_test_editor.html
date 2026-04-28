@@ -1,0 +1,489 @@
+{% extends "recruiter_dashboard.html" %}
+
+{% block dashboard_content %}
+<div class="container-fluid mt-4">
+    <div class="mb-4">
+        <h3 class="fw-bold mb-1">Configure Assessment Test</h3>
+        <p class="text-muted">Create AI-generated test for: <strong>{{ candidate_name }}</strong></p>
+        <p class="text-muted small">Job Position: <strong>{{ job_title }}</strong></p>
+    </div>
+
+    <!-- Configuration Panel -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h6 class="mb-0 fw-bold">Test Configuration</h6>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 mb-4">
+                <!-- Aptitude Questions -->
+                <div class="col-md-3">
+                    <label class="form-label">Aptitude Questions</label>
+                    <input type="number" id="numAptitude" class="form-control" value="15" min="5" max="30">
+                    <small class="text-muted">5-30 questions</small>
+                </div>
+
+                <!-- Technical Questions -->
+                <div class="col-md-3">
+                    <label class="form-label">Technical Questions</label>
+                    <input type="number" id="numTechnical" class="form-control" value="15" min="5" max="30">
+                    <small class="text-muted">5-30 questions</small>
+                </div>
+
+                <!-- Duration -->
+                <div class="col-md-3">
+                    <label class="form-label">Duration (minutes)</label>
+                    <input type="number" id="durationMinutes" class="form-control" value="90" min="30" max="300">
+                    <small class="text-muted">30-300 minutes</small>
+                </div>
+
+                <!-- Total Marks -->
+                <div class="col-md-3">
+                    <label class="form-label">Total Marks</label>
+                    <input type="number" id="totalMarks" class="form-control" value="60" min="30" max="200">
+                    <small class="text-muted">Per question: 1 mark</small>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-primary-custom" id="generateQuestionsBtn">
+                    <i class="bi bi-sparkles me-2"></i>Generate AI Questions
+                </button>
+                <button type="button" class="btn btn-outline-secondary" id="refreshConfigBtn">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+                </button>
+            </div>
+
+            <!-- Loading indicator -->
+            <div id="loadingSpinner" class="mt-3" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Generating questions...</span>
+                </div>
+                <span class="ms-2">Generating AI questions (this may take a moment)...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Questions Editor -->
+    <div id="questionsPanel" style="display: none;">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0 fw-bold">Generated Questions</h6>
+                        <small class="text-muted">Total: <span id="totalQuestionsCount">0</span> | 
+                            Aptitude: <span id="aptitudeCount">0</span> | 
+                            Technical: <span id="technicalCount">0</span></small>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="addQuestionBtn">
+                        <i class="bi bi-plus-circle me-1"></i>Add Question
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Aptitude Section -->
+                <div class="mb-5">
+                    <h6 class="fw-bold text-primary mb-3">
+                        <i class="bi bi-calculator-fill me-2"></i>Aptitude Section
+                    </h6>
+                    <div id="aptitudeQuestionsContainer"></div>
+                </div>
+
+                <!-- Technical Section -->
+                <div class="mb-4">
+                    <h6 class="fw-bold text-success mb-3">
+                        <i class="bi bi-cpu-fill me-2"></i>Technical Section
+                    </h6>
+                    <div id="technicalQuestionsContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex gap-2 mb-4">
+            <button type="button" class="btn btn-success" id="sendTestBtn">
+                <i class="bi bi-send-fill me-2"></i>Send Test to Candidate
+            </button>
+            <button type="button" class="btn btn-outline-secondary" onclick="window.history.back()">
+                <i class="bi bi-arrow-left me-2"></i>Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Question Edit Modal -->
+<div class="modal fade" id="editQuestionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Question</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Question Text*</label>
+                    <textarea class="form-control" id="editQuestion" rows="3" placeholder="Enter question text"></textarea>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Option A*</label>
+                        <input type="text" class="form-control" id="editOptionA" placeholder="Option A">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Option B*</label>
+                        <input type="text" class="form-control" id="editOptionB" placeholder="Option B">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Option C*</label>
+                        <input type="text" class="form-control" id="editOptionC" placeholder="Option C">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Option D*</label>
+                        <input type="text" class="form-control" id="editOptionD" placeholder="Option D">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Correct Answer*</label>
+                    <select class="form-select" id="editCorrectAnswer">
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Section</label>
+                    <select class="form-select" id="editSection">
+                        <option value="Aptitude">Aptitude</option>
+                        <option value="Technical">Technical</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveEditBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let allQuestions = [];
+let editingIndex = -1;
+let editModal = null;
+
+// Wait for DOM and Bootstrap to load
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bootstrap modal after DOM is loaded
+    if (typeof bootstrap !== 'undefined') {
+        editModal = new bootstrap.Modal(document.getElementById('editQuestionModal'));
+        console.log('Bootstrap modal initialized');
+    } else {
+        console.error('Bootstrap is not loaded!');
+    }
+});
+
+// Generate Questions
+document.getElementById('generateQuestionsBtn').addEventListener('click', async () => {
+    console.log('Generate button clicked');
+    const numAptitude = parseInt(document.getElementById('numAptitude').value);
+    const numTechnical = parseInt(document.getElementById('numTechnical').value);
+    
+    console.log('Aptitude:', numAptitude, 'Technical:', numTechnical);
+    
+    if (numAptitude + numTechnical === 0) {
+        alert('Please enter question counts');
+        return;
+    }
+
+    document.getElementById('loadingSpinner').style.display = 'block';
+    document.getElementById('generateQuestionsBtn').disabled = true;
+
+    try {
+        console.log('Fetching from:', `/api/generate-recruiter-questions/{{ app_id }}`);
+        
+        const response = await fetch(`/api/generate-recruiter-questions/{{ app_id }}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                num_aptitude: numAptitude,
+                num_technical: numTechnical
+            })
+        });
+
+        console.log('Response status:', response.status);
+        const data = await response.json();
+        console.log('Response data:', data);
+
+        if (data.success) {
+            allQuestions = data.questions;
+            displayQuestions();
+            document.getElementById('questionsPanel').style.display = 'block';
+            
+            // Update counts
+            document.getElementById('totalQuestionsCount').textContent = data.total_questions;
+            document.getElementById('aptitudeCount').textContent = data.aptitude_count;
+            document.getElementById('technicalCount').textContent = data.technical_count;
+            
+            alert(`Generated ${data.total_questions} questions successfully!`);
+        } else {
+            console.error('Error from server:', data.error);
+            alert('Error: ' + (data.error || 'Failed to generate questions'));
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        alert('Failed to generate questions. Error: ' + error.message + '\n\nCheck browser console (F12) for details.');
+    } finally {
+        document.getElementById('loadingSpinner').style.display = 'none';
+        document.getElementById('generateQuestionsBtn').disabled = false;
+    }
+});
+
+// Display Questions
+function displayQuestions() {
+    const aptitudeContainer = document.getElementById('aptitudeQuestionsContainer');
+    const technicalContainer = document.getElementById('technicalQuestionsContainer');
+    
+    aptitudeContainer.innerHTML = '';
+    technicalContainer.innerHTML = '';
+
+    allQuestions.forEach((q, idx) => {
+        const questionHTML = createQuestionCard(q, idx);
+        if (q.section === 'Aptitude') {
+            aptitudeContainer.innerHTML += questionHTML;
+        } else {
+            technicalContainer.innerHTML += questionHTML;
+        }
+    });
+
+    // Add event listeners
+    addQuestionEventListeners();
+}
+
+// Create Question Card
+function createQuestionCard(q, idx) {
+    const correctLabel = `Option ${q.correct_answer}`;
+    return `
+        <div class="card mb-3 question-card" data-index="${idx}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <small class="text-muted">Q${idx + 1}</small>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-primary edit-btn" data-index="${idx}">
+                            <i class="bi bi-pencil"></i> Edit
+                        </button>
+                        <button type="button" class="btn btn-outline-danger delete-btn" data-index="${idx}">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+
+                <p class="mb-2 fw-bold">${q.question}</p>
+
+                <div class="options">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" disabled ${q.correct_answer === 'A' ? 'checked' : ''}>
+                        <label class="form-check-label">A: ${q.option_a}</label>
+                        ${q.correct_answer === 'A' ? '<span class="badge bg-success ms-2">Correct</span>' : ''}
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" disabled ${q.correct_answer === 'B' ? 'checked' : ''}>
+                        <label class="form-check-label">B: ${q.option_b}</label>
+                        ${q.correct_answer === 'B' ? '<span class="badge bg-success ms-2">Correct</span>' : ''}
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" disabled ${q.correct_answer === 'C' ? 'checked' : ''}>
+                        <label class="form-check-label">C: ${q.option_c}</label>
+                        ${q.correct_answer === 'C' ? '<span class="badge bg-success ms-2">Correct</span>' : ''}
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" disabled ${q.correct_answer === 'D' ? 'checked' : ''}>
+                        <label class="form-check-label">D: ${q.option_d}</label>
+                        ${q.correct_answer === 'D' ? '<span class="badge bg-success ms-2">Correct</span>' : ''}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Add Event Listeners
+function addQuestionEventListeners() {
+    // Edit buttons
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const idx = parseInt(this.dataset.index);
+            editQuestion(idx);
+        });
+    });
+
+    // Delete buttons
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const idx = parseInt(this.dataset.index);
+            if (confirm('Delete this question?')) {
+                allQuestions.splice(idx, 1);
+                displayQuestions();
+                updateCounts();
+            }
+        });
+    });
+}
+
+// Edit Question
+function editQuestion(idx) {
+    editingIndex = idx;
+    const q = allQuestions[idx];
+
+    document.getElementById('editQuestion').value = q.question;
+    document.getElementById('editOptionA').value = q.option_a;
+    document.getElementById('editOptionB').value = q.option_b;
+    document.getElementById('editOptionC').value = q.option_c;
+    document.getElementById('editOptionD').value = q.option_d;
+    document.getElementById('editCorrectAnswer').value = q.correct_answer;
+    document.getElementById('editSection').value = q.section;
+
+    if (editModal) {
+        editModal.show();
+    } else {
+        console.error('Modal not initialized yet');
+    }
+}
+
+// Save Edit
+document.getElementById('saveEditBtn').addEventListener('click', () => {
+    if (editingIndex === -1) return;
+
+    allQuestions[editingIndex] = {
+        question: document.getElementById('editQuestion').value,
+        option_a: document.getElementById('editOptionA').value,
+        option_b: document.getElementById('editOptionB').value,
+        option_c: document.getElementById('editOptionC').value,
+        option_d: document.getElementById('editOptionD').value,
+        correct_answer: document.getElementById('editCorrectAnswer').value,
+        section: document.getElementById('editSection').value
+    };
+
+    displayQuestions();
+    updateCounts();
+    if (editModal) {
+        editModal.hide();
+    }
+});
+
+// Add Question Button
+document.getElementById('addQuestionBtn').addEventListener('click', () => {
+    allQuestions.push({
+        section: 'Technical',
+        question: 'New Question?',
+        option_a: 'Option A',
+        option_b: 'Option B',
+        option_c: 'Option C',
+        option_d: 'Option D',
+        correct_answer: 'A'
+    });
+    displayQuestions();
+    updateCounts();
+});
+
+// Update Counts
+function updateCounts() {
+    const aptCount = allQuestions.filter(q => q.section === 'Aptitude').length;
+    const techCount = allQuestions.filter(q => q.section === 'Technical').length;
+    
+    document.getElementById('aptitudeCount').textContent = aptCount;
+    document.getElementById('technicalCount').textContent = techCount;
+    document.getElementById('totalQuestionsCount').textContent = allQuestions.length;
+}
+
+// Send Test
+document.getElementById('sendTestBtn').addEventListener('click', async () => {
+    if (allQuestions.length === 0) {
+        alert('Please generate questions first');
+        return;
+    }
+
+    if (!confirm(`Send this test with ${allQuestions.length} questions to the candidate?`)) {
+        return;
+    }
+
+    const durationMinutes = parseInt(document.getElementById('durationMinutes').value);
+    const totalMarks = parseInt(document.getElementById('totalMarks').value);
+
+    document.getElementById('sendTestBtn').disabled = true;
+
+    try {
+        const response = await fetch(`/save-recruiter-test/{{ app_id }}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                questions: allQuestions,
+                duration_minutes: durationMinutes,
+                total_marks: totalMarks
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert(data.message);
+            window.location.href = '/applications';
+        } else {
+            alert('Error: ' + (data.error || 'Failed to send test'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to send test');
+    } finally {
+        document.getElementById('sendTestBtn').disabled = false;
+    }
+});
+
+// Refresh Config
+document.getElementById('refreshConfigBtn').addEventListener('click', () => {
+    document.getElementById('numAptitude').value = '15';
+    document.getElementById('numTechnical').value = '15';
+    document.getElementById('durationMinutes').value = '90';
+    document.getElementById('totalMarks').value = '60';
+    allQuestions = [];
+    document.getElementById('questionsPanel').style.display = 'none';
+});
+</script>
+
+<!-- Bootstrap JavaScript (required for dropdowns) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<style>
+.question-card {
+    border-left: 4px solid #0f6ee4;
+    transition: all 0.3s ease;
+}
+
+.question-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.options {
+    background-color: #f8fafc;
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
+.btn-primary-custom {
+    background: linear-gradient(135deg, #0f6ee4 0%, #0754b8 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-primary-custom:hover {
+    background: linear-gradient(135deg, #0754b8 0%, #053a8c 100%);
+    color: white;
+}
+</style>
+{% endblock %}

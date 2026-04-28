@@ -1,0 +1,1774 @@
+{% extends "base.html" %}
+
+{% block title %}Skill Gap Analysis - {{ job_role }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Skill Gap Analysis - Clean Professional Corporate Design */
+:root {
+    --primary: #0F2A44;
+    --primary-dark: #0A1F33;
+    --accent: #4FB6E8;
+    --accent-dark: #3A9FD5;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #4FB6E8;
+    --bg-light: #F6F8FB;
+    --text-dark: #1F2933;
+    --text-muted: #6B7280;
+    --border-light: #e2e8f0;
+}
+
+body {
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%) !important;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+}
+
+.analysis-container {
+    max-width: 1400px;
+    margin: 40px auto;
+    padding: 30px;
+    position: relative;
+    z-index: 1;
+}
+
+.hero-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+    border-radius: 24px;
+    padding: 60px 50px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06);
+    margin-bottom: 40px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.hero-title {
+    font-size: 42px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+}
+
+.hero-subtitle {
+    color: var(--text-muted);
+    font-size: 16px;
+    margin-bottom: 40px;
+}
+
+.score-display {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.score-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.score-circle {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: 900;
+    color: white;
+    margin-bottom: 18px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.score-circle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+}
+
+.score-excellent {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.score-good {
+    background: linear-gradient(135deg, #4FB6E8, #3A9FD5);
+}
+
+.score-average {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.score-poor {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.score-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 5px;
+}
+
+.score-percentage {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+    border-radius: 20px;
+    padding: 35px 30px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid rgba(226, 232, 240, 0.6);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(15, 42, 68, 0.12);
+    border-color: var(--primary);
+}
+
+.stat-value {
+    font-size: 42px;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.section-card {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    margin-bottom: 35px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    border: 1px solid rgba(226, 232, 240, 0.6);
+    transition: all 0.3s ease;
+}
+
+.section-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06);
+    transform: translateY(-2px);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.section-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.section-icon:hover {
+    transform: rotate(5deg) scale(1.05);
+}
+
+.ai-icon {
+    background: linear-gradient(135deg, #4FB6E8, #3A9FD5);
+}
+
+.success-icon {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.warning-icon {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.info-icon {
+    background: linear-gradient(135deg, #0F2A44, #2E3A46);
+}
+
+.history-icon {
+    background: linear-gradient(135deg, #2E3A46, #1F2933);
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.section-subtitle {
+    color: var(--text-muted);
+    margin: 5px 0 0 0;
+    font-size: 14px;
+}
+
+.ai-section {
+    background: linear-gradient(135deg, #E8F2F7, #D6E8F3);
+    border-left: 5px solid var(--accent);
+}
+
+.insights-grid {
+    display: grid;
+    gap: 20px;
+}
+
+.insight-card {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    border: 2px solid var(--border-light);
+}
+
+.insight-title {
+    color: var(--text-dark);
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.insight-card p {
+    color: #4b5563;
+    line-height: 1.7;
+    margin: 0;
+}
+
+.career-card {
+    border: 2px solid #e5e7eb;
+}
+
+.career-status {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.career-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.status-ready {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-almost {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-needs {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.career-time {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.strengths-card {
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    border-left: 4px solid var(--success);
+}
+
+.strengths-card .insight-title {
+    color: #065f46;
+}
+
+.strengths-card p {
+    color: #064e3b;
+}
+
+.weaknesses-card {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border-left: 4px solid var(--warning);
+}
+
+.weaknesses-card .insight-title {
+    color: #92400e;
+}
+
+.weaknesses-card p {
+    color: #78350f;
+}
+
+.action-plan {
+    margin-top: 20px;
+}
+
+.action-plan h5 {
+    color: #374151;
+    font-size: 16px;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.action-steps {
+    display: grid;
+    gap: 12px;
+}
+
+.action-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f9fafb;
+    padding: 15px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.action-step:hover {
+    background: #f3f4f6;
+    transform: translateX(5px);
+}
+
+.step-number {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--primary));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.action-step span {
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+.interview-card {
+    background: linear-gradient(135deg, #F6F8FB, #E8F2F7);
+    border-left: 4px solid var(--accent);
+}
+
+.interview-card .insight-title {
+    color: #6b21a8;
+}
+
+.interview-card ul {
+    margin: 0;
+    padding-left: 24px;
+    color: #581c87;
+}
+
+.interview-card li {
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+.skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 25px;
+}
+
+.skill-card {
+    background: white;
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 2px solid var(--border-light);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.skill-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+    border-color: rgba(15, 42, 68, 0.3);
+}
+
+.strong-skill {
+    border-left: 4px solid var(--success);
+}
+
+.weak-skill {
+    border-left: 4px solid var(--warning);
+}
+
+.skill-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.skill-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.skill-score {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--success);
+}
+
+.weak-score {
+    color: var(--warning);
+}
+
+.skill-stats {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.skill-stats i {
+    margin-right: 5px;
+}
+
+.difficulty-breakdown {
+    display: grid;
+    gap: 12px;
+}
+
+.diff-item {
+    display: grid;
+    grid-template-columns: 70px 1fr 50px;
+    align-items: center;
+    gap: 10px;
+}
+
+.diff-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.diff-bar {
+    background: #e5e7eb;
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.diff-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.5s ease;
+}
+
+.easy-fill {
+    background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.medium-fill {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.hard-fill {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.diff-percent {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dark);
+    text-align: right;
+}
+
+.learning-path {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid var(--border-light);
+}
+
+.learning-path h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 15px;
+}
+
+.path-steps {
+    display: grid;
+    gap: 12px;
+}
+
+.path-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f9fafb;
+    padding: 12px;
+    border-radius: 10px;
+}
+
+.path-number {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--warning), #d97706);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.path-title {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 14px;
+}
+
+.path-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.courses-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid var(--border-light);
+}
+
+.courses-section h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 15px;
+}
+
+.course-list {
+    display: grid;
+    gap: 10px;
+}
+
+.course-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.course-item:hover {
+    background: white;
+    border-color: var(--primary);
+    transform: translateX(5px);
+}
+
+.course-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.course-info {
+    flex: 1;
+}
+
+.course-title {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 14px;
+    margin-bottom: 3px;
+}
+
+.course-platform {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.course-item i.bi-arrow-right-short {
+    font-size: 24px;
+    color: var(--text-muted);
+}
+
+.table-responsive {
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+.breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.breakdown-table thead {
+    background: #f8fafc;
+}
+
+.breakdown-table th {
+    padding: 15px;
+    text-align: left;
+    font-weight: 700;
+    color: var(--text-dark);
+    border-bottom: 2px solid var(--border-light);
+    font-size: 14px;
+}
+
+.breakdown-table td {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-muted);
+}
+
+.breakdown-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.skill-cell strong {
+    color: var(--text-dark);
+    font-size: 15px;
+}
+
+.progress-bar-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.progress-bar-bg {
+    flex: 1;
+    height: 10px;
+    background: #e5e7eb;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.5s ease;
+}
+
+.progress-bar-fill.success {
+    background: linear-gradient(90deg, var(--success), #059669);
+}
+
+.progress-bar-fill.warning {
+    background: linear-gradient(90deg, var(--warning), #d97706);
+}
+
+.progress-bar-fill.danger {
+    background: linear-gradient(90deg, var(--danger), #dc2626);
+}
+
+.progress-text {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 13px;
+    min-width: 45px;
+}
+
+.status-badge {
+    padding: 6px 14px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-block;
+}
+
+.status-strong {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-moderate {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-weak {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 40px 0;
+}
+
+.btn-action {
+    padding: 16px 36px;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 16px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.btn-action:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15, 42, 68, 0.4);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, var(--success), #059669);
+    color: white;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btn-outline {
+    background: white;
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-outline:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.history-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.history-card {
+    background: #f9fafb;
+    padding: 20px;
+    border-radius: 16px;
+    border: 2px solid var(--border-light);
+    transition: all 0.3s ease;
+}
+
+.history-card:hover {
+    background: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.history-header h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.history-date {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.history-score {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.history-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.history-progress {
+    flex: 1;
+}
+
+.history-bar {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.history-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.history-progress span {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.trend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.trend-chip {
+    background: #f8fafc;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 14px;
+}
+
+.trend-chip h5 {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.trend-chip p {
+    margin: 0;
+    font-weight: 700;
+    color: var(--text-dark);
+    font-size: 18px;
+}
+
+.trend-skill-list {
+    display: grid;
+    gap: 12px;
+}
+
+.trend-skill-item {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr auto;
+    gap: 10px;
+    align-items: center;
+    background: #f9fafb;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+
+.trend-pill {
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-block;
+}
+
+.trend-pill.rising {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.trend-pill.stable {
+    background: #e0f2fe;
+    color: #075985;
+}
+
+.trend-pill.emerging {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.trend-pill.covered {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.trend-pill.gap {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+}
+
+.video-card {
+    border: 1px solid var(--border-light);
+    border-radius: 14px;
+    padding: 14px;
+    background: #fff;
+}
+
+.video-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 8px 0;
+}
+
+.video-tag {
+    background: #f1f5f9;
+    color: #334155;
+    font-size: 11px;
+    border-radius: 999px;
+    padding: 4px 9px;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .analysis-container {
+        padding: 15px;
+    }
+    
+    .hero-card {
+        padding: 30px 20px;
+    }
+    
+    .hero-title {
+        font-size: 28px;
+    }
+    
+    .score-display {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    
+    .score-circle {
+        width: 100px;
+        height: 100px;
+        font-size: 24px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .section-card {
+        padding: 25px 20px;
+    }
+    
+    .skills-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .btn-action {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.hero-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.stats-grid {
+    animation: fadeInUp 0.6s ease-out 0.1s backwards;
+}
+
+.section-card {
+    animation: fadeInUp 0.6s ease-out 0.2s backwards;
+}
+
+.analysis-container {
+    animation: fadeIn 0.4s ease-out;
+}
+
+.btn-action:focus,
+.course-item:focus {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
+}
+
+::selection {
+    background-color: var(--primary);
+    color: white;
+}
+
+::-moz-selection {
+    background-color: var(--primary);
+    color: white;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+@media print {
+    .action-buttons,
+    .navbar {
+        display: none;
+    }
+    
+    .analysis-container {
+        margin: 0;
+        padding: 20px;
+    }
+    
+    .section-card,
+    .hero-card {
+        page-break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+}
+/* ================= SKILL GAP ANALYSIS – FINAL MOBILE POLISH ================= */
+
+@media (max-width: 576px) {
+
+    /* Container */
+    .analysis-container {
+        padding: 12px;
+        margin: 20px auto;
+    }
+
+    /* Hero */
+    .hero-title {
+        font-size: 22px;
+    }
+
+    .hero-subtitle {
+        font-size: 14px;
+        margin-bottom: 25px;
+    }
+
+    .score-display {
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .score-circle {
+        width: 85px;
+        height: 85px;
+        font-size: 20px;
+    }
+
+    .score-label {
+        font-size: 14px;
+    }
+
+    /* Section headers */
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .section-icon {
+        width: 52px;
+        height: 52px;
+        font-size: 22px;
+    }
+
+    .section-title {
+        font-size: 18px;
+    }
+
+    /* Cards */
+    .section-card {
+        padding: 20px 16px;
+        border-radius: 18px;
+    }
+
+    .stat-value {
+        font-size: 28px;
+    }
+
+    /* Skill cards */
+    .skill-card {
+        padding: 20px;
+    }
+
+    .skill-name {
+        font-size: 16px;
+    }
+
+    .skill-score {
+        font-size: 18px;
+    }
+
+    /* Learning path & steps */
+    .path-step,
+    .action-step {
+        padding: 10px;
+    }
+
+    .path-title {
+        font-size: 13px;
+    }
+
+    .path-desc {
+        font-size: 11px;
+    }
+
+    /* Tables */
+    .breakdown-table th,
+    .breakdown-table td {
+        padding: 10px;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .table-responsive {
+        overflow-x: visible;
+    }
+
+    .breakdown-table,
+    .breakdown-table thead,
+    .breakdown-table tbody,
+    .breakdown-table tr,
+    .breakdown-table th,
+    .breakdown-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .breakdown-table thead {
+        display: none;
+    }
+
+    .breakdown-table tbody tr {
+        margin-bottom: 14px;
+        border: 1px solid var(--border-light);
+        border-radius: 14px;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .breakdown-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        white-space: normal;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .breakdown-table td:last-child {
+        border-bottom: none;
+    }
+
+    .breakdown-table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--text-dark);
+        flex: 0 0 40%;
+    }
+
+    .skill-cell strong {
+        font-size: 14px;
+    }
+
+    .progress-bar-cell {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .progress-bar-bg {
+        min-width: 120px;
+    }
+
+    /* Buttons */
+    .btn-action {
+        padding: 14px;
+        font-size: 14px;
+        border-radius: 12px;
+    }
+
+    /* History */
+    .history-circle {
+        width: 48px;
+        height: 48px;
+        font-size: 12px;
+    }
+}
+    
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analysis-container">
+    <!-- Hero Section -->
+    <div class="hero-card">
+        <div class="hero-title">📊 Your Skill Gap Analysis</div>
+        <div class="hero-subtitle">{{ job_role }} Assessment | Completed on {{ test_date }}</div>
+        
+        <div class="score-display">
+            <div class="score-item">
+                <div class="score-circle {% if percentage >= 80 %}score-excellent{% elif percentage >= 60 %}score-good{% elif percentage >= 40 %}score-average{% else %}score-poor{% endif %}">
+                    {{ percentage }}%
+                </div>
+                <div class="score-label">Overall Score</div>
+                <div class="score-percentage">{{ score }}/{{ total_questions }} correct</div>
+            </div>
+            
+            <div class="score-item">
+                <div class="score-circle score-good">
+                    {{ strong_skills|length }}
+                </div>
+                <div class="score-label">Strong Skills</div>
+                <div class="score-percentage">Mastered areas</div>
+            </div>
+            
+            <div class="score-item">
+                <div class="score-circle score-average">
+                    {{ weak_skills|length }}
+                </div>
+                <div class="score-label">Skills to Improve</div>
+                <div class="score-percentage">Growth opportunities</div>
+            </div>
+            
+            <div class="score-item">
+                <div class="score-circle {% if percentage >= 90 %}score-excellent{% elif percentage >= 75 %}score-good{% elif percentage >= 60 %}score-average{% else %}score-poor{% endif %}">
+                    {% if percentage >= 90 %}A+{% elif percentage >= 80 %}A{% elif percentage >= 70 %}B{% elif percentage >= 60 %}C{% else %}D{% endif %}
+                </div>
+                <div class="score-label">Grade</div>
+                <div class="score-percentage">Performance level</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ skill_performance.keys()|length }}</div>
+            <div class="stat-label">Skills Tested</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ total_questions }}</div>
+            <div class="stat-label">Total Questions</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ (score / total_questions * 100)|round(1) }}%</div>
+            <div class="stat-label">Accuracy Rate</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ strong_skills|length }}/{{ skill_performance.keys()|length }}</div>
+            <div class="stat-label">Skills Mastered</div>
+        </div>
+    </div>
+
+    <!-- AI-Powered Analysis -->
+    {% if ai_insights %}
+    <div class="section-card ai-section">
+        <div class="section-header">
+            <div class="section-icon ai-icon">🤖</div>
+            <div>
+                <h2 class="section-title">AI-Powered Performance Analysis</h2>
+                <p class="section-subtitle">Personalized insights based on your profile and test performance</p>
+            </div>
+        </div>
+        
+        <div class="insights-grid">
+            <!-- Career Fit Assessment -->
+            <div class="insight-card career-card">
+                <h4 class="insight-title">
+                    <i class="bi bi-bullseye"></i>
+                    Career Readiness for {{ job_role }}
+                </h4>
+                <div class="career-status">
+                    <span class="career-badge {% if 'Ready' in ai_insights.career_fit and 'Needs' not in ai_insights.career_fit %}status-ready{% elif 'Almost' in ai_insights.career_fit %}status-almost{% else %}status-needs{% endif %}">
+                        {{ ai_insights.career_fit }}
+                    </span>
+                    <span class="career-time">
+                        <i class="bi bi-clock"></i> Estimated time to job-ready: <strong>{{ ai_insights.estimated_ready_time }}</strong>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Strengths Analysis -->
+            <div class="insight-card strengths-card">
+                <h4 class="insight-title">
+                    <i class="bi bi-trophy-fill"></i>
+                    Your Strengths
+                </h4>
+                <p>{{ ai_insights.strengths_analysis }}</p>
+            </div>
+
+            <!-- Weaknesses Analysis -->
+            <div class="insight-card weaknesses-card">
+                <h4 class="insight-title">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    Areas for Improvement
+                </h4>
+                <p>{{ ai_insights.weaknesses_analysis }}</p>
+            </div>
+
+            <!-- Personalized Advice -->
+            <div class="insight-card advice-card">
+                <h4 class="insight-title">
+                    <i class="bi bi-lightbulb-fill"></i>
+                    Personalized Recommendations
+                </h4>
+                <p>{{ ai_insights.personalized_advice }}</p>
+                
+                {% if ai_insights.next_steps %}
+                <div class="action-plan">
+                    <h5>Your Action Plan:</h5>
+                    <div class="action-steps">
+                        {% for step in ai_insights.next_steps %}
+                        <div class="action-step">
+                            <div class="step-number">{{ loop.index }}</div>
+                            <span>{{ step }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Interview Tips -->
+            {% if ai_insights.interview_preparation_tips %}
+            <div class="insight-card interview-card">
+                <h4 class="insight-title">
+                    <i class="bi bi-mic-fill"></i>
+                    Interview Preparation Tips
+                </h4>
+                <ul>
+                    {% for tip in ai_insights.interview_preparation_tips %}
+                    <li>{{ tip }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if market_trends %}
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-icon info-icon">📈</div>
+            <div>
+                <h2 class="section-title">AI Market Trend Intelligence</h2>
+                <p class="section-subtitle">Live demand signals inferred from current job postings for {{ job_role }}</p>
+            </div>
+        </div>
+
+        <div class="trend-grid">
+            <div class="trend-chip">
+                <h5>Active Jobs Analyzed</h5>
+                <p>{{ market_trends.total_postings or 0 }}</p>
+            </div>
+            <div class="trend-chip">
+                <h5>Last 30 Days Activity</h5>
+                <p>{{ market_trends.recent_postings_30d or 0 }}</p>
+            </div>
+            <div class="trend-chip">
+                <h5>Urgent Skill Gaps</h5>
+                <p>{{ market_trends.urgent_gap_skills|length }}</p>
+            </div>
+        </div>
+
+        {% if market_trends.market_insights %}
+        <div class="insight-card mb-3">
+            <h4 class="insight-title"><i class="bi bi-lightning-charge-fill"></i> Market Outlook</h4>
+            <p>{{ market_trends.market_insights.market_outlook }}</p>
+            <p class="mt-2 mb-0"><strong>Hiring Signal:</strong> {{ market_trends.market_insights.hiring_signal }}</p>
+
+            {% if market_trends.market_insights.priority_skills %}
+            <div class="video-meta mt-2">
+                {% for skill in market_trends.market_insights.priority_skills %}
+                <span class="video-tag">{{ skill }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if market_trends.top_skills %}
+        <div class="trend-skill-list">
+            {% for item in market_trends.top_skills[:8] %}
+            <div class="trend-skill-item">
+                <div>
+                    <strong>{{ item.skill }}</strong><br>
+                    <small class="text-muted">Demand score: {{ item.demand_score }} • Jobs: {{ item.job_count }}</small>
+                </div>
+                <div>
+                    <span class="trend-pill {{ item.momentum|lower }}">{{ item.momentum }}</span>
+                </div>
+                <div>
+                    <span class="trend-pill {{ 'covered' if item.candidate_status == 'Covered' else 'gap' }}">{{ item.candidate_status }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if video_recommendations %}
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-icon ai-icon">🎥</div>
+            <div>
+                <h2 class="section-title">Advanced Video Recommendations</h2>
+                <p class="section-subtitle">Personalized to your weak skills + latest hiring trends</p>
+            </div>
+        </div>
+
+        <div class="video-grid">
+            {% for video in video_recommendations %}
+            <div class="video-card">
+                <h5 class="mb-2">{{ video.title }}</h5>
+                <div class="video-meta">
+                    <span class="video-tag">{{ video.platform }}</span>
+                    {% if video.duration %}<span class="video-tag">{{ video.duration }}</span>{% endif %}
+                    {% if video.focus %}<span class="video-tag">{{ video.focus }}</span>{% endif %}
+                    {% if video.recommended_for %}<span class="video-tag">For: {{ video.recommended_for }}</span>{% endif %}
+                </div>
+                <a href="{{ video.url }}" target="_blank" class="btn-action btn-outline" style="padding:10px 14px; font-size:14px; box-shadow:none; margin-top:8px;">
+                    <i class="bi bi-play-circle"></i>
+                    Watch Recommendation
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Strong Skills Section -->
+    {% if strong_skills %}
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-icon success-icon">✓</div>
+            <div>
+                <h2 class="section-title">Your Strong Skills</h2>
+                <p class="section-subtitle">Skills where you excel</p>
+            </div>
+        </div>
+        
+        <div class="skills-grid">
+            {% for skill_data in strong_skills %}
+            <div class="skill-card strong-skill">
+                <div class="skill-header">
+                    <h3 class="skill-name">{{ skill_data.skill }}</h3>
+                    <div class="skill-score">{{ skill_data.percentage }}%</div>
+                </div>
+                <div class="skill-stats">
+                    <span><i class="bi bi-check-circle-fill"></i> {{ skill_data.correct }}/{{ skill_data.total }} correct</span>
+                </div>
+                <div class="difficulty-breakdown">
+                    <div class="diff-item">
+                        <span class="diff-label">Easy</span>
+                        <div class="diff-bar">
+                            <div class="diff-fill easy-fill" style="width: {{ skill_data.easy_percentage }}%"></div>
+                        </div>
+                        <span class="diff-percent">{{ skill_data.easy_percentage }}%</span>
+                    </div>
+                    <div class="diff-item">
+                        <span class="diff-label">Medium</span>
+                        <div class="diff-bar">
+                            <div class="diff-fill medium-fill" style="width: {{ skill_data.medium_percentage }}%"></div>
+                        </div>
+                        <span class="diff-percent">{{ skill_data.medium_percentage }}%</span>
+                    </div>
+                    <div class="diff-item">
+                        <span class="diff-label">Hard</span>
+                        <div class="diff-bar">
+                            <div class="diff-fill hard-fill" style="width: {{ skill_data.hard_percentage }}%"></div>
+                        </div>
+                        <span class="diff-percent">{{ skill_data.hard_percentage }}%</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Weak Skills Section -->
+    {% if weak_skills %}
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-icon warning-icon">📚</div>
+            <div>
+                <h2 class="section-title">Skills to Improve</h2>
+                <p class="section-subtitle">Focus areas for growth with learning resources</p>
+            </div>
+        </div>
+        
+        <div class="skills-grid">
+            {% for skill_data in weak_skills %}
+            <div class="skill-card weak-skill">
+                <div class="skill-header">
+                    <h3 class="skill-name">{{ skill_data.skill }}</h3>
+                    <div class="skill-score weak-score">{{ skill_data.percentage }}%</div>
+                </div>
+                <div class="skill-stats">
+                    <span><i class="bi bi-x-circle-fill"></i> {{ skill_data.correct }}/{{ skill_data.total }} correct</span>
+                </div>
+                
+                <!-- Learning Path -->
+                <div class="learning-path">
+                    <h4>4-Step Learning Path:</h4>
+                    <div class="path-steps">
+                        <div class="path-step">
+                            <div class="path-number">1</div>
+                            <div>
+                                <div class="path-title">Fundamentals</div>
+                                <div class="path-desc">Master basic concepts</div>
+                            </div>
+                        </div>
+                        <div class="path-step">
+                            <div class="path-number">2</div>
+                            <div>
+                                <div class="path-title">Practice</div>
+                                <div class="path-desc">Hands-on exercises</div>
+                            </div>
+                        </div>
+                        <div class="path-step">
+                            <div class="path-number">3</div>
+                            <div>
+                                <div class="path-title">Projects</div>
+                                <div class="path-desc">Build real applications</div>
+                            </div>
+                        </div>
+                        <div class="path-step">
+                            <div class="path-number">4</div>
+                            <div>
+                                <div class="path-title">Master</div>
+                                <div class="path-desc">Advanced techniques</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Course Recommendations -->
+                {% if skill_data.courses %}
+                <div class="courses-section">
+                    <h4>Recommended Courses:</h4>
+                    <div class="course-list">
+                        {% for course in skill_data.courses[:3] %}
+                        <a href="{{ course.url }}" target="_blank" class="course-item">
+                            <div class="course-icon">
+                                {% if 'udemy' in course.url.lower() %}
+                                <i class="bi bi-mortarboard-fill"></i>
+                                {% elif 'coursera' in course.url.lower() %}
+                                <i class="bi bi-book-fill"></i>
+                                {% elif 'youtube' in course.url.lower() %}
+                                <i class="bi bi-youtube"></i>
+                                {% else %}
+                                <i class="bi bi-play-circle-fill"></i>
+                                {% endif %}
+                            </div>
+                            <div class="course-info">
+                                <div class="course-title">{{ course.title }}</div>
+                                <div class="course-platform">{{ course.platform }}</div>
+                            </div>
+                            <i class="bi bi-arrow-right-short"></i>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Detailed Skill Breakdown -->
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-icon info-icon">📊</div>
+            <div>
+                <h2 class="section-title">Detailed Skill Breakdown</h2>
+                <p class="section-subtitle">Complete performance analysis</p>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="breakdown-table">
+                <thead>
+                    <tr>
+                        <th>Skill</th>
+                        <th>Questions</th>
+                        <th>Correct</th>
+                        <th>Accuracy</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if skill_performance %}
+                    {% for skill, data in skill_performance.items() %}
+                    <tr>
+                        <td class="skill-cell" data-label="Skill">
+                            <strong>{{ skill }}</strong>
+                        </td>
+                        <td data-label="Questions">{{ data.total }}</td>
+                        <td data-label="Correct">{{ data.correct }}</td>
+                        <td data-label="Accuracy">
+                            <div class="progress-bar-cell">
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill {% if data.percentage >= 70 %}success{% elif data.percentage >= 50 %}warning{% else %}danger{% endif %}" 
+                                         style="width: {{ data.percentage }}%"></div>
+                                </div>
+                                <span class="progress-text">{{ data.percentage }}%</span>
+                            </div>
+                        </td>
+                        <td data-label="Status">
+                            <span class="status-badge {% if data.percentage >= 70 %}status-strong{% elif data.percentage >= 50 %}status-moderate{% else %}status-weak{% endif %}">
+                                {% if data.percentage >= 70 %}Strong{% elif data.percentage >= 50 %}Moderate{% else %}Needs Work{% endif %}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">
+                            No detailed skill breakdown is available for this test yet.
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <a href="/ai-test" class="btn-action btn-primary">
+            <i class="bi bi-arrow-repeat"></i>
+            Retake Assessment
+        </a>
+        <a href="/view-job?job_id=all" class="btn-action btn-secondary">
+            <i class="bi bi-briefcase"></i>
+            Browse Jobs
+        </a>
+        <a href="/ai-test" class="btn-action btn-outline">
+            <i class="bi bi-list-check"></i>
+            View Questions
+        </a>
+    </div>
+
+    <!-- Recent Tests History -->
+    {% if previous_tests %}
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-icon history-icon">📜</div>
+            <div>
+                <h2 class="section-title">Your Test History</h2>
+                <p class="section-subtitle">Track your progress over time</p>
+            </div>
+        </div>
+        
+        <div class="history-grid">
+            {% for prev_test in previous_tests[:5] %}
+            <div class="history-card">
+                <div class="history-header">
+                    <h4>{{ prev_test.skills_tested.split(',')[0] if prev_test.skills_tested else 'Technical Assessment' }}</h4>
+                    <span class="history-date">{{ prev_test.completed_at.strftime('%b %d, %Y') if prev_test.completed_at else prev_test.started_at.strftime('%b %d, %Y') }}</span>
+                </div>
+                <div class="history-score">
+                    <div class="history-circle">{{ ((prev_test.percentage * prev_test.total_questions / 100)|int) }}/{{ prev_test.total_questions }}</div>
+                    <div class="history-progress">
+                        <div class="history-bar">
+                            <div class="history-fill" style="width: {{ prev_test.percentage }}%"></div>
+                        </div>
+                        <span>{{ prev_test.percentage|round(1) }}%</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

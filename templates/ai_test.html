@@ -1,0 +1,791 @@
+{% extends "base.html" %}
+{% block title %}AI Technical Test | HireHub{% endblock %}
+
+{% block content %}
+<style>
+    .test-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 30px;
+    }
+    
+    .test-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .timer {
+        font-size: 24px;
+        font-weight: bold;
+        background: rgba(255,255,255,0.2);
+        padding: 10px 20px;
+        border-radius: 5px;
+        display: inline-block;
+    }
+    
+    .question-card {
+        background: white;
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .question-number {
+        color: #667eea;
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+    
+    .question-text {
+        font-size: 18px;
+        font-weight: 500;
+        margin-bottom: 25px;
+        line-height: 1.6;
+        color: #2d3748;
+    }
+    
+    .option-btn {
+        width: 100%;
+        text-align: left;
+        padding: 15px 20px;
+        margin-bottom: 12px;
+        border: 2px solid #e2e8f0;
+        background: white;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 16px;
+    }
+    
+    .option-btn:hover {
+        border-color: #667eea;
+        background: #f7fafc;
+        transform: translateX(5px);
+    }
+    
+    .option-btn.selected {
+        border-color: #667eea;
+        background: #edf2f7;
+        font-weight: 500;
+    }
+
+    .option-btn.correct {
+        border-color: #10b981;
+        background: rgba(16, 185, 129, 0.12);
+    }
+
+    .option-btn.incorrect {
+        border-color: #ef4444;
+        background: rgba(239, 68, 68, 0.12);
+    }
+    
+    .option-label {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        background: #667eea;
+        color: white;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 30px;
+        margin-right: 12px;
+        font-weight: bold;
+    }
+    
+    .option-btn.selected .option-label {
+        background: #764ba2;
+    }
+    
+    .progress-bar-custom {
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 20px 0;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        transition: width 0.3s ease;
+    }
+    
+    .navigation-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 30px;
+    }
+    
+    .btn-nav {
+        padding: 12px 30px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-previous {
+        background: #e2e8f0;
+        color: #4a5568;
+    }
+    
+    .btn-previous:hover {
+        background: #cbd5e0;
+    }
+    
+    .btn-next {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .btn-next:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-submit {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+    
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+    }
+    
+    .question-navigator {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .question-dots {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .question-dot {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        border: 2px solid #e2e8f0;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .question-dot:hover {
+        border-color: #667eea;
+    }
+    
+    .question-dot.answered {
+        background: #48bb78;
+        border-color: #48bb78;
+        color: white;
+    }
+    
+    .question-dot.current {
+        background: #667eea;
+        border-color: #667eea;
+        color: white;
+        transform: scale(1.2);
+    }
+    
+    .stats-row {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #e2e8f0;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-label {
+        font-size: 12px;
+        color: #718096;
+        margin-bottom: 5px;
+    }
+    
+    .stat-value {
+        font-size: 18px;
+        font-weight: bold;
+        color: #2d3748;
+    }
+   /* ================= AI TEST – MOBILE ================= */
+    @media (max-width: 768px) {
+    
+        .test-container {
+            padding: 15px;
+        }
+    
+        .test-header .d-flex {
+            flex-direction: column;
+            gap: 15px;
+            align-items: flex-start;
+        }
+    
+        .timer {
+            font-size: 18px;
+            padding: 8px 14px;
+        }
+    
+        .question-card {
+            padding: 20px;
+        }
+    
+        .question-text {
+            font-size: 16px;
+        }
+    
+        .option-btn {
+            font-size: 14px;
+            padding: 12px;
+        }
+    
+        .navigation-buttons {
+            flex-direction: column;
+            gap: 12px;
+        }
+    
+        .btn-nav {
+            width: 100%;
+            text-align: center;
+        }
+    
+        .question-dot {
+            width: 30px;
+            height: 30px;
+            font-size: 11px;
+        }
+    
+        .modal-dialog {
+            margin: 10px;
+        }
+    }
+ 
+</style>
+
+<div class="test-container">
+    <div class="test-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="mb-2"><i class="bi bi-robot me-2"></i>AI Technical Assessment</h3>
+                <p class="mb-0 opacity-75">Based on your skills: {{ test.skills_tested }}</p>
+            </div>
+            <div class="timer" id="timer">
+                <i class="bi bi-clock me-2"></i><span id="time-display">50:00</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="question-navigator">
+        <h6 class="mb-3">Question Navigator</h6>
+        <div class="question-dots" id="question-dots">
+            {% for q in questions %}
+            <div class="question-dot {% if loop.index == 1 %}current{% endif %}" 
+                 data-question="{{ loop.index }}" 
+                 onclick="goToQuestion({{ loop.index }})">
+                {{ loop.index }}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="stats-row">
+            <div class="stat-item">
+                <div class="stat-label">Total</div>
+                <div class="stat-value">{{ questions|length }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Answered</div>
+                <div class="stat-value" id="answered-count">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Remaining</div>
+                <div class="stat-value" id="remaining-count">{{ questions|length }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="progress-bar-custom">
+        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+    </div>
+    
+    <div id="questions-container">
+        {% for question in questions %}
+        <div class="question-card" id="question-{{ loop.index }}" style="display: {% if loop.index == 1 %}block{% else %}none{% endif %}">
+            <div class="question-number">Question {{ loop.index }} of {{ questions|length }}</div>
+            <div class="question-text">{{ question.question_text }}</div>
+            
+            <div class="options">
+                <button class="option-btn" data-answer="A" onclick="selectAnswer({{ test.id }}, {{ question.id }}, 'A', {{ loop.index }})">
+                    <span class="option-label">A</span>
+                    <span class="option-text">{{ question.option_a }}</span>
+                </button>
+                <button class="option-btn" data-answer="B" onclick="selectAnswer({{ test.id }}, {{ question.id }}, 'B', {{ loop.index }})">
+                    <span class="option-label">B</span>
+                    <span class="option-text">{{ question.option_b }}</span>
+                </button>
+                <button class="option-btn" data-answer="C" onclick="selectAnswer({{ test.id }}, {{ question.id }}, 'C', {{ loop.index }})">
+                    <span class="option-label">C</span>
+                    <span class="option-text">{{ question.option_c }}</span>
+                </button>
+                <button class="option-btn" data-answer="D" onclick="selectAnswer({{ test.id }}, {{ question.id }}, 'D', {{ loop.index }})">
+                    <span class="option-label">D</span>
+                    <span class="option-text">{{ question.option_d }}</span>
+                </button>
+            </div>
+            
+            <div class="navigation-buttons">
+                <button class="btn-nav btn-previous" onclick="previousQuestion()" {% if loop.index == 1 %}disabled{% endif %}>
+                    <i class="bi bi-arrow-left me-2"></i>Previous
+                </button>
+                
+                {% if loop.index < questions|length %}
+                <button class="btn-nav btn-next" onclick="nextQuestion()">
+                    Next<i class="bi bi-arrow-right ms-2"></i>
+                </button>
+                {% else %}
+                <button class="btn-nav btn-submit" onclick="submitTest({{ test.id }})">
+                    Submit Test<i class="bi bi-check-circle ms-2"></i>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Result Modal -->
+<div class="modal fade" id="resultModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-trophy me-2"></i>Test Completed!</h5>
+            </div>
+            <div class="modal-body text-center py-4" id="result-body">
+                <div class="mb-3">
+                    <div style="font-size: 48px; color: #48bb78;">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                </div>
+                <h4 class="mb-3">Your Score</h4>
+                <div class="display-4 mb-3 text-primary" id="score-display">0/50</div>
+                <div class="h5 mb-3" id="percentage-display">0%</div>
+                <div class="text-muted" id="correct-display">0 out of 25 correct</div>
+            </div>
+            <div class="modal-footer">
+                <a href="/candidate-dashboard#ai-assessments" class="btn btn-primary">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentQuestion = 1;
+const totalQuestions = {{ questions|length }};
+let answers = {};
+let timeLeft = 50 * 60; // 50 minutes in seconds
+
+// Timer
+function startTimer() {
+    const timerInterval = setInterval(() => {
+        timeLeft--;
+        
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            autoSubmitTest();
+            return;
+        }
+        
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        document.getElementById('time-display').textContent = 
+            minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
+        
+        // Warning when less than 5 minutes
+        if (timeLeft <= 300) {
+            document.getElementById('timer').style.background = 'rgba(255, 0, 0, 0.3)';
+        }
+    }, 1000);
+}
+
+function selectAnswer(testId, questionId, answer, questionNum) {
+    // Remove selection from all options in current question
+    const currentCard = document.getElementById('question-' + questionNum);
+    currentCard.querySelectorAll('.option-btn').forEach(btn => {
+        btn.classList.remove('selected');
+        btn.classList.remove('correct');
+        btn.classList.remove('incorrect');
+    });
+    
+    // Add selection to clicked option
+    const selectedBtn = event.target.closest('.option-btn');
+    selectedBtn.classList.add('selected');
+    
+    // Store answer
+    answers[questionNum] = {
+        questionId: questionId,
+        answer: answer
+    };
+    
+    // Submit answer to backend
+    fetch('/submit-answer/' + testId + '/' + questionId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ answer: answer })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Mark as answered
+            document.querySelector('.question-dot[data-question="' + questionNum + '"]').classList.add('answered');
+            if (data.is_correct) {
+                selectedBtn.classList.add('correct');
+            } else {
+                selectedBtn.classList.add('incorrect');
+                if (data.correct_answer) {
+                    const correctBtn = currentCard.querySelector('.option-btn[data-answer="' + data.correct_answer + '"]');
+                    if (correctBtn) {
+                        correctBtn.classList.add('correct');
+                    }
+                }
+            }
+            updateStats();
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function nextQuestion() {
+    if (currentQuestion < totalQuestions) {
+        document.getElementById('question-' + currentQuestion).style.display = 'none';
+        currentQuestion++;
+        document.getElementById('question-' + currentQuestion).style.display = 'block';
+        updateNavigator();
+        updateProgress();
+    }
+}
+
+function previousQuestion() {
+    if (currentQuestion > 1) {
+        document.getElementById('question-' + currentQuestion).style.display = 'none';
+        currentQuestion--;
+        document.getElementById('question-' + currentQuestion).style.display = 'block';
+        updateNavigator();
+        updateProgress();
+    }
+}
+
+function goToQuestion(questionNum) {
+    document.getElementById('question-' + currentQuestion).style.display = 'none';
+    currentQuestion = questionNum;
+    document.getElementById('question-' + currentQuestion).style.display = 'block';
+    updateNavigator();
+    updateProgress();
+}
+
+function updateNavigator() {
+    document.querySelectorAll('.question-dot').forEach(dot => {
+        dot.classList.remove('current');
+    });
+    document.querySelector('.question-dot[data-question="' + currentQuestion + '"]').classList.add('current');
+}
+
+function updateProgress() {
+    const progress = (currentQuestion / totalQuestions) * 100;
+    document.getElementById('progress-fill').style.width = progress + '%';
+}
+
+function updateStats() {
+    const answeredCount = Object.keys(answers).length;
+    const remainingCount = totalQuestions - answeredCount;
+    
+    document.getElementById('answered-count').textContent = answeredCount;
+    document.getElementById('remaining-count').textContent = remainingCount;
+}
+
+function submitTest(testId, isAutoSubmit = false) {
+    const answeredCount = Object.keys(answers).length;
+    
+    if (!isAutoSubmit && answeredCount < totalQuestions) {
+        if (!confirm('You have answered ' + answeredCount + ' out of ' + totalQuestions + ' questions. Are you sure you want to submit?')) {
+            return;
+        }
+    }
+    
+    fetch('/finish-test/' + testId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (isAutoSubmit) {
+                // Redirect to candidate dashboard for auto-submissions
+                window.location.href = '/candidate-dashboard';
+            } else {
+                showResult(data);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (!isAutoSubmit) {
+            alert('Error submitting test. Please try again.');
+        }
+    });
+}
+
+function autoSubmitTest() {
+    alert('Time is up! Your test will be submitted automatically.');
+    const testId = {{ test.id }};
+    submitTest(testId);
+}
+
+function showResult(data) {
+    document.getElementById('score-display').textContent = data.obtained_marks + '/' + data.total_marks;
+    document.getElementById('percentage-display').textContent = data.percentage + '%';
+    document.getElementById('correct-display').textContent = data.correct_count + ' out of ' + data.total_questions + ' correct';
+    
+    // Show skill gaps if available
+    if (data.skill_gaps && data.skill_gaps.length > 0) {
+        const skillGapHtml = '<div class="alert alert-warning mt-3"><strong><i class="bi bi-exclamation-triangle me-2"></i>Skills needing improvement:</strong><ul class="mb-0 mt-2">' + 
+            data.skill_gaps.map(function(skill) { return '<li>' + skill + '</li>'; }).join('') + 
+            '</ul></div>';
+        document.getElementById('result-body').insertAdjacentHTML('beforeend', skillGapHtml);
+    }
+    
+    // Add button to view detailed analysis
+    const analysisBtn = '<a href="/skill-gap-analysis/' + {{ test_id }} + '" class="btn btn-primary w-100 mt-3"><i class="bi bi-graph-up me-2"></i>View Detailed Skill Gap Analysis & Course Recommendations</a>';
+    document.getElementById('result-body').insertAdjacentHTML('beforeend', analysisBtn);
+    
+    const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
+    resultModal.show();
+}
+
+// Prevent page refresh/navigation during test
+window.addEventListener('beforeunload', function (e) {
+    e.preventDefault();
+    e.returnValue = '';
+});
+
+// Tab switch detection and prevention
+let tabSwitchCount = 0;
+const maxTabSwitches = 3;
+let warningModal;
+
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+        // User switched tab or minimized window
+        tabSwitchCount++;
+        
+        if (tabSwitchCount === 1) {
+            showTabSwitchWarning('Warning! Tab switching detected.\nPlease stay on this tab during the test.\n\nViolations: ' + tabSwitchCount + '/' + maxTabSwitches);
+        } else if (tabSwitchCount === 2) {
+            showTabSwitchWarning('⚠️ Second Warning!\nTab switching detected again.\n\nIf you switch tabs one more time, your test will be automatically submitted.\n\nViolations: ' + tabSwitchCount + '/' + maxTabSwitches);
+        } else if (tabSwitchCount >= maxTabSwitches) {
+            // Show brief warning then redirect immediately
+            showTabSwitchWarning('❌ Test Violation!\nYou have switched tabs ' + tabSwitchCount + ' times.\n\nRedirecting to dashboard...');
+            
+            // Close warning and redirect after 2 seconds
+            setTimeout(function() {
+                const testId = {{ test.id }};
+                // Submit test and redirect
+                fetch('/finish-test/' + testId, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Immediately redirect to dashboard
+                    window.location.href = '/candidate-dashboard';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    window.location.href = '/candidate-dashboard';
+                });
+            }, 2000);
+        }
+        
+        // Log tab switch to backend
+        logTabSwitch({{ test.id }});
+    }
+});
+
+function showTabSwitchWarning(message) {
+    // Remove existing warning if any
+    const existingWarning = document.getElementById('tab-switch-warning');
+    if (existingWarning) {
+        existingWarning.remove();
+    }
+    
+    // Create warning overlay
+    const warningDiv = document.createElement('div');
+    warningDiv.id = 'tab-switch-warning';
+    warningDiv.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    const warningContent = document.createElement('div');
+    warningContent.style.cssText = `
+        background: white;
+        padding: 40px;
+        border-radius: 15px;
+        max-width: 500px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    `;
+    
+    const icon = tabSwitchCount >= maxTabSwitches ? '❌' : '⚠️';
+    const color = tabSwitchCount >= maxTabSwitches ? '#dc3545' : '#ff6b35';
+    
+    warningContent.innerHTML = `
+        <div style="font-size: 60px; margin-bottom: 20px;">${icon}</div>
+        <h3 style="color: ${color}; margin-bottom: 20px; font-weight: 700;">Tab Switch Detected!</h3>
+        <p style="white-space: pre-line; font-size: 16px; line-height: 1.8; color: #333;">${message}</p>
+        ${tabSwitchCount < maxTabSwitches ? '<button onclick="closeTabWarning()" style="margin-top: 30px; padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">I Understand - Continue Test</button>' : '<p style="color: #666; margin-top: 20px;">Submitting test in 3 seconds...</p>'}
+    `;
+    
+    warningDiv.appendChild(warningContent);
+    document.body.appendChild(warningDiv);
+}
+
+function closeTabWarning() {
+    const warning = document.getElementById('tab-switch-warning');
+    if (warning) {
+        warning.remove();
+    }
+}
+
+function logTabSwitch(testId) {
+    fetch('/log-tab-switch/' + testId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            switch_count: tabSwitchCount
+        })
+    });
+}
+
+// Disable right-click during test
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+});
+
+// Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+document.addEventListener('keydown', function(e) {
+    // F12
+    if (e.key === 'F12') {
+        e.preventDefault();
+        return false;
+    }
+    // Ctrl+Shift+I (DevTools)
+    if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+        e.preventDefault();
+        return false;
+    }
+    // Ctrl+Shift+J (Console)
+    if (e.ctrlKey && e.shiftKey && e.key === 'J') {
+        e.preventDefault();
+        return false;
+    }
+    // Ctrl+U (View Source)
+    if (e.ctrlKey && e.key === 'u') {
+        e.preventDefault();
+        return false;
+    }
+});
+
+// Start timer when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    startTimer();
+    updateProgress();
+    
+    // Show initial instruction about tab switching
+    setTimeout(function() {
+        const instruction = document.createElement('div');
+        instruction.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            z-index: 9999;
+            font-size: 14px;
+            animation: slideInRight 0.5s ease;
+        `;
+        instruction.innerHTML = '<i class="bi bi-info-circle me-2"></i><strong>Note:</strong> Tab switching is monitored. Stay on this tab!';
+        document.body.appendChild(instruction);
+        
+        // Remove after 5 seconds
+        setTimeout(function() {
+            instruction.style.animation = 'fadeOut 0.5s ease';
+            setTimeout(function() {
+                instruction.remove();
+            }, 500);
+        }, 5000);
+    }, 1000);
+});
+</script>
+
+<style>
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+</style>
+
+{% endblock %}

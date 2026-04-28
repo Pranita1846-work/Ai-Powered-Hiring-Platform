@@ -1,0 +1,1700 @@
+{% extends "recruiter_dashboard.html" %}
+
+{% block dashboard_content %}
+<div class="container-fluid mt-2">
+    <h3 class="fw-bold mb-4">Scheduled Interviews</h3>
+
+    {% if jobs_grouped %}
+    <div id="jobTitlesSection" class="space-y-3">
+        {% for job in jobs_grouped %}
+        <div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-3">
+            <div class="card-header bg-light py-3 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-3 flex-grow-1">
+                    <i class="bi bi-briefcase text-primary" style="font-size: 1.3rem;"></i>
+                    <div>
+                        <h5 class="mb-0 fw-bold">{{ job.job_title }}</h5>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-see-interviews"
+                        data-job-id="{{ job.job_id }}"
+                        data-job-title="{{ job.job_title }}"
+                        data-interview-count="{{ job.interviews|length }}">
+                    <i class="bi bi-eye me-1"></i>See Interviews (<span class="interview-count">{{ job.interviews|length }}</span>)
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div id="jobInterviewsSection" class="d-none">
+        <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+            <div class="card-header bg-light py-3 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-3">
+                    <button id="backToJobsBtn" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left me-1"></i>Back
+                    </button>
+                    <div>
+                        <h5 class="mb-0 fw-bold" id="selectedJobTitle"></h5>
+                        <small class="text-muted" id="selectedJobSubtitle"></small>
+                    </div>
+                </div>
+                <div>
+                    <button id="scheduleAllInterviewsBtn" class="btn btn-primary btn-sm">
+                        <i class="bi bi-calendar-event me-1"></i>Schedule Interview
+                    </button>
+                </div>
+            </div>
+
+            <div id="roundTabsContainer" style="min-height: 400px;">
+                <ul class="nav nav-tabs border-bottom px-3" id="roundTabs" role="tablist"></ul>
+                <div class="tab-content" id="roundTabsContent"></div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-calendar-x text-muted mb-3" style="font-size: 3rem;"></i>
+        <h5 class="text-muted">No interviews scheduled</h5>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Configure Interview Rounds Modal -->
+<div class="modal fade" id="configureRoundsModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Configure Interview Rounds</h5>
+            </div>
+            <div class="modal-body pt-0">
+                <form id="configureRoundsForm">
+                    <input type="hidden" id="configJobId">
+                    <input type="hidden" id="configAppId">
+                    
+                    <!-- Number of Rounds -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Number of Interview Rounds</label>
+                        <div class="input-group">
+                            <button class="btn btn-outline-secondary" type="button" onclick="decrementRounds()">−</button>
+                            <input type="number" id="totalRounds" class="form-control text-center" value="1" min="1" max="5" onchange="updateRoundNames()">
+                            <button class="btn btn-outline-secondary" type="button" onclick="incrementRounds()">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Round Names -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Round Names</label>
+                        <div id="roundNamesContainer"></div>
+                    </div>
+
+                    <!-- GD (Group Discussion) -->
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="includeGD" onchange="toggleGDOptions()">
+                            <label class="form-check-label" for="includeGD">
+                                <strong>Include Group Discussion (GD)</strong> as a final round after all interviews
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- GD Details (hidden by default) -->
+                    <div id="gdDetails" style="display:none; background-color:#f8f9fa; padding:12px; border-radius:6px; margin-bottom:4px;">
+                        <small class="text-muted">GD will be scheduled as the final round after completing all interview rounds</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="proceedToScheduleInterview()">Configure & Proceed</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Interview Modal -->
+<div class="modal fade" id="scheduleInterviewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Schedule Interview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <form id="scheduleInterviewForm">
+                    <input type="hidden" id="applicationId" name="application_id">
+                    <input type="hidden" id="scheduleJobId" name="job_id">
+                    
+                    <!-- Candidate Info Display -->
+                    <div class="alert alert-light border mb-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">Candidates</small>
+                                <div class="fw-semibold" id="candidateName">Eligible candidates in this job</div>
+                                <div class="small text-muted" id="candidateEmail"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Position</small>
+                                <div class="fw-semibold" id="jobTitle"></div>
+                                <div class="small text-muted" id="scheduleCandidatesCount"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interview Mode Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold mb-3">Interview Mode</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="interview_mode" id="modeOnline" value="online" onchange="toggleModeOptions()">
+                            <label class="btn btn-outline-primary" for="modeOnline">
+                                <i class="bi bi-camera-video me-2"></i>Online
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="interview_mode" id="modeOffline" value="offline" onchange="toggleModeOptions()">
+                            <label class="btn btn-outline-primary" for="modeOffline">
+                                <i class="bi bi-geo-alt me-2"></i>Offline
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Online Interview Options -->
+                    <div id="onlineOptions" style="display:none;">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Platform</label>
+                            <select class="form-select" id="platform" name="platform">
+                                <option value="">Select Platform</option>
+                                <option value="zoom">Zoom</option>
+                                <option value="google_meet">Google Meet</option>
+                                <option value="microsoft_teams">Microsoft Teams</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Meeting Link</label>
+                            <input type="url" class="form-control" id="interviewLink" name="interview_link" placeholder="https://zoom.us/j/...">
+                            <small class="text-muted">Paste the meeting link here</small>
+                        </div>
+                    </div>
+
+                    <!-- Offline Interview Options -->
+                    <div id="offlineOptions" style="display:none;">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Location</label>
+                            <input type="text" class="form-control" id="location" name="location" placeholder="e.g., Conference Room A, Office Address">
+                        </div>
+                    </div>
+
+                    <!-- Date and Time -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Interview Date</label>
+                            <input type="date" class="form-control" id="interviewDate" name="interview_date" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Start Time</label>
+                            <input type="time" class="form-control" id="interviewTime" name="interview_time" required>
+                        </div>
+                    </div>
+
+                    <!-- Scheduling Mode -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold mb-3">Scheduling Method</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="scheduling_mode" id="modeSlot" value="slot-based" onchange="updateSchedulingUI()" checked>
+                            <label class="btn btn-outline-secondary" for="modeSlot">
+                                <i class="bi bi-clock-history me-2"></i>Slot-Based (Auto-Assign)
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="scheduling_mode" id="modeIndividual" value="individual">
+                            <label class="btn btn-outline-secondary" for="modeIndividual">
+                                <i class="bi bi-person-check me-2"></i>Individual per Candidate
+                            </label>
+                        </div>
+                        <small class="text-muted d-block mt-2">
+                            <strong>Slot-Based:</strong> Each candidate gets auto-assigned consecutive time slots<br>
+                            <strong>Individual:</strong> Each candidate gets the same start time (for group interviews)
+                        </small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Duration per Candidate (minutes)</label>
+                        <input type="number" class="form-control" id="slotDuration" name="slot_duration" min="5" step="5" value="30" required>
+                        <small class="text-muted" id="slotDurationHint">Each candidate will be auto-assigned consecutive time slots. Ensure total duration fits before business day ends.</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Maximum End Time (Do Not Schedule After)</label>
+                        <input type="time" class="form-control" id="maxEndTime" name="max_end_time" value="18:00" required>
+                        <small class="text-muted">Interviews will not be scheduled after this time to maintain professionalism.</small>
+                    </div>
+
+                    <div class="mb-4" id="schedulePreviewBox" style="display:none;">
+                        <div class="alert alert-info mb-0">
+                            <strong>Schedule Preview:</strong><br>
+                            <small id="schedulePreviewText"></small>
+                        </div>
+                    </div>
+
+                    <!-- Interviewer Name -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Interviewer Name</label>
+                        <input type="text" class="form-control" id="interviewerName" name="interviewer_name" placeholder="Your name">
+                    </div>
+
+                    <!-- Interview Type -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Interview Type</label>
+                        <select class="form-select" id="interviewType" name="interview_type">
+                            <option value="">Select Interview Type</option>
+                            <option value="technical">Technical Round</option>
+                            <option value="hr">HR Round</option>
+                            <option value="manager">Manager Round</option>
+                            <option value="final">Final Round</option>
+                            <option value="group">Group Discussion</option>
+                        </select>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Additional Notes (Optional)</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Any additional instructions or notes for the candidate..."></textarea>
+                    </div>
+
+                    <!-- Send Email Confirmation -->
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="sendEmail" name="send_email" checked>
+                            <label class="form-check-label" for="sendEmail">
+                                Send interview details to candidate email
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitScheduleInterviewBtn" onclick="submitScheduleInterview()">Schedule Interviews</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Next Round Modal -->
+<div class="modal fade" id="scheduleNextRoundModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Schedule Round 2 Interview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <form id="scheduleNextRoundForm">
+                    <input type="hidden" id="nextInterviewId" name="interview_id">
+                    <input type="hidden" id="nextCandidateId" name="candidate_id">
+                    <input type="hidden" id="nextJobId" name="job_id">
+                    
+                    <!-- Candidate Info Display -->
+                    <div class="alert alert-light border mb-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">Candidate</small>
+                                <div class="fw-semibold" id="nextCandidateName"></div>
+                                <div class="small text-muted" id="nextCandidateEmail"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Position</small>
+                                <div class="fw-semibold" id="nextJobTitle"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interview Mode Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold mb-3">Interview Mode</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="next_interview_mode" id="nextModeOnline" value="online" onchange="toggleNextModeOptions()">
+                            <label class="btn btn-outline-primary" for="nextModeOnline">
+                                <i class="bi bi-camera-video me-2"></i>Online
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="next_interview_mode" id="nextModeOffline" value="offline" onchange="toggleNextModeOptions()">
+                            <label class="btn btn-outline-primary" for="nextModeOffline">
+                                <i class="bi bi-geo-alt me-2"></i>Offline
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Online Interview Options -->
+                    <div id="nextOnlineOptions" style="display:none;">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Platform</label>
+                            <select class="form-select" id="nextPlatform" name="platform">
+                                <option value="">Select Platform</option>
+                                <option value="zoom">Zoom</option>
+                                <option value="google_meet">Google Meet</option>
+                                <option value="microsoft_teams">Microsoft Teams</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Meeting Link</label>
+                            <input type="url" class="form-control" id="nextInterviewLink" name="interview_link" placeholder="https://zoom.us/j/...">
+                        </div>
+                    </div>
+
+                    <!-- Offline Interview Options -->
+                    <div id="nextOfflineOptions" style="display:none;">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Location</label>
+                            <input type="text" class="form-control" id="nextLocation" name="location" placeholder="e.g., Conference Room A">
+                        </div>
+                    </div>
+
+                    <!-- Date and Time -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Interview Date</label>
+                            <input type="date" class="form-control" id="nextInterviewDate" name="interview_date" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Interview Time</label>
+                            <input type="time" class="form-control" id="nextInterviewTime" name="interview_time" required>
+                        </div>
+                    </div>
+
+                    <!-- Interviewer Name -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Interviewer Name</label>
+                        <input type="text" class="form-control" id="nextInterviewerName" name="interviewer_name" placeholder="Your name">
+                    </div>
+
+                    <!-- Interview Type -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Interview Round Type</label>
+                        <select class="form-select" id="nextInterviewType" name="interview_type">
+                            <option value="">Select Round Type</option>
+                            <option value="technical">Technical Round</option>
+                            <option value="hr">HR Round</option>
+                            <option value="manager">Manager Round</option>
+                            <option value="final">Final Round</option>
+                        </select>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Additional Notes (Optional)</label>
+                        <textarea class="form-control" id="nextNotes" name="notes" rows="3" placeholder="Any additional instructions..."></textarea>
+                    </div>
+
+                    <!-- Send Email Confirmation -->
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="nextSendEmail" name="send_email" checked>
+                            <label class="form-check-label" for="nextSendEmail">
+                                Send interview details to candidate email
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitScheduleNextRound()">Schedule Round 2</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interview Feedback Modal -->
+<div class="modal fade" id="interviewFeedbackModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Interview Feedback - <span id="feedbackCandidateName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="feedbackInterviewId">
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="technicalScore" class="form-label">Technical Score (0-10)</label>
+                        <input type="number" class="form-control" id="technicalScore" min="0" max="10" step="0.5" value="5">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="communicationScore" class="form-label">Communication Score (0-10)</label>
+                        <input type="number" class="form-control" id="communicationScore" min="0" max="10" step="0.5" value="5">
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="problemSolvingScore" class="form-label">Problem Solving (0-10)</label>
+                        <input type="number" class="form-control" id="problemSolvingScore" min="0" max="10" step="0.5" value="5">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="culturalFitScore" class="form-label">Cultural Fit (0-10)</label>
+                        <input type="number" class="form-control" id="culturalFitScore" min="0" max="10" step="0.5" value="5">
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="strengths" class="form-label">Strengths</label>
+                    <textarea class="form-control" id="strengths" rows="2" placeholder="What are the candidate's key strengths?"></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="weaknesses" class="form-label">Weaknesses</label>
+                    <textarea class="form-control" id="weaknesses" rows="2" placeholder="Any areas for improvement?"></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="recommendation" class="form-label">Recommendation</label>
+                    <select class="form-select" id="recommendation">
+                        <option value="Pending">Pending</option>
+                        <option value="Strong Yes">Strong Yes</option>
+                        <option value="Yes">Yes</option>
+                        <option value="Maybe">Maybe</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="detailedFeedback" class="form-label">Detailed Feedback</label>
+                    <textarea class="form-control" id="detailedFeedback" rows="3" placeholder="Additional comments..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="submitFeedbackBtn">Submit Feedback</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Group Discussion Feedback Modal -->
+<div class="modal fade" id="gdFeedbackModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Group Discussion Feedback - <span id="gdFeedbackCandidateName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="gdFeedbackCandidateId">
+                <input type="hidden" id="gdFeedbackJobId">
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="leadershipScore" class="form-label">Leadership Score (0-10)</label>
+                        <input type="number" class="form-control" id="leadershipScore" min="0" max="10" step="0.5" value="5">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="taskCommunicationScore" class="form-label">Communication Score (0-10)</label>
+                        <input type="number" class="form-control" id="taskCommunicationScore" min="0" max="10" step="0.5" value="5">
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="teamworkScore" class="form-label">Teamwork Score (0-10)</label>
+                        <input type="number" class="form-control" id="teamworkScore" min="0" max="10" step="0.5" value="5">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="criticalThinkingScore" class="form-label">Critical Thinking (0-10)</label>
+                        <input type="number" class="form-control" id="criticalThinkingScore" min="0" max="10" step="0.5" value="5">
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="gdFeedback" class="form-label">Feedback</label>
+                    <textarea class="form-control" id="gdFeedback" rows="3" placeholder="Detailed feedback about the group discussion performance..."></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="gdResult" class="form-label">Result</label>
+                    <select class="form-select" id="gdResult">
+                        <option value="Pending">Pending</option>
+                        <option value="Excellent">Excellent</option>
+                        <option value="Good">Good</option>
+                        <option value="Average">Average</option>
+                        <option value="Poor">Poor</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="submitGDFeedbackBtn">Submit GD Feedback</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Bootstrap modals should be mounted under <body> to avoid clipping/stacking issues
+document.addEventListener('DOMContentLoaded', function () {
+    const modalIds = [
+        'configureRoundsModal',
+        'scheduleInterviewModal',
+        'scheduleNextRoundModal',
+        'interviewFeedbackModal',
+        'gdFeedbackModal'
+    ];
+
+    modalIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el && el.parentElement !== document.body) {
+            document.body.appendChild(el);
+        }
+    });
+});
+
+function toggleModeOptions() {
+    const mode = document.querySelector('input[name="interview_mode"]:checked').value;
+    document.getElementById('onlineOptions').style.display = mode === 'online' ? 'block' : 'none';
+    document.getElementById('offlineOptions').style.display = mode === 'offline' ? 'block' : 'none';
+}
+
+function updateSchedulingUI() {
+    const mode = document.querySelector('input[name="scheduling_mode"]:checked').value;
+    const slotDurationDiv = document.querySelector('.mb-4:has(#slotDuration)');
+    const slotHint = document.getElementById('slotDurationHint');
+    
+    if (mode === 'slot-based') {
+        slotDurationDiv.style.display = 'block';
+        slotHint.textContent = 'Each candidate will be auto-assigned consecutive time slots. Ensure total duration fits before business day ends.';
+    } else {
+        slotDurationDiv.style.display = 'block';
+        slotHint.textContent = 'All candidates will be interviewed at the same start time (for group discussions or parallel interviews).';
+    }
+}
+
+function toggleNextModeOptions() {
+    const mode = document.querySelector('input[name="next_interview_mode"]:checked').value;
+    document.getElementById('nextOnlineOptions').style.display = mode === 'online' ? 'block' : 'none';
+    document.getElementById('nextOfflineOptions').style.display = mode === 'offline' ? 'block' : 'none';
+}
+
+function scheduleNextRound(interviewId, candidateId, jobId, candidateName, candidateEmail, jobTitle) {
+    // Populate the form with candidate/interview info
+    document.getElementById('nextInterviewId').value = interviewId;
+    document.getElementById('nextCandidateId').value = candidateId;
+    document.getElementById('nextJobId').value = jobId;
+    document.getElementById('nextCandidateName').textContent = candidateName;
+    document.getElementById('nextCandidateEmail').textContent = candidateEmail;
+    document.getElementById('nextJobTitle').textContent = jobTitle;
+    
+    // Reset form
+    document.getElementById('scheduleNextRoundForm').reset();
+    document.getElementById('nextOnlineOptions').style.display = 'none';
+    document.getElementById('nextOfflineOptions').style.display = 'none';
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('scheduleNextRoundModal'));
+    modal.show();
+}
+
+function openIndividualScheduleModal(interview) {
+    if (!interview) return;
+    if (typeof interview === 'string') {
+        try {
+            interview = JSON.parse(interview);
+        } catch (e) {
+            try {
+                interview = JSON.parse(decodeURIComponent(interview));
+            } catch (err) {
+                return;
+            }
+        }
+    }
+
+    document.getElementById('applicationId').value = interview.id || '';
+    document.getElementById('scheduleJobId').value = interview.job_id || '';
+    document.getElementById('candidateName').textContent = interview.candidate_name || 'Candidate';
+    document.getElementById('candidateEmail').textContent = interview.candidate_email || '';
+    document.getElementById('jobTitle').textContent = interview.job_title || 'Job';
+    document.getElementById('scheduleCandidatesCount').textContent = '1 candidate selected for scheduling';
+
+    document.getElementById('scheduleInterviewForm').reset();
+    document.getElementById('applicationId').value = interview.id || '';
+    document.getElementById('scheduleJobId').value = interview.job_id || '';
+    document.querySelector('input[name="interview_mode"][value="online"]').checked = true;
+    document.querySelector('input[name="scheduling_mode"][value="individual"]').checked = true;
+    toggleModeOptions();
+    updateSchedulingUI();
+
+    window.scheduleInterviewContext = {
+        mode: 'individual',
+        applicationId: interview.id,
+        candidateName: interview.candidate_name,
+        jobTitle: interview.job_title
+    };
+
+    const submitBtn = document.getElementById('submitScheduleInterviewBtn');
+    if (submitBtn) submitBtn.textContent = 'Schedule Candidate';
+
+    const modal = new bootstrap.Modal(document.getElementById('scheduleInterviewModal'));
+    modal.show();
+}
+
+// Handle schedule next round button click
+document.querySelectorAll('.btn-schedule-next-round').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const interviewId = this.getAttribute('data-interview-id');
+        const candidateId = this.getAttribute('data-candidate-id');
+        const jobId = this.getAttribute('data-job-id');
+        const candidateName = this.getAttribute('data-candidate-name');
+        const candidateEmail = this.getAttribute('data-candidate-email');
+        const jobTitle = this.getAttribute('data-job-title');
+        
+        scheduleNextRound(interviewId, candidateId, jobId, candidateName, candidateEmail, jobTitle);
+    });
+});
+
+async function submitScheduleInterview() {
+    const jobId = document.getElementById('scheduleJobId').value;
+    const applicationId = document.getElementById('applicationId').value;
+    
+    if (!jobId) {
+        alert('Job ID is missing');
+        return;
+    }
+
+    const modeSelected = document.querySelector('input[name="interview_mode"]:checked');
+    const mode = modeSelected ? modeSelected.value : null;
+    if (!mode) {
+        alert('Please select interview mode');
+        return;
+    }
+
+    const date = document.getElementById('interviewDate').value;
+    const time = document.getElementById('interviewTime').value;
+    const maxEndTime = document.getElementById('maxEndTime').value;
+    
+    if (!date || !time) {
+        alert('Please select date and time');
+        return;
+    }
+
+    const slotDuration = parseInt(document.getElementById('slotDuration').value || '0', 10);
+    if (!slotDuration || slotDuration < 5) {
+        alert('Please enter valid slot duration (minimum 5 minutes)');
+        return;
+    }
+
+    const schedulingMode = document.querySelector('input[name="scheduling_mode"]:checked').value;
+    
+    // Validate professional scheduling - check if slots overflow past max end time
+    const job = jobsData[jobId];
+    const eligible = job ? (job.interviews || []).filter(i => i.status !== 'Selected' && i.status !== 'Rejected') : [];
+    
+    if (!applicationId && schedulingMode === 'slot-based' && eligible.length > 0) {
+        const [startHour, startMin] = time.split(':').map(Number);
+        const [endHour, endMin] = maxEndTime.split(':').map(Number);
+        
+        const startMinTotal = startHour * 60 + startMin;
+        const endMinTotal = endHour * 60 + endMin;
+        const totalDuration = eligible.length * slotDuration;
+        const lastSlotEnd = startMinTotal + totalDuration;
+        
+        if (lastSlotEnd > endMinTotal) {
+            const overflowMins = lastSlotEnd - endMinTotal;
+            const overflowHours = Math.floor(overflowMins / 60);
+            const overflowMins2 = overflowMins % 60;
+            alert(`⚠️ Professional Scheduling Alert:\n\nWith ${eligible.length} candidates at ${slotDuration}min each, the last interview would extend ${overflowHours}h ${overflowMins2}min past your maximum end time (${maxEndTime}).\n\nPlease:\n1. Increase maximum end time, OR\n2. Reduce slot duration, OR\n3. Schedule in separate batches`);
+            return;
+        }
+    }
+
+    const roundConfig = window.roundConfig || { totalRounds: 1, rounds: [{ round_number: 1, round_name: 'Round 1' }] };
+    const selectedRound = roundConfig.rounds && roundConfig.rounds.length ? roundConfig.rounds[0] : { round_number: 1, round_name: 'Round 1' };
+    const payload = {
+        interview_mode: mode,
+        interview_date: date,
+        interview_time: time,
+        interview_link: document.getElementById('interviewLink').value || null,
+        location: document.getElementById('location').value || null,
+        platform: document.getElementById('platform').value || null,
+        interviewer_name: document.getElementById('interviewerName').value,
+        interview_type: document.getElementById('interviewType').value,
+        notes: document.getElementById('notes').value,
+        send_email: document.getElementById('sendEmail').checked,
+        slot_duration: schedulingMode === 'slot-based' ? slotDuration : 0,
+        scheduling_mode: schedulingMode,
+        interview_round: selectedRound.round_number,
+        round_name: selectedRound.round_name,
+        total_rounds: (roundConfig.rounds && roundConfig.rounds.length) ? roundConfig.rounds.length : (roundConfig.totalRounds || 1),
+        include_gd: !!roundConfig.includeGD
+    };
+
+    try {
+        let response;
+        if (applicationId) {
+            response = await fetch(`/schedule-interview/${applicationId}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+        } else {
+            response = await fetch(`/schedule-interviews-bulk/${jobId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+        }
+
+        let result;
+        if (!applicationId && response.status === 404) {
+            result = await scheduleAllUsingSingleEndpoint(jobId, payload);
+        } else {
+            const resultText = await response.text();
+            try {
+                result = JSON.parse(resultText);
+            } catch (e) {
+                result = {
+                    success: false,
+                    error: 'Server returned invalid response while scheduling interviews'
+                };
+            }
+        }
+
+        if (result.success) {
+            alert(applicationId ? 'Interview scheduled successfully for the selected candidate!' : `Interviews scheduled successfully for ${result.scheduled_count || 0} candidate(s)!`);
+            document.getElementById('scheduleInterviewForm').reset();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('scheduleInterviewModal'));
+            modal.hide();
+            window.scheduleInterviewContext = { mode: 'bulk' };
+            const submitBtn = document.getElementById('submitScheduleInterviewBtn');
+            if (submitBtn) submitBtn.textContent = 'Schedule Interviews';
+            location.reload();
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to schedule interview');
+    }
+}
+
+function getSlotDateTime(baseDate, baseTime, minutesToAdd) {
+    const scheduled = new Date(`${baseDate}T${baseTime}:00`);
+    scheduled.setMinutes(scheduled.getMinutes() + minutesToAdd);
+
+    const year = scheduled.getFullYear();
+    const month = String(scheduled.getMonth() + 1).padStart(2, '0');
+    const day = String(scheduled.getDate()).padStart(2, '0');
+    const hours = String(scheduled.getHours()).padStart(2, '0');
+    const minutes = String(scheduled.getMinutes()).padStart(2, '0');
+
+    return {
+        date: `${year}-${month}-${day}`,
+        time: `${hours}:${minutes}`
+    };
+}
+
+async function scheduleAllUsingSingleEndpoint(jobId, payload) {
+    const job = jobsData[jobId];
+    if (!job || !job.interviews || !job.interviews.length) {
+        return { success: false, error: 'No candidates found for this job' };
+    }
+
+    const eligible = job.interviews.filter(interview => interview.status !== 'Selected' && interview.status !== 'Rejected');
+    if (!eligible.length) {
+        return { success: false, error: 'No eligible candidates available for scheduling' };
+    }
+
+    let scheduledCount = 0;
+    const errors = [];
+    const schedulingMode = payload.scheduling_mode || 'slot-based';
+
+    for (let index = 0; index < eligible.length; index++) {
+        const application = eligible[index];
+        
+        // Determine the time for this candidate
+        let slot;
+        if (schedulingMode === 'slot-based') {
+            // Each candidate gets a sequential slot
+            slot = getSlotDateTime(payload.interview_date, payload.interview_time, index * payload.slot_duration);
+        } else {
+            // All candidates get the same start time (individual/group)
+            slot = getSlotDateTime(payload.interview_date, payload.interview_time, 0);
+        }
+        
+        const perCandidatePayload = {
+            ...payload,
+            interview_date: slot.date,
+            interview_time: slot.time
+        };
+
+        try {
+            const response = await fetch(`/schedule-interview/${application.id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(perCandidatePayload)
+            });
+
+            const text = await response.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                data = { success: false, error: 'Invalid server response' };
+            }
+
+            if (response.ok && data.success) {
+                scheduledCount += 1;
+            } else {
+                errors.push(`${application.candidate_name}: ${data.error || 'Failed to schedule'}`);
+            }
+        } catch (error) {
+            errors.push(`${application.candidate_name}: ${error.message || 'Request failed'}`);
+        }
+    }
+
+    if (scheduledCount > 0 && errors.length === 0) {
+        return {
+            success: true,
+            scheduled_count: scheduledCount
+        };
+    }
+
+    if (scheduledCount > 0 && errors.length > 0) {
+        return {
+            success: false,
+            scheduled_count: scheduledCount,
+            error: `Scheduled ${scheduledCount} candidate(s), but some failed: ${errors.join('; ')}`
+        };
+    }
+
+    return {
+        success: false,
+        scheduled_count: 0,
+        error: errors.join('; ') || 'Failed to schedule interviews'
+    };
+}
+
+async function submitScheduleNextRound() {
+    const modal = document.getElementById('scheduleNextRoundModal');
+    const applicationId = modal.getAttribute('data-application-id');
+    const nextRound = parseInt(modal.getAttribute('data-next-round'), 10);
+    const nextRoundName = modal.getAttribute('data-next-round-name');
+    const totalRounds = parseInt(modal.getAttribute('data-total-rounds'), 10);
+    
+    if (!applicationId) {
+        alert('Application ID is missing');
+        return;
+    }
+
+    const mode = document.querySelector('input[name="next_interview_mode"]:checked');
+    if (!mode) {
+        alert('Please select interview mode');
+        return;
+    }
+
+    const date = document.getElementById('nextInterviewDate').value;
+    const time = document.getElementById('nextInterviewTime').value;
+    if (!date || !time) {
+        alert('Please select date and time');
+        return;
+    }
+
+    try {
+        const payload = {
+            interview_mode: mode.value,
+            interview_date: date,
+            interview_time: time,
+            interview_link: document.getElementById('nextInterviewLink').value || null,
+            location: document.getElementById('nextLocation').value || null,
+            platform: document.getElementById('nextPlatform')?.value || null,
+            interviewer_name: document.getElementById('nextInterviewerName').value,
+            interview_type: document.getElementById('nextInterviewType').value,
+            interview_round: nextRound,
+            round_name: nextRoundName,
+            total_rounds: totalRounds,
+            notes: document.getElementById('nextNotes').value,
+            send_email: document.getElementById('nextSendEmail').checked
+        };
+
+        const response = await fetch(`/schedule-interview/${applicationId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            alert(`${nextRoundName} scheduled successfully!`);
+            document.getElementById('scheduleNextRoundForm').reset();
+            const bsModal = bootstrap.Modal.getInstance(modal);
+            bsModal.hide();
+            location.reload();
+        } else {
+            alert('Error: ' + (result.error || 'Failed to schedule next round'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to schedule next round');
+    }
+}
+
+// Interview Feedback Modal
+function openFeedbackModal(interviewId, candidateName) {
+    document.getElementById('feedbackInterviewId').value = interviewId;
+    document.getElementById('feedbackCandidateName').textContent = candidateName;
+    const modal = new bootstrap.Modal(document.getElementById('interviewFeedbackModal'));
+    modal.show();
+}
+
+function submitFeedback(interviewId, candidateName) {
+    openFeedbackModal(interviewId, candidateName);
+}
+
+async function selectForNextRound(applicationId, candidateId, currentRound, jobId) {
+    const nextRound = parseInt(currentRound, 10) + 1;
+
+    // Open modal for recruiter to set new interview date/time
+    const job = jobsData[jobId] || {};
+    const interviews = job.interviews || [];
+    const currentInterview = interviews.find(i => String(i.id) === String(applicationId) && String(i.candidate_id) === String(candidateId));
+
+    if (!currentInterview) {
+        alert('Interview data not found');
+        return;
+    }
+
+    const configuredTotalRounds = (window.roundConfig && Array.isArray(window.roundConfig.rounds) && window.roundConfig.rounds.length)
+        ? window.roundConfig.rounds.length
+        : Number(currentInterview?.total_rounds || 1);
+    const nextRoundName = (window.roundConfig && Array.isArray(window.roundConfig.rounds))
+        ? ((window.roundConfig.rounds.find(r => Number(r.round_number) === nextRound) || {}).round_name || `Round ${nextRound}`)
+        : `Round ${nextRound}`;
+
+    // Open the scheduling modal
+    openScheduleNextRoundModal({
+        applicationId: applicationId,
+        candidateId: candidateId,
+        candidateName: currentInterview.candidate_name,
+        candidateEmail: currentInterview.candidate_email,
+        jobId: jobId,
+        jobTitle: currentInterview.job_title,
+        currentRound: currentRound,
+        nextRound: nextRound,
+        nextRoundName: nextRoundName,
+        totalRounds: configuredTotalRounds
+    });
+}
+
+function openScheduleNextRoundModal(data) {
+    // Update modal title
+    document.querySelector('#scheduleNextRoundModal .modal-title').textContent = `Schedule ${data.nextRoundName} Interview`;
+    
+    // Store data in hidden fields
+    document.getElementById('nextInterviewId').value = data.applicationId;
+    document.getElementById('nextCandidateId').value = data.candidateId;
+    document.getElementById('nextJobId').value = data.jobId;
+    
+    // Store round info in data attributes
+    const modal = document.getElementById('scheduleNextRoundModal');
+    modal.setAttribute('data-application-id', data.applicationId);
+    modal.setAttribute('data-next-round', data.nextRound);
+    modal.setAttribute('data-next-round-name', data.nextRoundName);
+    modal.setAttribute('data-total-rounds', data.totalRounds);
+    
+    // Display candidate info
+    document.getElementById('nextCandidateName').textContent = data.candidateName;
+    document.getElementById('nextCandidateEmail').textContent = data.candidateEmail;
+    document.getElementById('nextJobTitle').textContent = data.jobTitle;
+    
+    // Set default date to tomorrow and time to 10:00 AM
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('nextInterviewDate').value = tomorrow.toISOString().slice(0, 10);
+    document.getElementById('nextInterviewTime').value = '10:00';
+    
+    // Set default mode to online
+    document.getElementById('nextModeOnline').checked = true;
+    toggleNextModeOptions();
+    
+    // Set default notes
+    document.getElementById('nextNotes').value = `Advanced from Round ${data.currentRound} to ${data.nextRoundName}`;
+    
+    // Update button text
+    const submitBtn = document.querySelector('#scheduleNextRoundModal .btn-primary');
+    submitBtn.textContent = `Schedule ${data.nextRoundName}`;
+    
+    // Show modal
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+}
+
+// Handle submit feedback button click
+document.querySelectorAll('.btn-submit-feedback').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const interviewId = this.getAttribute('data-interview-id');
+        const candidateName = this.getAttribute('data-candidate-name');
+        openFeedbackModal(interviewId, candidateName);
+    });
+});
+
+// Submit Interview Feedback
+document.getElementById('submitFeedbackBtn')?.addEventListener('click', async function() {
+    const interviewId = document.getElementById('feedbackInterviewId').value;
+    const technicalScore = parseFloat(document.getElementById('technicalScore').value) || 0;
+    const communicationScore = parseFloat(document.getElementById('communicationScore').value) || 0;
+    const problemSolvingScore = parseFloat(document.getElementById('problemSolvingScore').value) || 0;
+    const culturalFitScore = parseFloat(document.getElementById('culturalFitScore').value) || 0;
+    
+    const strengths = document.getElementById('strengths').value;
+    const weaknesses = document.getElementById('weaknesses').value;
+    const recommendation = document.getElementById('recommendation').value;
+    const detailedFeedback = document.getElementById('detailedFeedback').value;
+    
+    try {
+        const response = await fetch(`/submit-interview-feedback/${interviewId}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                technical_score: technicalScore,
+                communication_score: communicationScore,
+                problem_solving_score: problemSolvingScore,
+                cultural_fit_score: culturalFitScore,
+                strengths: strengths,
+                weaknesses: weaknesses,
+                recommendation: recommendation,
+                detailed_feedback: detailedFeedback
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(`Feedback submitted successfully!\nOverall Score: ${data.overall_score}/10`);
+            const modal = bootstrap.Modal.getInstance(document.getElementById('interviewFeedbackModal'));
+            modal.hide();
+            location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'Failed to submit feedback'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to submit feedback');
+    }
+});
+
+// GD Feedback Modal
+function openGDFeedbackModal(candidateId, jobId, candidateName) {
+    document.getElementById('gdFeedbackCandidateId').value = candidateId;
+    document.getElementById('gdFeedbackJobId').value = jobId;
+    document.getElementById('gdFeedbackCandidateName').textContent = candidateName;
+    const modal = new bootstrap.Modal(document.getElementById('gdFeedbackModal'));
+    modal.show();
+}
+
+// Handle GD feedback button click
+document.querySelectorAll('.btn-gd-feedback').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const candidateId = this.getAttribute('data-candidate-id');
+        const jobId = this.getAttribute('data-job-id');
+        const candidateName = this.getAttribute('data-candidate-name');
+        openGDFeedbackModal(candidateId, jobId, candidateName);
+    });
+});
+
+// Submit GD Feedback
+document.getElementById('submitGDFeedbackBtn')?.addEventListener('click', async function() {
+    const candidateId = document.getElementById('gdFeedbackCandidateId').value;
+    const jobId = document.getElementById('gdFeedbackJobId').value;
+    const leadershipScore = parseFloat(document.getElementById('leadershipScore').value) || 0;
+    const taskCommunicationScore = parseFloat(document.getElementById('taskCommunicationScore').value) || 0;
+    const teamworkScore = parseFloat(document.getElementById('teamworkScore').value) || 0;
+    const criticalThinkingScore = parseFloat(document.getElementById('criticalThinkingScore').value) || 0;
+    
+    const feedback = document.getElementById('gdFeedback').value;
+    const result = document.getElementById('gdResult').value;
+    
+    // First, get the GD ID from the database
+    try {
+        const getGDResponse = await fetch(`/get-gd-id/${candidateId}/${jobId}`);
+        const gdData = await getGDResponse.json();
+        
+        if (!gdData.gd_id) {
+            alert('Error: Group discussion record not found');
+            return;
+        }
+        
+        const response = await fetch(`/submit-gd-feedback/${gdData.gd_id}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                leadership_score: leadershipScore,
+                communication_score: taskCommunicationScore,
+                teamwork_score: teamworkScore,
+                critical_thinking_score: criticalThinkingScore,
+                feedback: feedback,
+                result: result
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(`GD Feedback submitted successfully!\nOverall Score: ${data.overall_score}/10`);
+            const modal = bootstrap.Modal.getInstance(document.getElementById('gdFeedbackModal'));
+            modal.hide();
+            location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'Failed to submit GD feedback'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to submit GD feedback');
+    }
+});
+
+// Final Selection
+function finalSelect(candidateId, jobId, candidateName) {
+    const decision = confirm(`Make final selection for ${candidateName}?\n\nClick OK to SELECT or Cancel to REJECT`);
+    let rejectionReason = '';
+    
+    if (!decision) {
+        rejectionReason = prompt('Please provide a reason for rejection (optional):') || 'Not suitable';
+    }
+    
+    try {
+        fetch(`/final-selection/${candidateId}/${jobId}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                decision: decision ? 'select' : 'reject',
+                rejection_reason: rejectionReason
+            })
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Failed to process selection'));
+            }
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to process selection');
+    }
+}
+
+// Handle final select button click
+document.querySelectorAll('.btn-final-select').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const candidateId = this.getAttribute('data-candidate-id');
+        const jobId = this.getAttribute('data-job-id');
+        const candidateName = this.getAttribute('data-candidate-name');
+        finalSelect(candidateId, jobId, candidateName);
+    });
+});
+
+// Job-wise interview grouping JavaScript
+const jobsData = {
+    {% for job in jobs_grouped %}
+    "{{ job.job_id }}": {
+        "job_id": "{{ job.job_id }}",
+        "job_title": "{{ job.job_title }}",
+        "interviews": [
+            {% for interview in job.interviews %}
+            {
+                "id": "{{ interview.id }}",
+                "candidate_id": "{{ interview.candidate_id }}",
+                "candidate_name": "{{ interview.candidate_name }}",
+                "candidate_email": "{{ interview.candidate_email }}",
+                "status": "{{ interview.status }}",
+                "interview_id": "{{ interview.interview_id if interview.interview_id else '' }}",
+                "interview_mode": "{{ interview.interview_mode if interview.interview_mode else '' }}",
+                "interview_date": "{{ interview.interview_date if interview.interview_date else '' }}",
+                "interview_time": "{{ interview.interview_time if interview.interview_time else '' }}",
+                "interview_link": "{{ interview.interview_link if interview.interview_link else '' }}",
+                "location": "{{ interview.location if interview.location else '' }}",
+                "interview_status": "{{ interview.interview_status if interview.interview_status else '' }}",
+                "resume_file": "{{ interview.resume_file if interview.resume_file else '' }}",
+                "interview_round": {{ interview.interview_round if interview.interview_round else 1 }},
+                "round_name": "{{ interview.round_name if interview.round_name else 'Round 1' }}",
+                "total_rounds": {{ interview.total_rounds if interview.total_rounds else 1 }},
+                "job_id": "{{ interview.job_id }}",
+                "job_title": "{{ interview.job_title }}"
+            }{{ "," if not loop.last }}
+            {% endfor %}
+        ]
+    }{{ "," if not loop.last }}
+    {% endfor %}
+};
+
+let selectedJobId = null;
+window.scheduleInterviewContext = { mode: 'bulk' };
+
+function getStoredRoundConfig(jobId) {
+    if (!jobId) return null;
+    try {
+        const saved = localStorage.getItem(`roundConfig_${jobId}`);
+        if (!saved) return null;
+        const parsed = JSON.parse(saved);
+        if (!parsed || !Array.isArray(parsed.rounds) || parsed.rounds.length === 0) return null;
+        return parsed;
+    } catch (e) {
+        return null;
+    }
+}
+
+function saveRoundConfig(jobId, config) {
+    if (!jobId || !config) return;
+    try {
+        localStorage.setItem(`roundConfig_${jobId}`, JSON.stringify(config));
+    } catch (e) {
+        // Ignore localStorage errors silently
+    }
+}
+
+function getStatusBadge(status) {
+    const badges = {
+        'Interview': '<span class="badge bg-warning-subtle text-warning border border-warning-subtle">Interview Scheduled</span>',
+        'Selected': '<span class="badge bg-success-subtle text-success border border-success-subtle">Selected</span>',
+        'Rejected': '<span class="badge bg-danger-subtle text-danger border border-danger-subtle">Rejected</span>'
+    };
+    return badges[status] || `<span class="badge bg-light text-dark border">${status}</span>`;
+}
+
+function getInterviewSortTimestamp(interview) {
+    const datePart = interview?.interview_date || '';
+    const timePart = interview?.interview_time || '';
+    if (!datePart) return 0;
+    const isoValue = `${datePart}T${timePart || '00:00'}:00`;
+    const ts = new Date(isoValue).getTime();
+    return Number.isNaN(ts) ? 0 : ts;
+}
+
+function dedupeRoundInterviews(roundInterviews) {
+    const candidateMap = new Map();
+
+    roundInterviews.forEach((interview) => {
+        const key = String(interview.candidate_id || interview.candidate_email || interview.id);
+        const existing = candidateMap.get(key);
+
+        if (!existing) {
+            candidateMap.set(key, interview);
+            return;
+        }
+
+        const existingInterviewId = Number(existing.interview_id || 0);
+        const currentInterviewId = Number(interview.interview_id || 0);
+
+        if (currentInterviewId > existingInterviewId) {
+            candidateMap.set(key, interview);
+            return;
+        }
+
+        if (currentInterviewId === existingInterviewId) {
+            const existingTs = getInterviewSortTimestamp(existing);
+            const currentTs = getInterviewSortTimestamp(interview);
+            if (currentTs >= existingTs) {
+                candidateMap.set(key, interview);
+            }
+        }
+    });
+
+    return Array.from(candidateMap.values());
+}
+
+function renderInterviews(job) {
+    const roundTabsNav = document.getElementById('roundTabs');
+    const roundTabsContent = document.getElementById('roundTabsContent');
+    roundTabsNav.innerHTML = '';
+    roundTabsContent.innerHTML = '';
+
+    const interviews = job.interviews || [];
+    
+    // Get configured rounds from selected job config or interviews data
+    let roundsArray = [];
+    const storedRoundConfig = getStoredRoundConfig(job.job_id);
+    const effectiveRoundConfig = (window.roundConfig && Array.isArray(window.roundConfig.rounds) && window.roundConfig.rounds.length)
+        ? window.roundConfig
+        : storedRoundConfig;
+    
+    // First, try to get persisted round configuration if it exists
+    if (effectiveRoundConfig && effectiveRoundConfig.rounds && effectiveRoundConfig.rounds.length > 0) {
+        roundsArray = effectiveRoundConfig.rounds.map(round => ({
+            round_number: round.round_number || round,
+            round_name: typeof round === 'string' ? round : (round.round_name || `Round ${round.round_number}`)
+        }));
+    } else {
+        // Otherwise, generate based on interviews data and total_rounds
+        const roundsMap = {};
+        let maxTotalRounds = 1;
+        interviews.forEach(interview => {
+            const roundNum = Number(interview.interview_round || 1);
+            const roundName = interview.round_name || `Round ${roundNum}`;
+            const totalRounds = Number(interview.total_rounds || 1);
+            if (totalRounds > maxTotalRounds) {
+                maxTotalRounds = totalRounds;
+            }
+            if (!roundsMap[roundNum]) {
+                roundsMap[roundNum] = {
+                    round_number: roundNum,
+                    round_name: roundName
+                };
+            }
+        });
+
+        for (let roundNumber = 1; roundNumber <= maxTotalRounds; roundNumber++) {
+            if (!roundsMap[roundNumber]) {
+                roundsMap[roundNumber] = {
+                    round_number: roundNumber,
+                    round_name: `Round ${roundNumber}`
+                };
+            }
+        }
+
+        roundsArray = Object.values(roundsMap).sort((a, b) => Number(a.round_number) - Number(b.round_number));
+    }
+    
+    if (roundsArray.length === 0) {
+        roundTabsContent.innerHTML = '<div class="p-4 text-center text-muted">No interview rounds configured for this job.</div>';
+        return;
+    }
+
+    // Create tabs for all configured rounds
+    roundsArray.forEach((round, index) => {
+        const roundNum = Number(round.round_number);
+        const roundName = round.round_name;
+        const roundId = `round-${roundNum}`;
+        const isActive = index === 0 ? 'active' : '';
+        
+        // Filter interviews for this round
+        const roundInterviewsRaw = interviews.filter(i => Number(i.interview_round || 1) === roundNum);
+        const roundInterviews = dedupeRoundInterviews(roundInterviewsRaw);
+        const candidates = roundInterviews.filter(i => i.status !== 'Rejected' && i.status !== 'Selected').length;
+        
+        // Create tab button
+        const tabButton = document.createElement('button');
+        tabButton.className = `nav-link ${isActive}`;
+        tabButton.setAttribute('data-bs-toggle', 'tab');
+        tabButton.setAttribute('data-bs-target', `#${roundId}`);
+        tabButton.setAttribute('type', 'button');
+        tabButton.setAttribute('role', 'tab');
+        tabButton.textContent = roundName;
+        
+        const badge = document.createElement('span');
+        badge.className = 'badge bg-secondary ms-2';
+        badge.textContent = candidates;
+        tabButton.appendChild(badge);
+        
+        roundTabsNav.appendChild(tabButton);
+        
+        // Create tab content pane
+        const tabPane = document.createElement('div');
+        tabPane.className = `tab-pane fade ${isActive ? 'show active' : ''}`;
+        tabPane.id = roundId;
+        
+        if (roundInterviews.length === 0) {
+            tabPane.innerHTML = '<div class="p-4 text-center text-muted">No interviews scheduled for this round yet.</div>';
+            roundTabsContent.appendChild(tabPane);
+            return;
+        }
+        
+        const tableHTML = `
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-muted small">
+                        <tr>
+                            <th class="ps-4">Candidate</th>
+                            <th class="py-3">Status</th>
+                            <th class="py-3">Interview Mode</th>
+                            <th class="py-3">Resume</th>
+                            <th class="pe-4 text-end">Next Steps</th>
+                        </tr>
+                    </thead>
+                    <tbody id="interviewsTableBody-${roundId}"></tbody>
+                </table>
+            </div>
+        `;
+        
+        tabPane.innerHTML = tableHTML;
+        roundTabsContent.appendChild(tabPane);
+        
+        // Populate table rows
+        const tbody = document.getElementById(`interviewsTableBody-${roundId}`);
+        roundInterviews.forEach(interview => {
+            const statusBadge = getStatusBadge(interview.status);
+            const interviewMode = interview.interview_mode
+                ? `<span class="badge bg-info">${interview.interview_mode}</span>`
+                : '<span class="text-muted small">Not scheduled</span>';
+            const resumeLink = interview.resume_file
+                ? `<a href="{{ url_for('static', filename='uploads/') }}${interview.resume_file}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-file-earmark-pdf"></i> View
+                   </a>`
+                : '<span class="text-muted small">N/A</span>';
+
+            let actionButtons = '';
+            if (interview.status === 'Interview' && interview.interview_mode) {
+                actionButtons = `
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="openIndividualScheduleModal(decodeURIComponent('${encodeURIComponent(JSON.stringify(interview))}'))" title="Schedule or reschedule this candidate individually">
+                        <i class="bi bi-person-plus me-1"></i>Schedule Individual
+                    </button>
+                    <button class="btn btn-sm btn-primary me-1" onclick="submitFeedback('${interview.interview_id}', '${interview.candidate_name}')">
+                        <i class="bi bi-clipboard-check me-1"></i>Submit Feedback
+                    </button>`;
+            } else if (interview.status !== 'Selected' && interview.status !== 'Rejected') {
+                actionButtons = `
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="openIndividualScheduleModal(decodeURIComponent('${encodeURIComponent(JSON.stringify(interview))}'))" title="Schedule this candidate individually">
+                        <i class="bi bi-person-plus me-1"></i>Schedule Individual
+                    </button>`;
+            }
+
+            if (interview.status !== 'Selected' && interview.status !== 'Rejected') {
+                // Check if this is the final round
+                const effectiveTotalRounds = Math.max(Number(interview.total_rounds || 1), Number(roundsArray.length || 1));
+                const isLastRound = Number(interview.interview_round || 1) === effectiveTotalRounds;
+                
+                if (isLastRound) {
+                    // On final round, show "Hire & Send Offer" button
+                    actionButtons += `
+                        <a href="/generate-offer/${interview.id}" class="btn btn-sm btn-success me-1" title="Select candidate and generate offer">
+                            <i class="bi bi-briefcase-check me-1"></i>Hire & Send Offer
+                        </a>
+                        <a href="/update-application/${interview.id}/reject" class="btn btn-sm btn-outline-danger" onclick="return confirm('Mark as Rejected?')">
+                            <i class="bi bi-x-lg me-1"></i>Reject
+                        </a>`;
+                } else {
+                    // On intermediate rounds, show "Select for Next" button
+                    actionButtons += `
+                        <button class="btn btn-sm btn-success me-1" onclick="selectForNextRound('${interview.id}', '${interview.candidate_id}', '${interview.interview_round}', '${interview.job_id}')" title="Move to next round">
+                            <i class="bi bi-check-lg me-1"></i>Select for Next
+                        </button>
+                        <a href="/update-application/${interview.id}/reject" class="btn btn-sm btn-outline-danger" onclick="return confirm('Mark as Rejected?')">
+                            <i class="bi bi-x-lg me-1"></i>Reject
+                        </a>`;
+                }
+            }
+
+            const row = `
+                <tr>
+                    <td class="ps-4">
+                        <div class="fw-semibold text-dark">${interview.candidate_name}</div>
+                        <div class="small text-muted">${interview.candidate_email}</div>
+                    </td>
+                    <td>${statusBadge}</td>
+                    <td>${interviewMode}</td>
+                    <td>${resumeLink}</td>
+                    <td class="text-end pe-4">
+                        ${actionButtons}
+                    </td>
+                </tr>
+            `;
+            tbody.insertAdjacentHTML('beforeend', row);
+        });
+    });
+}
+
+function openBulkScheduleForSelectedJob() {
+    if (!selectedJobId || !jobsData[selectedJobId]) {
+        alert('Please select a job first.');
+        return;
+    }
+
+    const job = jobsData[selectedJobId];
+    const eligibleCandidates = (job.interviews || []).filter(interview => interview.status !== 'Selected' && interview.status !== 'Rejected');
+    if (eligibleCandidates.length === 0) {
+        alert('No eligible candidates available for scheduling in this job.');
+        return;
+    }
+
+    document.getElementById('configJobId').value = selectedJobId;
+    document.getElementById('configAppId').value = eligibleCandidates[0].id;
+
+    document.getElementById('totalRounds').value = 1;
+    document.getElementById('includeGD').checked = false;
+    updateRoundNames();
+    toggleGDOptions();
+
+    window.scheduleData = {
+        appId: eligibleCandidates[0].id,
+        jobId: selectedJobId,
+        candidateName: 'Eligible candidates',
+        candidateEmail: `${eligibleCandidates.length} candidate(s) selected for scheduling`,
+        jobTitle: job.job_title || 'Job'
+    };
+
+    // Clear stale modal artifacts that can trap clicks behind an old backdrop
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('padding-right');
+
+    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('configureRoundsModal'));
+    modal.show();
+}
+
+// Handle See Interviews button click
+document.querySelectorAll('.btn-see-interviews').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const jobId = this.getAttribute('data-job-id');
+        const jobTitle = this.getAttribute('data-job-title');
+        const interviewCount = this.getAttribute('data-interview-count');
+        const job = jobsData[jobId];
+
+        selectedJobId = jobId;
+        window.roundConfig = getStoredRoundConfig(jobId) || null;
+        document.getElementById('selectedJobTitle').textContent = jobTitle;
+        document.getElementById('selectedJobSubtitle').textContent = `${interviewCount} Interview(s)`;
+        renderInterviews(job);
+
+        // Update schedule button state
+        const eligibleCandidates = (job.interviews || []).filter(i => i.status !== 'Selected' && i.status !== 'Rejected');
+        const scheduleAllBtn = document.getElementById('scheduleAllInterviewsBtn');
+        if (scheduleAllBtn) {
+            scheduleAllBtn.disabled = eligibleCandidates.length === 0;
+            if (eligibleCandidates.length === 0) {
+                scheduleAllBtn.title = 'No eligible candidates for scheduling';
+            } else {
+                scheduleAllBtn.title = `Schedule interviews for ${eligibleCandidates.length} candidate(s)`;
+            }
+        }
+
+        document.getElementById('jobTitlesSection').classList.add('d-none');
+        document.getElementById('jobInterviewsSection').classList.remove('d-none');
+    });
+});
+
+// Back to job titles
+document.getElementById('backToJobsBtn')?.addEventListener('click', function() {
+    selectedJobId = null;
+    document.getElementById('jobInterviewsSection').classList.add('d-none');
+    document.getElementById('jobTitlesSection').classList.remove('d-none');
+});
+
+document.getElementById('scheduleAllInterviewsBtn')?.addEventListener('click', function() {
+    openBulkScheduleForSelectedJob();
+});
+
+// ========== ROUND CONFIGURATION FUNCTIONS ==========
+
+// Increment total rounds
+function incrementRounds() {
+    const totalRoundsInput = document.getElementById('totalRounds');
+    if (parseInt(totalRoundsInput.value) < 5) {
+        totalRoundsInput.value = parseInt(totalRoundsInput.value) + 1;
+        updateRoundNames();
+    }
+}
+
+// Decrement total rounds
+function decrementRounds() {
+    const totalRoundsInput = document.getElementById('totalRounds');
+    if (parseInt(totalRoundsInput.value) > 1) {
+        totalRoundsInput.value = parseInt(totalRoundsInput.value) - 1;
+        updateRoundNames();
+    }
+}
+
+// Update round name input fields
+function updateRoundNames() {
+    const totalRounds = parseInt(document.getElementById('totalRounds').value);
+    const container = document.getElementById('roundNamesContainer');
+    container.innerHTML = '';
+    
+    for (let i = 1; i <= totalRounds; i++) {
+        const roundDiv = document.createElement('div');
+        roundDiv.className = 'mb-2';
+        roundDiv.innerHTML = `
+            <label class="form-label small text-muted">Round ${i} Name</label>
+            <input type="text" class="form-control form-control-sm" id="roundName${i}" 
+                   placeholder="e.g., Technical Review, HR Round" 
+                   value="Round ${i}" required>
+        `;
+        container.appendChild(roundDiv);
+    }
+}
+
+// Toggle GD options visibility
+function toggleGDOptions() {
+    const includeGD = document.getElementById('includeGD').checked;
+    const gdDetails = document.getElementById('gdDetails');
+    
+    if (includeGD) {
+        gdDetails.style.display = 'block';
+    } else {
+        gdDetails.style.display = 'none';
+    }
+}
+
+// Proceed to Schedule Interview modal
+function proceedToScheduleInterview() {
+    const totalRounds = parseInt(document.getElementById('totalRounds').value);
+    const includeGD = document.getElementById('includeGD').checked;
+    const roundNames = [];
+    
+    // Collect round names
+    for (let i = 1; i <= totalRounds; i++) {
+        const roundName = document.getElementById(`roundName${i}`).value || `Round ${i}`;
+        roundNames.push({
+            round_number: i,
+            round_name: roundName
+        });
+    }
+    
+    // Add GD if included
+    if (includeGD) {
+        roundNames.push({
+            round_number: totalRounds + 1,
+            round_name: 'Group Discussion'
+        });
+    }
+    
+    // Store round configuration in window object for later use
+    window.roundConfig = {
+        totalRounds: roundNames.length,
+        includeGD: includeGD,
+        rounds: roundNames
+    };
+
+    if (window.scheduleData && window.scheduleData.jobId) {
+        saveRoundConfig(window.scheduleData.jobId, window.roundConfig);
+    }
+    
+    const configureModalEl = document.getElementById('configureRoundsModal');
+    const scheduleModalEl = document.getElementById('scheduleInterviewModal');
+
+    // Populate schedule interview modal data first
+    document.getElementById('applicationId').value = window.scheduleData.appId;
+    document.getElementById('scheduleJobId').value = window.scheduleData.jobId;
+    document.getElementById('candidateName').textContent = window.scheduleData.candidateName;
+    document.getElementById('candidateEmail').textContent = 'Combined scheduling is applied to all eligible candidates in this job.';
+    document.getElementById('jobTitle').textContent = window.scheduleData.jobTitle;
+    const job = jobsData[window.scheduleData.jobId];
+    const eligibleCount = job ? (job.interviews || []).filter(i => i.status !== 'Selected' && i.status !== 'Rejected').length : 0;
+    document.getElementById('scheduleCandidatesCount').textContent = `${eligibleCount} candidate(s) will be scheduled`;
+
+    const showScheduleModalSafely = () => {
+        // Remove stale backdrops that can block interactions
+        document.querySelectorAll('.modal-backdrop').forEach((el, idx, arr) => {
+            if (idx < arr.length - 1) el.remove();
+        });
+
+        // Ensure body state is correct before showing next modal
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('padding-right');
+
+        const scheduleModal = bootstrap.Modal.getOrCreateInstance(scheduleModalEl);
+        scheduleModal.show();
+    };
+
+    // Close configure modal and open schedule modal only after hidden to avoid z-index/backdrop race
+    const configModal = bootstrap.Modal.getOrCreateInstance(configureModalEl);
+    configureModalEl.addEventListener('hidden.bs.modal', function handleHidden() {
+        configureModalEl.removeEventListener('hidden.bs.modal', handleHidden);
+        showScheduleModalSafely();
+    });
+    configModal.hide();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentorship Chat - HireHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --accent: #ec4899;
+            --success: #10b981;
+            --dark: #0f172a;
+            --gray: #64748b;
+            --light: #f8fafc;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-weight: 700;
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .back-btn {
+            padding: 0.5rem 1rem;
+            background: var(--light);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--gray);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .chat-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .chat-header {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .chat-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .chat-header-info {
+            display: flex;
+            gap: 2rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .meeting-info {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1));
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .meeting-info h4 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .meeting-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .meeting-detail {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .join-meeting-btn {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            margin-top: 1rem;
+            transition: background 0.3s;
+        }
+
+        .join-meeting-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .chat-main {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            height: calc(100vh - 300px);
+        }
+
+        .messages-container {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message {
+            display: flex;
+            gap: 0.75rem;
+            max-width: 70%;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.sent {
+            margin-left: auto;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .message-content {
+            background: var(--light);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            flex: 1;
+        }
+
+        .message.sent .message-content {
+            background: var(--primary);
+            color: white;
+        }
+
+        .message-sender {
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .message.sent .message-sender {
+            color: rgba(255,255,255,0.9);
+        }
+
+        .message-text {
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: var(--gray);
+            margin-top: 0.25rem;
+        }
+
+        .message.sent .message-time {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .message-input-container {
+            border-top: 1px solid var(--border);
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        .message-input-form {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: none;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .send-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.3s;
+            font-weight: 600;
+        }
+
+        .send-btn:hover {
+            background: var(--accent);
+        }
+
+        .send-btn:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+        }
+
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+            padding: 3rem;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            opacity: 0.3;
+            margin-bottom: 1rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-accepted {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        /* ================= CHAT PAGE – MOBILE FIXES ================= */
+        
+        @media (max-width: 768px) {
+        
+            /* Top bar */
+            .topbar {
+                padding: 0.75rem 1rem;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+        
+            .brand {
+                font-size: 1.1rem;
+            }
+        
+            /* Chat container spacing */
+            .chat-container {
+                margin: 1rem auto;
+                padding: 0 0.75rem;
+            }
+        
+            /* Fix broken vh height on mobile */
+            .chat-main {
+                height: auto;
+            }
+        
+            .messages-container {
+                min-height: 60vh;
+                max-height: 70vh;
+            }
+        
+            /* Messages readability */
+            .message {
+                max-width: 85%;
+            }
+        
+            .message-avatar {
+                width: 34px;
+                height: 34px;
+                font-size: 0.85rem;
+            }
+        
+            .message-content {
+                font-size: 0.9rem;
+            }
+        
+            /* Input area */
+            .message-input-form {
+                gap: 0.5rem;
+            }
+        
+            .message-input {
+                font-size: 0.9rem;
+            }
+        
+            .send-btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.85rem;
+            }
+        }
+        
+        /* Extra small phones */
+        @media (max-width: 480px) {
+        
+            .messages-container {
+                min-height: 55vh;
+                max-height: 65vh;
+            }
+        
+            .message {
+                max-width: 92%;
+            }
+        
+            .message-input-form {
+                flex-direction: column;
+            }
+        
+            .send-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="topbar">
+        <div class="brand">HireHub</div>
+        <a href="{{ '/candidate-dashboard' if user_role == 'candidate' else '/mentor-dashboard' }}" class="back-btn">
+            <i class="bi bi-arrow-left"></i>
+            Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="chat-container">
+        <!-- Chat Header -->
+        <div class="chat-header">
+            <h2>
+                {% if user_role == 'candidate' %}
+                    Chat with {{ request.mentor_name }}
+                {% else %}
+                    Chat with {{ request.candidate_name }}
+                {% endif %}
+            </h2>
+            <div class="chat-header-info">
+                {% if request.expertise %}
+                <div><i class="bi bi-briefcase"></i> {{ request.expertise }}</div>
+                {% endif %}
+                {% if request.company %}
+                <div><i class="bi bi-building"></i> {{ request.company }}</div>
+                {% endif %}
+                <div><span class="status-badge status-accepted">Active</span></div>
+            </div>
+        </div>
+
+        <!-- Meeting Info (if scheduled) -->
+        {% if meeting %}
+        <div class="meeting-info">
+            <h4><i class="bi bi-calendar-check"></i> Upcoming Meeting</h4>
+            <div class="meeting-details">
+                <div class="meeting-detail">
+                    <i class="bi bi-calendar-event"></i>
+                    <span>{{ meeting.meeting_date }}</span>
+                </div>
+                <div class="meeting-detail">
+                    <i class="bi bi-clock"></i>
+                    <span>{{ meeting.meeting_time }}</span>
+                </div>
+                <div class="meeting-detail">
+                    <i class="bi bi-laptop"></i>
+                    <span>{{ meeting.mode }}</span>
+                </div>
+            </div>
+            {% if meeting.notes %}
+            <div style="margin-top: 0.75rem; color: var(--gray);">
+                <strong>Note:</strong> {{ meeting.notes }}
+            </div>
+            {% endif %}
+            {% if meeting.meeting_link %}
+            <a href="{{ meeting.meeting_link }}" target="_blank" class="join-meeting-btn">
+                <i class="bi bi-camera-video"></i>
+                Join Meeting
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Chat Main Area -->
+        <div class="chat-main">
+            <div class="messages-container">
+                <div class="messages-area" id="messagesArea">
+                    {% if messages and messages|length > 0 %}
+                        {% for msg in messages %}
+                        <div class="message {% if msg.sender_role == user_role %}sent{% else %}received{% endif %}">
+                            <div class="message-avatar">
+                                {{ msg.sender_name[0] if msg.sender_name else 'U' }}
+                            </div>
+                            <div class="message-content">
+                                <div class="message-sender">{{ msg.sender_name or 'Unknown' }}</div>
+                                <div class="message-text">{{ msg.message_text }}</div>
+                                <div class="message-time">{{ msg.created_at.strftime('%b %d, %I:%M %p') if msg.created_at else 'Just now' }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-chat-dots"></i>
+                        <h4>Start the conversation</h4>
+                        <p>Send a message to begin your mentorship journey!</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Message Input -->
+                <div class="message-input-container">
+                    <form class="message-input-form" id="messageForm" onsubmit="sendMessage(event)">
+                        <textarea 
+                            class="message-input" 
+                            id="messageInput" 
+                            placeholder="Type your message..." 
+                            rows="1"
+                            required></textarea>
+                        <button type="submit" class="send-btn" id="sendBtn">
+                            <i class="bi bi-send-fill"></i>
+                            Send
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+        const mentorshipRequestId = {{ request.id }};
+        const userRole = '{{ user_role }}';
+        const userName = '{{ request.candidate_name if user_role == "candidate" else request.mentor_name }}';
+        const messagesArea = document.getElementById('messagesArea');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        // Join the mentorship room
+        socket.on('connect', function() {
+            console.log('Connected to socket');
+            socket.emit('join_mentorship', {
+                mentorship_request_id: mentorshipRequestId
+            });
+        });
+
+        // Listen for new messages
+        socket.on('new_mentor_message', function(data) {
+            console.log('New message received:', data);
+            if (data.mentorship_request_id === mentorshipRequestId) {
+                addMessageToUI(data);
+            }
+        });
+
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Send message
+        function sendMessage(event) {
+            event.preventDefault();
+            
+            const messageText = messageInput.value.trim();
+            if (!messageText) return;
+
+            // Disable send button
+            sendBtn.disabled = true;
+            messageInput.disabled = true;
+
+            fetch('/send-mentor-message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    mentorship_request_id: mentorshipRequestId,
+                    message: messageText
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Clear input
+                    messageInput.value = '';
+                    messageInput.style.height = 'auto';
+                    
+                    // The message will be added via socket event
+                } else {
+                    alert('Failed to send message: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to send message');
+            })
+            .finally(() => {
+                sendBtn.disabled = false;
+                messageInput.disabled = false;
+                messageInput.focus();
+            });
+        }
+
+        // Add message to UI
+        function addMessageToUI(data) {
+            // Remove empty state if it exists
+            const emptyState = messagesArea.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            const isSent = data.sender_role === userRole;
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">
+                    ${data.sender_name ? data.sender_name[0] : 'U'}
+                </div>
+                <div class="message-content">
+                    <div class="message-sender">${data.sender_name || 'Unknown'}</div>
+                    <div class="message-text">${escapeHtml(data.message_text)}</div>
+                    <div class="message-time">${data.created_at || 'Just now'}</div>
+                </div>
+            `;
+            
+            messagesArea.appendChild(messageDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Scroll to bottom on load
+        window.addEventListener('load', function() {
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        });
+
+        // Handle Enter key (Shift+Enter for new line)
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('messageForm').dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    (function () {
+        if (window.__professionalAlertInstalled) return;
+        window.__professionalAlertInstalled = true;
+
+        const style = document.createElement('style');
+        style.textContent = `
+            #pro-alert-container { position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 12px; max-width: min(420px, calc(100vw - 24px)); }
+            .pro-alert { background: #fff; border-radius: 14px; box-shadow: 0 16px 40px rgba(15,42,68,.18); border-left: 5px solid #4FB6E8; padding: 14px 14px 14px 16px; color: #1F2933; font: 500 14px/1.45 Inter,Segoe UI,sans-serif; transform: translateY(-10px); opacity: 0; transition: all .22s ease; white-space: pre-line; display:flex; gap:10px; align-items:flex-start; }
+            .pro-alert.show { opacity: 1; transform: translateY(0); }
+            .pro-alert.success { border-left-color: #10b981; }
+            .pro-alert.error { border-left-color: #ef4444; }
+            .pro-alert.warning { border-left-color: #f59e0b; }
+            .pro-alert .icon { font-size: 16px; margin-top: 1px; }
+            .pro-alert .content { flex: 1; }
+            .pro-alert .close-btn { border: 0; background: transparent; color: #64748b; font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px; }
+            @media (max-width: 768px) { #pro-alert-container { left: 10px; right: 10px; top: 10px; max-width: none; } }
+        `;
+        document.head.appendChild(style);
+
+        const typeOf = (message) => {
+            const text = String(message || '').toLowerCase();
+            if (text.includes('error') || text.includes('failed') || text.includes('not found') || text.includes('could not')) return 'error';
+            if (text.includes('warning') || text.includes('please') || text.includes('required') || text.includes('invalid')) return 'warning';
+            if (text.includes('success') || text.includes('submitted') || text.includes('saved') || text.includes('generated') || text.includes('approved')) return 'success';
+            return 'info';
+        };
+
+        const iconOf = (type) => type === 'success' ? '✅' : (type === 'error' || type === 'warning') ? '⚠️' : 'ℹ️';
+
+        window.alert = function (message) {
+            let container = document.getElementById('pro-alert-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'pro-alert-container';
+                document.body.appendChild(container);
+            }
+
+            const type = typeOf(message);
+            const toast = document.createElement('div');
+            toast.className = `pro-alert ${type}`;
+            toast.innerHTML = `<div class="icon">${iconOf(type)}</div><div class="content">${String(message || '')}</div><button class="close-btn" aria-label="Close">×</button>`;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+
+            const close = () => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 220); };
+            toast.querySelector('.close-btn').addEventListener('click', close);
+            setTimeout(close, 5000);
+        };
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,463 @@
+{% extends "recruiter_dashboard.html" %}
+
+{% block dashboard_content %}
+<div class="container-fluid mt-2">
+    <h3 class="fw-bold mb-4">Applications</h3>
+
+    {% if applications %}
+    <div class="card border-0 shadow-sm rounded-4">
+        <!-- Tab Navigation -->
+        <div class="card-header border-bottom bg-white rounded-top-4 p-3">
+            <ul class="nav nav-tabs mb-0" id="applicationTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-applications" type="button" role="tab" aria-controls="all-applications" aria-selected="true">
+                        <i class="bi bi-inbox me-2"></i>Applications <span class="badge bg-secondary ms-2" id="count-all">0</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="shortlisted-tab" data-bs-toggle="tab" data-bs-target="#shortlisted-applications" type="button" role="tab" aria-controls="shortlisted-applications" aria-selected="false">
+                        <i class="bi bi-star me-2"></i>Shortlisted <span class="badge bg-info ms-2" id="count-shortlisted">0</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="interview-tab" data-bs-toggle="tab" data-bs-target="#interview-applications" type="button" role="tab" aria-controls="interview-applications" aria-selected="false">
+                        <i class="bi bi-calendar-event me-2"></i>Interview <span class="badge bg-warning ms-2" id="count-interview">0</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="selected-tab" data-bs-toggle="tab" data-bs-target="#selected-applications" type="button" role="tab" aria-controls="selected-applications" aria-selected="false">
+                        <i class="bi bi-check-circle me-2"></i>Selected <span class="badge bg-success ms-2" id="count-selected">0</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected-applications" type="button" role="tab" aria-controls="rejected-applications" aria-selected="false">
+                        <i class="bi bi-x-circle me-2"></i>Rejected <span class="badge bg-danger ms-2" id="count-rejected">0</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="applicationsTabContent">
+            <!-- All Applications Tab -->
+            <div class="tab-pane fade show active" id="all-applications" role="tabpanel" aria-labelledby="all-tab">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" data-filter="all">
+                            <thead class="bg-light text-muted small">
+                                <tr>
+                                    <th class="ps-4">Candidate</th>
+                                    <th class="py-3">Job Role</th>
+                                    <th class="py-3">Applied Date</th>
+                                    <th class="py-3">AI Score</th>
+                                    <th class="py-3">Skill Match</th>
+                                    <th class="py-3">Status</th>
+                                    <th class="py-3">Assessment</th>
+                                    <th class="py-3">Resume</th>
+                                    <th class="pe-4 text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in applications %}
+                                <tr data-status="{% if app.status == 'Applied' %}applied{% elif app.status == 'Shortlisted' %}shortlisted{% elif app.status == 'Interview' %}interview{% elif app.status == 'Selected' %}selected{% else %}rejected{% endif %}">
+                            <td class="ps-4">
+                                <div class="fw-semibold text-dark">
+                                    {{ app.candidate_name }}
+                                </div>
+                                <div class="small text-muted">
+                                    {{ app.candidate_email }}
+                                </div>
+                            </td>
+                            <td>{{ app.job_title }}</td>
+                            <td>{{ app.applied_at.strftime('%d %b %Y') if app.applied_at else '-' }}</td>
+                            <td>
+                                <div class="fw-semibold text-dark">{{ app.ai_score }}%</div>
+                                <div class="progress mt-1" style="height:6px;">
+                                    <div class="progress-bar bg-primary"
+                                        style="width: {{ app.ai_score }}%">
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if app.skill_match >= 70 %}
+                                    <span class="badge bg-success-subtle text-success">
+                                        {{ app.skill_match }}% Match
+                                    </span>
+                                {% elif app.skill_match >= 40 %}
+                                    <span class="badge bg-warning-subtle text-warning">
+                                        {{ app.skill_match }}% Match
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger">
+                                        {{ app.skill_match }}% Match
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if app.status == 'Applied' %}
+                                    <span class="badge bg-secondary-subtle text-secondary">Applied</span>
+                                {% elif app.status == 'Shortlisted' %}
+                                    <span class="badge bg-info-subtle text-info">Shortlisted</span>
+                                {% elif app.status == 'Interview' %}
+                                    <span class="badge bg-warning-subtle text-warning">Interview</span>
+                                {% elif app.status == 'Selected' %}
+                                    <span class="badge bg-success-subtle text-success">Selected</span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger">Rejected</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if app.assessment_status == 'not_assigned' %}
+                                    <span class="badge bg-light text-dark border border-secondary">Not Assigned</span>
+                                {% elif app.assessment_status == 'pending_review' %}
+                                    <span class="badge bg-warning-subtle text-warning">Pending Review</span>
+                                {% elif app.assessment_status == 'sent' %}
+                                    <span class="badge bg-info-subtle text-info">Test Assigned</span>
+                                {% elif app.assessment_status == 'completed' %}
+                                    <span class="badge bg-success-subtle text-success">Test Completed</span>
+                                    {% if app.assessment_obtained_marks is not none and app.assessment_total_marks is not none %}
+                                    <div class="small text-muted mt-1">{{ app.assessment_obtained_marks }}/{{ app.assessment_total_marks }} ({{ '%.1f'|format(app.assessment_percentage or 0) }}%)</div>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger">Test Not Completed</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if app.resume_file %}
+                                <a href="{{ url_for('static', filename='uploads/' + app.resume_file) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-file-earmark-pdf"></i> View
+                                </a>
+                                {% else %}
+                                <span class="text-muted small">No Resume</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-primary dropdown-toggle"
+                                            data-bs-toggle="dropdown">
+                                        Update
+                                    </button>
+
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                        <li>
+                                            <a class="dropdown-item"
+                                            href="/update-application/{{ app.id }}/shortlist">
+                                                <i class="bi bi-check-circle"></i> Shortlist
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                            href="/update-application/{{ app.id }}/interview">
+                                                <i class="bi bi-calendar-event"></i> Schedule Interview
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                            href="/update-application/{{ app.id }}/offer">
+                                                <i class="bi bi-envelope"></i> Send Offer
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item text-danger"
+                                            href="/update-application/{{ app.id }}/reject">
+                                                <i class="bi bi-x-circle"></i> Reject
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+
+                        </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shortlisted Tab -->
+            <div class="tab-pane fade" id="shortlisted-applications" role="tabpanel" aria-labelledby="shortlisted-tab">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" data-filter="shortlisted">
+                            <thead class="bg-light text-muted small">
+                                <tr>
+                                    <th class="ps-4">Candidate</th>
+                                    <th class="py-3">Job Role</th>
+                                    <th class="py-3">Applied Date</th>
+                                    <th class="py-3">AI Score</th>
+                                    <th class="py-3">Skill Match</th>
+                                    <th class="py-3">Status</th>
+                                    <th class="py-3">Assessment</th>
+                                    <th class="py-3">Resume</th>
+                                    <th class="pe-4 text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in applications %}
+                                {% if app.status == 'Shortlisted' %}
+                                <tr data-status="shortlisted">
+                                    <td class="ps-4">
+                                        <div class="fw-semibold text-dark">{{ app.candidate_name }}</div>
+                                        <div class="small text-muted">{{ app.candidate_email }}</div>
+                                    </td>
+                                    <td>{{ app.job_title }}</td>
+                                    <td>{{ app.applied_at.strftime('%d %b %Y') if app.applied_at else '-' }}</td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">{{ app.ai_score }}%</div>
+                                        <div class="progress mt-1" style="height:6px;">
+                                            <div class="progress-bar bg-primary" style="width: {{ app.ai_score }}%"></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if app.skill_match >= 70 %}
+                                            <span class="badge bg-success-subtle text-success">{{ app.skill_match }}% Match</span>
+                                        {% elif app.skill_match >= 40 %}
+                                            <span class="badge bg-warning-subtle text-warning">{{ app.skill_match }}% Match</span>
+                                        {% else %}
+                                            <span class="badge bg-danger-subtle text-danger">{{ app.skill_match }}% Match</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="badge bg-info-subtle text-info">Shortlisted</span></td>
+                                    <td>
+                                        {% if app.assessment_status == 'not_assigned' %}
+                                            <span class="badge bg-light text-dark border border-secondary">Not Assigned</span>
+                                        {% elif app.assessment_status == 'pending_review' %}
+                                            <span class="badge bg-warning-subtle text-warning">Pending Review</span>
+                                        {% elif app.assessment_status == 'sent' %}
+                                            <span class="badge bg-info-subtle text-info">Test Assigned</span>
+                                        {% elif app.assessment_status == 'completed' %}
+                                            <span class="badge bg-success-subtle text-success">Test Completed</span>
+                                            {% if app.assessment_obtained_marks is not none and app.assessment_total_marks is not none %}
+                                            <div class="small text-muted mt-1">{{ app.assessment_obtained_marks }}/{{ app.assessment_total_marks }} ({{ '%.1f'|format(app.assessment_percentage or 0) }}%)</div>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-danger-subtle text-danger">Test Not Completed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if app.resume_file %}
+                                        <a href="{{ url_for('static', filename='uploads/' + app.resume_file) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-file-earmark-pdf"></i> View
+                                        </a>
+                                        {% else %}
+                                        <span class="text-muted small">No Resume</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">Update</button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                <li><a class="dropdown-item" href="/update-application/{{ app.id }}/interview"><i class="bi bi-calendar-event"></i> Schedule Interview</a></li>
+                                                <li><a class="dropdown-item" href="/update-application/{{ app.id }}/offer"><i class="bi bi-envelope"></i> Send Offer</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item text-danger" href="/update-application/{{ app.id }}/reject"><i class="bi bi-x-circle"></i> Reject</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interview Tab -->
+            <div class="tab-pane fade" id="interview-applications" role="tabpanel" aria-labelledby="interview-tab">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" data-filter="interview">
+                            <thead class="bg-light text-muted small">
+                                <tr>
+                                    <th class="ps-4">Candidate</th>
+                                    <th class="py-3">Job Role</th>
+                                    <th class="py-3">Applied Date</th>
+                                    <th class="py-3">AI Score</th>
+                                    <th class="py-3">Status</th>
+                                    <th class="py-3">Assessment</th>
+                                    <th class="pe-4 text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in applications %}
+                                {% if app.status == 'Interview' %}
+                                <tr data-status="interview">
+                                    <td class="ps-4">
+                                        <div class="fw-semibold text-dark">{{ app.candidate_name }}</div>
+                                        <div class="small text-muted">{{ app.candidate_email }}</div>
+                                    </td>
+                                    <td>{{ app.job_title }}</td>
+                                    <td>{{ app.applied_at.strftime('%d %b %Y') if app.applied_at else '-' }}</td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">{{ app.ai_score }}%</div>
+                                        <div class="progress mt-1" style="height:6px;">
+                                            <div class="progress-bar bg-primary" style="width: {{ app.ai_score }}%"></div>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-warning-subtle text-warning">Interview Scheduled</span></td>
+                                    <td>
+                                        {% if app.assessment_status == 'completed' %}
+                                            <span class="badge bg-success-subtle text-success">Test Completed</span>
+                                            {% if app.assessment_obtained_marks is not none and app.assessment_total_marks is not none %}
+                                            <div class="small text-muted mt-1">{{ app.assessment_obtained_marks }}/{{ app.assessment_total_marks }} ({{ '%.1f'|format(app.assessment_percentage or 0) }}%)</div>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-light text-dark border border-secondary">Not Assigned</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">Actions</button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                <li><a class="dropdown-item" href="/update-application/{{ app.id }}/interview"><i class="bi bi-calendar-event"></i> Update Interview</a></li>
+                                                <li><a class="dropdown-item" href="/update-application/{{ app.id }}/offer"><i class="bi bi-envelope"></i> Send Offer</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item text-danger" href="/update-application/{{ app.id }}/reject"><i class="bi bi-x-circle"></i> Reject</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selected Tab -->
+            <div class="tab-pane fade" id="selected-applications" role="tabpanel" aria-labelledby="selected-tab">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" data-filter="selected">
+                            <thead class="bg-light text-muted small">
+                                <tr>
+                                    <th class="ps-4">Candidate</th>
+                                    <th class="py-3">Job Role</th>
+                                    <th class="py-3">Applied Date</th>
+                                    <th class="py-3">AI Score</th>
+                                    <th class="py-3">Status</th>
+                                    <th class="py-3">Resume</th>
+                                    <th class="pe-4 text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in applications %}
+                                {% if app.status == 'Selected' %}
+                                <tr data-status="selected">
+                                    <td class="ps-4">
+                                        <div class="fw-semibold text-dark">{{ app.candidate_name }}</div>
+                                        <div class="small text-muted">{{ app.candidate_email }}</div>
+                                    </td>
+                                    <td>{{ app.job_title }}</td>
+                                    <td>{{ app.applied_at.strftime('%d %b %Y') if app.applied_at else '-' }}</td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">{{ app.ai_score }}%</div>
+                                        <div class="progress mt-1" style="height:6px;">
+                                            <div class="progress-bar bg-primary" style="width: {{ app.ai_score }}%"></div>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-success-subtle text-success">Selected</span></td>
+                                    <td>
+                                        {% if app.resume_file %}
+                                        <a href="{{ url_for('static', filename='uploads/' + app.resume_file) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-file-earmark-pdf"></i> View
+                                        </a>
+                                        {% else %}
+                                        <span class="text-muted small">No Resume</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <span class="text-muted small">Selected</span>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rejected Tab -->
+            <div class="tab-pane fade" id="rejected-applications" role="tabpanel" aria-labelledby="rejected-tab">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" data-filter="rejected">
+                            <thead class="bg-light text-muted small">
+                                <tr>
+                                    <th class="ps-4">Candidate</th>
+                                    <th class="py-3">Job Role</th>
+                                    <th class="py-3">Applied Date</th>
+                                    <th class="py-3">AI Score</th>
+                                    <th class="py-3">Status</th>
+                                    <th class="pe-4 text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in applications %}
+                                {% if app.status == 'Rejected' %}
+                                <tr data-status="rejected">
+                                    <td class="ps-4">
+                                        <div class="fw-semibold text-dark">{{ app.candidate_name }}</div>
+                                        <div class="small text-muted">{{ app.candidate_email }}</div>
+                                    </td>
+                                    <td>{{ app.job_title }}</td>
+                                    <td>{{ app.applied_at.strftime('%d %b %Y') if app.applied_at else '-' }}</td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">{{ app.ai_score }}%</div>
+                                        <div class="progress mt-1" style="height:6px;">
+                                            <div class="progress-bar bg-primary" style="width: {{ app.ai_score }}%"></div>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-danger-subtle text-danger">Rejected</span></td>
+                                    <td class="text-end pe-4">
+                                        <span class="text-muted small">No actions</span>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTabCounts();
+        });
+
+        function updateTabCounts() {
+            const statuses = [
+                { filter: 'applied', badge: 'count-all', selector: '[data-status="applied"]' },
+                { filter: 'shortlisted', badge: 'count-shortlisted', selector: '[data-status="shortlisted"]' },
+                { filter: 'interview', badge: 'count-interview', selector: '[data-status="interview"]' },
+                { filter: 'selected', badge: 'count-selected', selector: '[data-status="selected"]' },
+                { filter: 'rejected', badge: 'count-rejected', selector: '[data-status="rejected"]' }
+            ];
+
+            // Count all
+            const allCount = document.querySelectorAll('tbody tr[data-status]').length;
+            document.getElementById('count-all').textContent = allCount;
+
+            // Count each status
+            statuses.forEach(status => {
+                const count = document.querySelectorAll(`tbody tr${status.selector}`).length;
+                const badge = document.getElementById(status.badge);
+                if (badge) {
+                    badge.textContent = count;
+                }
+            });
+        }
+    </script>
+    {% else %}
+    <div class="text-center py-5 text-muted">No applications received yet.</div>
+    {% endif %}
+</div>
+{% endblock %}

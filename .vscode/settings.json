@@ -1,0 +1,46 @@
+{
+    "files.associations": {
+        "*.html": "jinja-html"
+    },
+    "emmet.includeLanguages": {
+        "jinja-html": "html"
+    },
+    "html.validate.scripts": false,
+    "javascript.validate.enable": false,
+    "[html]": {
+        "editor.suggest.insertMode": "replace"
+    },
+    "html.format.templating": true,
+    "html.customData": [
+        ".vscode/html.html-data.json"
+    ],
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "xprotocol",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 33060,
+            "driver": "MySQL",
+            "name": "MySQL Local",
+            "database": "AI",
+            "username": "root",
+            "password": "Tanisha@1105",
+            "connectionTimeout": 30
+        },
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "PG Local",
+            "database": "hiring_platform",
+            "username": "postgres",
+            "connectionTimeout": 30
+        }
+    ],
+    "python-envs.defaultEnvManager": "ms-python.python:venv"
+}

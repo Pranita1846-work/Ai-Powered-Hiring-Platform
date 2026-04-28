@@ -1,0 +1,325 @@
+<!-- Admin Verify Companies Template -->
+{% extends "base.html" %}
+{% block title %}Verify Companies | HireHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- SIDEBAR -->
+        <div class="col-md-3 admin-sidebar">
+            <h5 class="sidebar-title">
+                <i class="bi bi-shield-lock-fill me-2"></i> Admin Console
+            </h5>
+
+            <a href="/admin-dashboard#overview" class="sidebar-link">
+                <i class="bi bi-graph-up me-2"></i> Analytics & Trends
+            </a>
+
+            <a href="/admin-dashboard#users" class="sidebar-link">
+                <i class="bi bi-people me-2"></i> Manage Users
+            </a>
+
+            <a href="/admin-dashboard#verify-mentors" class="sidebar-link">
+                <i class="bi bi-patch-check me-2"></i> Verify Mentors
+            </a>
+
+            <a href="/admin-dashboard#verify-companies" class="sidebar-link active">
+                <i class="bi bi-building-check me-2"></i> Verify Companies
+            </a>
+
+            <a href="/admin-dashboard#jobs" class="sidebar-link">
+                <i class="bi bi-briefcase me-2"></i> Job Moderation
+            </a>
+
+            <a href="/admin-dashboard#feedbacks" class="sidebar-link">
+                <i class="bi bi-exclamation-octagon me-2"></i> Users Feedback
+            </a>
+
+            <hr>
+            <a href="/logout" class="sidebar-link logout">
+                <i class="bi bi-door-open me-2"></i> Logout
+            </a>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="col-md-9 p-5">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold">
+                    <i class="bi bi-building-check me-2"></i>
+                    Company Verification Center
+                </h3>
+                <span class="badge bg-dark fs-6 px-3 py-2">
+                    System Status: Secure
+                </span>
+            </div>
+
+            <!-- FLASH MESSAGES -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{% if category == 'error' %}danger{% elif category == 'success' %}success{% elif category == 'warning' %}warning{% elif category == 'info' %}info{% else %}{{ category }}{% endif %} alert-dismissible fade show shadow-sm">
+                            <i class="bi bi-{% if category == 'error' or category == 'danger' %}exclamation-circle-fill{% elif category == 'success' %}check-circle-fill{% elif category == 'warning' %}exclamation-triangle-fill{% else %}info-circle-fill{% endif %} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- COMPANY TABLE -->
+            <div class="card shadow-sm border-0 p-4">
+
+                {% if companies %}
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover border">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Company Name</th>
+                                <th>Email</th>
+                                <th>Verification Document</th>
+                                <th>MOU Status</th>
+                                <th>MOU Details</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                                <th>View Profile</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for company in companies %}
+                            <tr>
+                                <td>
+                                    {{ company.company_name or '—' }}
+                                </td>
+
+                                <td>
+                                    {{ company.company_email or '—' }}
+                                </td>
+
+                                <td>
+                                    {% if company.document_path %}
+                                        <a href="{{ url_for('static', filename=company.document_path) }}"
+                                           target="_blank">
+                                            View Document
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if company.agreement_accepted %}
+                                        <span class="badge bg-success">Signed by Recruiter</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Awaiting Recruiter Signature</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if company.agreement_accepted %}
+                                        <small class="d-block">{{ company.agreement_signature_name or 'N/A' }}</small>
+                                        {% if company.agreement_signature_at %}
+                                            <small class="d-block text-muted">{{ company.agreement_signature_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                        {% endif %}
+                                        {% if company.agreement_pdf_available %}
+                                            <a href="/admin/company-mou/pdf/{{ company.company_id }}" target="_blank">View MOU PDF</a>
+                                        {% endif %}
+                                    {% else %}
+                                        <small class="text-muted">Not signed yet</small>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <span class="badge bg-warning text-dark">
+                                        {{ company.verification_status }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {% if company.agreement_accepted %}
+                                        <a href="/admin/approve-company/{{ company.company_id }}"
+                                           class="btn btn-sm btn-success">
+                                            Counter Sign & Approve
+                                        </a>
+                                    {% else %}
+                                        <button class="btn btn-sm btn-secondary" disabled>
+                                            Awaiting Signature
+                                        </button>
+                                    {% endif %}
+
+                                    <a href="/admin/reject-company/{{ company.company_id }}"
+                                       class="btn btn-sm btn-danger">
+                                        Reject
+                                    </a>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-primary view-company-btn" data-recruiter-id="{{ company.company_id }}">View Profile</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                    <p class="text-muted text-center mb-0">
+                        No pending company verifications.
+                    </p>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+.admin-sidebar {
+    background: linear-gradient(180deg, #212529, #343a40);
+    min-height: 100vh;
+    padding: 20px;
+    color: #fff;
+}
+
+.sidebar-title {
+    font-weight: 600;
+    margin-bottom: 25px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 15px;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    color: #adb5bd;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+
+.sidebar-link:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
+
+.sidebar-link.active {
+    background: rgba(13, 110, 253, 0.2);
+    color: #0d6efd;
+    font-weight: 600;
+}
+
+.sidebar-link.logout {
+    color: #f8d7da;
+}
+</style>
+{% endblock %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.view-company-btn').forEach(btn => btn.addEventListener('click', async () => {
+        const uid = btn.getAttribute('data-recruiter-id');
+        let modalEl = document.getElementById('companyModal');
+        if (!modalEl) {
+            modalEl = document.createElement('div');
+            modalEl.innerHTML = `
+            <div class="modal fade" id="companyModal" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Company Profile</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body" id="companyBody">Loading...</div>
+                  <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>
+                </div>
+              </div>
+            </div>`;
+            document.body.appendChild(modalEl);
+        }
+        const modal = new bootstrap.Modal(document.getElementById('companyModal'));
+        const body = document.getElementById('companyBody');
+        body.innerHTML = '<p class="text-muted">Loading…</p>';
+        modal.show();
+        try {
+            const res = await fetch(`/admin/user-profile/recruiter/${encodeURIComponent(uid)}`);
+            const data = await res.json();
+            if (!data.success) { body.innerHTML = '<div class="alert alert-danger">Could not load profile</div>'; return; }
+            const u = data.profile.user || {}; const rp = data.profile.recruiter_profile || {};
+            const docUrl = rp.company_doc ? `/static/uploads/${rp.company_doc}` : null;
+            const authUrl = rp.auth_doc ? `/static/uploads/${rp.auth_doc}` : null;
+            const logoUrl = rp.logo_file ? `/static/uploads/${rp.logo_file}` : null;
+            const geoTagUrl = rp.geo_tag_pdf ? `/static/uploads/${rp.geo_tag_pdf}` : null;
+            const isImg = (f) => /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(f || '');
+            body.innerHTML = `
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm p-3 text-center">
+                            ${logoUrl ? (isImg(logoUrl) ? `<img src="${logoUrl}" class="img-fluid rounded mb-2" alt="logo">` : `<a href="${logoUrl}" target="_blank" class="btn btn-sm btn-outline-primary">View Logo</a>`) : '<div class="text-muted small">No logo uploaded</div>'}
+                            <h5 class="mt-2">${rp.company_name || '—'}</h5>
+                            <div class="small text-muted">${rp.industry || ''}</div>
+                            <div class="mt-2"><a href="${rp.website || '#'}" target="_blank">${rp.website || ''}</a></div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card border-0 shadow-sm p-3">
+                            <h6 class="fw-bold">Company Details</h6>
+                            <div class="row small">
+                                <div class="col-md-6"><strong>Type:</strong> ${rp.company_type || '—'}</div>
+                                <div class="col-md-6"><strong>Size:</strong> ${rp.company_size || '—'}</div>
+                                <div class="col-md-12 mt-1"><strong>Address:</strong> ${rp.address || '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Headquarters:</strong> ${rp.headquarters_location || '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Founded Year:</strong> ${rp.founded_year || '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Registration No:</strong> ${rp.company_registration || '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Company LinkedIn:</strong> ${rp.company_linkedin ? `<a href="${rp.company_linkedin}" target="_blank">View</a>` : '—'}</div>
+                                <div class="col-md-12 mt-1"><strong>Hiring Locations:</strong> ${rp.hiring_locations || '—'}</div>
+                                <div class="col-md-12 mt-1"><strong>Specific Locations:</strong> ${rp.specific_locations || '—'}</div>
+                                <div class="col-md-12 mt-1"><strong>Roles:</strong> ${rp.roles || '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Experience:</strong> ${rp.experience_levels || '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Job Types:</strong> ${rp.job_types || '—'}</div>
+                            </div>
+                            <hr>
+                            <h6 class="fw-bold">Admin Contact</h6>
+                            <div class="row small">
+                                <div class="col-md-6"><strong>Name:</strong> ${rp.full_name || u.name || '—'}</div>
+                                <div class="col-md-6"><strong>Email:</strong> ${u.email || '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Work Email:</strong> ${rp.work_email || '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Designation:</strong> ${rp.designation || '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Phone:</strong> ${rp.phone || '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Recruiting Experience:</strong> ${rp.recruiting_experience || '—'} years</div>
+                                <div class="col-md-12 mt-1"><strong>Specialization:</strong> ${rp.specialization || '—'}</div>
+                                <div class="col-md-12 mt-1"><strong>Languages:</strong> ${rp.languages || '—'}</div>
+                                <div class="col-md-12 mt-1"><strong>LinkedIn:</strong> ${rp.linkedin ? `<a href="${rp.linkedin}" target="_blank">${rp.linkedin}</a>` : '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Interview Mode:</strong> ${rp.interview_mode || '—'}</div>
+                            </div>
+                            <hr>
+                            <h6 class="fw-bold">Verification Documents</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="border rounded p-2">
+                                        <div class="small text-muted">Company Document</div>
+                                        ${docUrl ? (isImg(docUrl) ? `<img src="${docUrl}" class="img-fluid rounded" />` : `<a href="${docUrl}" target="_blank">View Document</a>`) : 'N/A'}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="border rounded p-2">
+                                        <div class="small text-muted">Authorization Proof</div>
+                                        ${authUrl ? (isImg(authUrl) ? `<img src="${authUrl}" class="img-fluid rounded" />` : `<a href="${authUrl}" target="_blank">View Document</a>`) : 'N/A'}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="border rounded p-2">
+                                        <div class="small text-muted">Company Geotag Photos PDF</div>
+                                        ${geoTagUrl ? `<a href="${geoTagUrl}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bi bi-file-pdf me-1"></i>View PDF</a>` : 'N/A'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        } catch (e) {
+            body.innerHTML = '<div class="alert alert-danger">Error loading profile</div>';
+        }
+    }));
+});
+</script>

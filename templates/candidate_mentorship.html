@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block title %}My Mentorship{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4"><i class="fas fa-user-graduate"></i> My Mentorship Journey</h2>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <h3 class="text-primary">{{ active_mentors }}</h3>
+                    <p class="mb-0">Active Mentors</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <h3 class="text-success">{{ total_sessions }}</h3>
+                    <p class="mb-0">Total Sessions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <h3 class="text-info">{{ upcoming_meetings }}</h3>
+                    <p class="mb-0">Upcoming Meetings</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <h3 class="text-warning">{{ feedback_received }}</h3>
+                    <p class="mb-0">Feedback Received</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Mentorships -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-users"></i> Active Mentorship Sessions</h5>
+                </div>
+                <div class="card-body">
+                    {% if active_sessions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Mentor</th>
+                                    <th>Expertise</th>
+                                    <th>Status</th>
+                                    <th>Last Meeting</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in active_sessions %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ session.mentor_name }}</strong><br>
+                                        <small class="text-muted">{{ session.company }}</small>
+                                    </td>
+                                    <td>{{ session.expertise }}</td>
+                                    <td><span class="badge badge-success">Active</span></td>
+                                    <td>
+                                        {% if session.last_meeting %}
+                                        {{ session.last_meeting.strftime('%Y-%m-%d') }}
+                                        {% else %}
+                                        <span class="text-muted">No meetings yet</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="/mentor-chat/{{ session.id }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-comments"></i> Chat
+                                        </a>
+                                        {% if session.mentor_feedback %}
+                                        <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#feedbackModal{{ session.id }}">
+                                            <i class="fas fa-star"></i> View Feedback
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-user-friends fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No active mentorships yet</p>
+                        <a href="/candidate-dashboard#mentors" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Find a Mentor
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Meetings -->
+    {% if meetings %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Upcoming Meetings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for meeting in meetings %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1"><strong>{{ meeting.mentor_name }}</strong></h6>
+                                    <p class="mb-1">
+                                        <i class="fas fa-calendar"></i> {{ meeting.meeting_date }}
+                                        <i class="fas fa-clock ml-3"></i> {{ meeting.meeting_time }}
+                                    </p>
+                                    <p class="mb-1">
+                                        <i class="fas fa-laptop"></i> {{ meeting.mode }}
+                                    </p>
+                                    {% if meeting.notes %}
+                                    <p class="mb-0 text-muted"><small>{{ meeting.notes }}</small></p>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    {% if meeting.meeting_link %}
+                                    <a href="{{ meeting.meeting_link }}" target="_blank" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-video"></i> Join Meeting
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Feedback History -->
+    {% if feedbacks %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-comments"></i> Feedback History</h5>
+                </div>
+                <div class="card-body">
+                    {% for feedback in feedbacks %}
+                    <div class="mb-3 p-3 border rounded">
+                        <div class="d-flex justify-content-between">
+                            <h6><strong>{{ feedback.mentor_name }}</strong></h6>
+                            <span class="text-muted">{{ feedback.created_at.strftime('%Y-%m-%d') if feedback.created_at else 'N/A' }}</span>
+                        </div>
+                        {% if feedback.rating %}
+                        <div class="mb-2">
+                            {% for i in range(feedback.rating) %}<i class="fas fa-star text-warning"></i>{% endfor %}
+                        </div>
+                        {% endif %}
+                        <p class="mb-1"><strong>Feedback:</strong> {{ feedback.feedback }}</p>
+                        {% if feedback.areas_improved %}
+                        <p class="mb-1"><strong>Areas Covered:</strong> {{ feedback.areas_improved }}</p>
+                        {% endif %}
+                        {% if feedback.recommendations %}
+                        <p class="mb-0"><strong>Recommendations:</strong> {{ feedback.recommendations }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="/candidate-dashboard" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <a href="/candidate-dashboard#mentors" class="btn btn-primary">
+                <i class="fas fa-search"></i> Find More Mentors
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

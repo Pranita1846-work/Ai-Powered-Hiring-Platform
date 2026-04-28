@@ -1,0 +1,13 @@
+# Virtual environment
+.venv/
+venv/
+
+# Environment variables
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Wrong Git folder (safety)
+Git/

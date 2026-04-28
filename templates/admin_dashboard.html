@@ -1,0 +1,3304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - HireHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #0F2A44;
+            --primary-dark: #081624;
+            --primary-light: #17385A;
+            --accent: #4FB6E8;
+            --accent-dark: #2F9FD9;
+            --accent-light: #7ED3F5;
+            --dark: #172033;
+            --muted: #64748B;
+            --border: #E5EAF0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --bg: #F5F7FB;
+            --surface: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--dark);
+            margin: 0;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .brand {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: grid;
+            place-items: center;
+            font-weight: 700;
+        }
+
+        .user-info {
+            line-height: 1.1;
+        }
+
+        .user-name { font-weight: 600; }
+        .user-role { color: var(--muted); font-size: 0.9rem; }
+
+        .logout-btn {
+            border: none;
+            background: #f3f4f6;
+            color: var(--dark);
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            transition: background 0.2s ease;
+        }
+
+        .logout-btn:hover { background: #e5e7eb; }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: calc(100vh - 64px);
+            gap: 0;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, #0f172a 0%, #13233A 100%);
+            color: #e2e8f0;
+            padding: 1.25rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            width: 260px;
+            position: relative;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.65rem 0.9rem;
+            color: #cbd5e1;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+            font-weight: 500;
+            font-size: 0.97rem;
+        }
+
+        .sidebar .nav-item i { font-size: 1.05rem; }
+
+        .sidebar .nav-item:hover { background: rgba(79, 182, 232, 0.14); color: white; transform: translateX(2px); }
+        .sidebar .nav-item.active { background: rgba(79, 182, 232, 0.22); color: white; box-shadow: inset 0 0 0 1px rgba(79, 182, 232, 0.35); }
+
+        .content-wrapper { 
+            background: var(--bg); 
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 100%;
+        }
+        
+        .content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            background: var(--bg);
+        }
+
+        .content h3 { color: var(--dark); }
+
+        .section-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .stat-card, .info-card, .card-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 12px 30px rgba(15, 42, 68, 0.08);
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .card.shadow-sm { border: 1px solid var(--border); }
+
+        .stat-card:hover, .card-item:hover {
+            box-shadow: 0 16px 34px rgba(15, 42, 68, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary-custom:hover {
+            background: #4f46e5;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .dashboard-section {
+            display: none;
+        }
+
+        .dashboard-section.active-section {
+            display: block;
+        }
+
+        .badge-custom {
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-primary { background: rgba(99, 102, 241, 0.1); color: var(--primary); }
+        .badge-success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .badge-warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .badge-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+        /* Real-time update indicator */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        #lastUpdated.text-success {
+            animation: pulseGreen 0.5s ease-in-out;
+        }
+
+        @keyframes pulseGreen {
+            0%, 100% { color: #6B7280; }
+            50% { color: #10b981; font-weight: 600; }
+        }
+
+        .health-card {
+            transition: all 0.3s ease;
+        }
+
+        .health-card:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Table styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table thead {
+            background: #f3f4f6;
+        }
+
+        table th {
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border-bottom: 2px solid var(--border);
+            white-space: nowrap;
+        }
+
+        table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 1rem;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 0 -1rem;
+            padding: 0 1rem;
+        }
+
+    /* ================= MOBILE RESPONSIVE FIXES ================= */
+        @media (max-width: 768px) {
+        
+            /* Dashboard container stacks on mobile */
+            .dashboard-container {
+                display: block;
+                min-height: calc(100vh - 70px);
+            }
+        
+            /* Hide sidebar by default on mobile */
+            .sidebar {
+                position: fixed;
+                top: 70px;              /* height of topbar */
+                left: 0;
+                width: 75vw;
+                max-width: 300px;
+                height: calc(100vh - 70px);
+                transform: translateX(-100%);
+                z-index: 1200;
+                padding: 1rem 0.75rem;
+                border-right: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+                overflow-y: auto;
+                transition: transform 0.3s ease;
+            }
+        
+            /* Show sidebar when active */
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            /* Content full width */
+            .content {
+                width: 100%;
+                padding: 1rem;
+                min-height: calc(100vh - 70px);
+            }
+        
+            /* Topbar adjustments */
+            .topbar {
+                padding: 0.6rem 1rem;
+                gap: 0.5rem;
+            }
+        
+            .brand {
+                font-size: 1rem;
+                flex: 1;
+            }
+        
+            .user-info {
+                display: none;
+            }
+        
+            .user-section {
+                gap: 0.4rem;
+            }
+
+            .user-avatar {
+                width: 32px;
+                height: 32px;
+                font-size: 0.8rem;
+            }
+        
+            /* Cards */
+            .card,
+            .stat-card {
+                padding: 1rem !important;
+                margin-bottom: 1rem;
+            }
+        
+            /* Stats grid */
+            .row.g-4 > [class^="col-"] {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        
+            /* Tables */
+            table {
+                width: 100%;
+                font-size: 0.8rem;
+                min-width: 700px;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                border-radius: 8px;
+                border: 1px solid var(--border);
+                background: white;
+                margin-bottom: 1rem;
+            }
+
+            .table-responsive table {
+                margin-bottom: 0;
+            }
+        
+            table th {
+                padding: 0.6rem 0.5rem !important;
+                font-size: 0.75rem;
+                white-space: nowrap;
+                background: #f3f4f6;
+            }
+
+            table td {
+                padding: 0.5rem !important;
+                white-space: normal;
+                word-break: break-word;
+            }
+
+            table tbody tr {
+                border-bottom: 1px solid var(--border);
+            }
+
+            table tbody tr:hover {
+                background-color: #f9fafb;
+            }
+        
+            /* Buttons in tables */
+            .btn {
+                font-size: 0.65rem;
+                padding: 0.3rem 0.5rem;
+                white-space: nowrap;
+                display: inline-block;
+                margin: 0.2rem 0.1rem;
+            }
+
+            .btn-sm {
+                padding: 0.25rem 0.4rem;
+                font-size: 0.6rem;
+            }
+
+            .btn-primary-custom {
+                padding: 0.5rem 1rem;
+                font-size: 0.85rem;
+            }
+        
+            /* Modals */
+            .modal-dialog {
+                margin: 0.5rem;
+                max-width: 90vw;
+            }
+        
+            /* Close sidebar when clicking outside */
+            .sidebar.active ~ .content {
+                position: relative;
+            }
+
+            /* Prevent overflow on body */
+            body {
+                overflow-x: hidden;
+                overflow-y: auto;
+            }
+
+            /* Section titles and headers */
+            .section-title {
+                font-size: 1.25rem;
+            }
+
+            .section-header {
+                margin-bottom: 1rem;
+            }
+        
+        }
+
+        /* Tablet size adjustments (769px - 1024px) */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .sidebar {
+                width: 220px;
+            }
+
+            .dashboard-container {
+                grid-template-columns: 220px 1fr;
+            }
+
+            .content {
+                padding: 1.5rem;
+            }
+
+            .sidebar .nav-item {
+                font-size: 0.9rem;
+                padding: 0.6rem 0.75rem;
+            }
+
+            /* Tables on tablet */
+            table {
+                font-size: 0.9rem;
+            }
+
+            table th,
+            table td {
+                padding: 0.6rem;
+            }
+        }
+
+        /* ===== UNIFIED ULTRA THEME (CANDIDATE/RECRUITER/ADMIN) ===== */
+        body {
+            background:
+                radial-gradient(circle at 8% 12%, rgba(79, 182, 232, 0.16), transparent 30%),
+                radial-gradient(circle at 88% 86%, rgba(15, 42, 68, 0.12), transparent 34%),
+                linear-gradient(145deg, #f4f8fd 0%, #ffffff 52%, #f6faff 100%);
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(15, 42, 68, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(15, 42, 68, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            opacity: 0.28;
+            z-index: 0;
+        }
+
+        .topbar {
+            box-shadow: 0 10px 30px rgba(15, 42, 68, 0.08);
+            border-bottom-color: rgba(15, 42, 68, 0.08);
+        }
+
+        .brand {
+            letter-spacing: 0.3px;
+            background: linear-gradient(135deg, #0f2a44, #2f9fd9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sidebar {
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 8px 0 24px rgba(5, 11, 20, 0.2);
+            overflow: hidden;
+        }
+
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            top: -100px;
+            right: -100px;
+            background: rgba(126, 211, 245, 0.14);
+            filter: blur(14px);
+        }
+
+        .sidebar .nav-item {
+            border-radius: 12px;
+            margin: 0.25rem 0.55rem;
+            position: relative;
+        }
+
+        .sidebar .nav-item.active {
+            box-shadow: inset 0 0 0 1px rgba(126, 211, 245, 0.35), 0 8px 18px rgba(0, 0, 0, 0.2);
+        }
+
+        .content-wrapper, .content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-card,
+        .card-item,
+        .info-card,
+        .card.shadow-sm:not(.bg-primary):not(.bg-success):not(.bg-info):not(.bg-warning):not(.bg-danger):not(.bg-secondary):not(.bg-dark) {
+            background: linear-gradient(170deg, #ffffff 0%, #f8fbff 100%);
+        }
+
+        .control-hero {
+            margin-bottom: 1.4rem;
+            border-radius: 20px;
+            padding: 1.2rem;
+            background: linear-gradient(135deg, #0f2a44 0%, #1a476f 58%, #2d77a8 100%);
+            color: #eef8ff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 18px 44px rgba(15, 42, 68, 0.26);
+        }
+
+        .control-hero::before {
+            content: '';
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            top: -100px;
+            right: -90px;
+            background: rgba(126, 211, 245, 0.24);
+            filter: blur(14px);
+        }
+
+        .control-hero-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 1fr;
+            gap: 1rem;
+            position: relative;
+            z-index: 1;
+            align-items: stretch;
+        }
+
+        .hero-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.12);
+            padding: 0.35rem 0.72rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 0.7rem;
+        }
+
+        .hero-title {
+            font-weight: 800;
+            font-size: clamp(1.2rem, 2.4vw, 1.9rem);
+            margin-bottom: 0.35rem;
+        }
+
+        .hero-sub {
+            color: rgba(238, 248, 255, 0.9);
+            font-size: 0.92rem;
+            margin: 0;
+        }
+
+        .hero-kpis {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.55rem;
+            margin-top: 0.95rem;
+        }
+
+        .hero-kpi {
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.23);
+            background: rgba(255, 255, 255, 0.11);
+            padding: 0.6rem;
+        }
+
+        .hero-kpi strong { display: block; font-size: 0.98rem; color: #fff; line-height: 1.1; }
+        .hero-kpi span { font-size: 0.74rem; color: rgba(238, 248, 255, 0.9); }
+
+        .hero-insight {
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.24);
+            background: rgba(255, 255, 255, 0.12);
+            padding: 0.9rem;
+            display: grid;
+            gap: 0.55rem;
+            align-content: start;
+        }
+
+        .insight-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.84rem;
+        }
+
+        .insight-row strong { color: #fff; }
+
+        .insight-bar {
+            height: 7px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        .insight-bar > span {
+            display: block;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #7ed3f5, #ffffff);
+            width: 78%;
+        }
+
+        @media (max-width: 768px) {
+            .control-hero-grid { grid-template-columns: 1fr; }
+            .hero-kpis { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- TOP BAR -->
+    <div class="topbar">
+        <!-- ☰ MOBILE SIDEBAR BUTTON -->
+        <button class="btn d-md-none me-2"
+                onclick="toggleSidebar()"
+                aria-label="Toggle sidebar">
+            <i class="bi bi-list fs-3"></i>
+        </button>
+        <div class="brand">HireHub</div>
+        <div class="user-section">
+            <div class="user-avatar">A</div>
+            <div class="user-info">
+                <div class="user-name">Admin</div>
+                <div class="user-role">Administrator</div>
+            </div>
+            <form action="/logout" method="POST" style="display: inline;">
+                <button type="submit" class="logout-btn" title="Logout">
+                    <i class="bi bi-box-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN LAYOUT -->
+    <div class="dashboard-container">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <a href="#overview" class="nav-item active" data-section="overview">
+                <i class="bi bi-graph-up"></i>
+                <span>Analytics & Trends</span>
+            </a>
+            <a href="#users" class="nav-item" data-section="users">
+                <i class="bi bi-people"></i>
+                <span>Manage Users</span>
+            </a>
+            <a href="#verify-companies" class="nav-item" data-section="verify-companies">
+                <i class="bi bi-building-check"></i>
+                <span>Verify Companies</span>
+            </a>
+            <a href="#jobs" class="nav-item" data-section="jobs">
+                <i class="bi bi-briefcase"></i>
+                <span>Job Moderation</span>
+            </a>
+            <a href="#feedbacks" class="nav-item" data-section="feedbacks">
+                <i class="bi bi-exclamation-octagon"></i>
+                <span>Users Feedback</span>
+            </a>
+            <a href="#notifications" class="nav-item" data-section="notifications">
+                <i class="bi bi-bell"></i>
+                <span>Notifications & Alerts</span>
+            </a>
+            <a href="#reports" class="nav-item" data-section="reports">
+                <i class="bi bi-download"></i>
+                <span>Export & Reports</span>
+            </a>
+            <a href="#settings" class="nav-item" data-section="settings">
+                <i class="bi bi-gear"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{% if category == 'error' %}danger{% elif category == 'success' %}success{% elif category == 'warning' %}warning{% elif category == 'info' %}info{% else %}{{ category }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+                            <i class="bi bi-{% if category == 'error' or category == 'danger' %}exclamation-circle-fill{% elif category == 'success' %}check-circle-fill{% elif category == 'warning' %}exclamation-triangle-fill{% else %}info-circle-fill{% endif %} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="control-hero" id="adminControlHero">
+                <div class="control-hero-grid">
+                    <div>
+                        <span class="hero-pill"><i class="bi bi-stars"></i> AI Governance Command Center</span>
+                        <h3 class="hero-title">Operate the platform with precision and confidence.</h3>
+                        <p class="hero-sub">Track ecosystem health, quality gates, and growth metrics from one extraordinary admin panel.</p>
+
+                        <div class="hero-kpis">
+                            <div class="hero-kpi"><strong>{{ total_placements }}</strong><span>Total placements</span></div>
+                            <div class="hero-kpi"><strong>{{ active_jobs }}</strong><span>Active jobs</span></div>
+                            <div class="hero-kpi"><strong>{{ reports_count }}</strong><span>Reports generated</span></div>
+                        </div>
+                    </div>
+                    <div class="hero-insight">
+                        <div class="insight-row"><span>Skill coverage</span><strong>{{ skill_coverage }}%</strong></div>
+                        <div class="insight-bar"><span style="width: {{ skill_coverage }}%;"></span></div>
+
+                        <div class="insight-row"><span>Live operations</span><strong>Stable</strong></div>
+                        <div class="insight-bar"><span style="width: 92%;"></span></div>
+
+                        <div class="insight-row"><span>Quality governance</span><strong>Active</strong></div>
+                        <div class="insight-bar"><span style="width: 88%;"></span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-4">
+                <h3 class="fw-bold"><i class="bi bi-gear-wide-connected me-2"></i> Platform Control Panel</h3>
+            </div>
+
+            <div class="dashboard-section active-section" id="overview">
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="card p-3 shadow-sm border-0 bg-primary text-white text-center">
+                            <h6>Total Placements</h6>
+                            <h2>{{ total_placements }}</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card p-3 shadow-sm border-0 bg-success text-white text-center">
+                            <h6>Active Jobs</h6>
+                            <h2>{{ active_jobs }}</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card p-3 shadow-sm border-0 bg-info text-white text-center">
+                            <h6>Skill Coverage</h6>
+                            <h2>{{ skill_coverage }}%</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card p-3 shadow-sm border-0 bg-warning text-dark text-center">
+                            <h6>Reports</h6>
+                            <h2>{{ reports_count }}</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Platform Health Monitoring -->
+                <div class="card shadow-sm p-4 mb-4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <h5 class="mb-0"><i class="bi bi-heart-pulse me-2"></i>Platform Health</h5>
+                        <span class="badge bg-success" style="animation: pulse 2s infinite;">
+                            <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i> Live
+                        </span>
+                    </div>
+                    <div id="healthStatus" class="row g-3">
+                        <div class="col-md-12 text-center text-muted">
+                            <i class="bi bi-hourglass-split"></i> Loading health metrics...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Include Analytics Section -->
+                {% include 'admin_analytics.html' %}
+            </div>
+
+            <div class="card shadow-sm p-4 dashboard-section" id="users">
+                <h4 class="mb-3">User & Role Management</h4>
+                <ul class="nav nav-tabs mb-3" id="userTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" data-role="All">All</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-role="Candidate">Candidates</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-role="Recruiter">Recruiters</button>
+                    </li>
+                </ul>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle border" id="usersTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Verification Status</th>
+                                <th>Assessment Payment</th>
+                                <th>Actions</th>
+                                <th>View Profile</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in all_users %}
+                            <tr data-role="{{ user.role|lower }}" data-user-id="{{ user.id }}">
+                                <td><code>{{ user.id }}</code></td>
+                                <td>{{ user.name }}</td>
+                                <td>{{ user.email }}</td>
+                                <td><span class="badge bg-secondary">{{ user.role }}</span></td>
+                                <td>
+                                    {% if user.verification_status %}
+                                        {% if user.verification_status == 'approved' %}
+                                            <span class="badge bg-success">Approved</span>
+                                        {% elif user.verification_status == 'rejected' %}
+                                            <span class="badge bg-danger">Rejected</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark">{{ user.verification_status }}</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.role == 'Candidate' %}
+                                        {% if user.assessment_payment_done %}
+                                            <span class="badge bg-success">Paid</span>
+                                            <div class="small text-muted mt-1">For: {{ user.assessment_payment_for }}</div>
+                                            <div class="small text-muted">Amount: ₹{{ user.assessment_payment_amount }}</div>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Not Paid</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.is_blocked %}
+                                        <button class="btn btn-sm btn-danger unblock-user-btn" data-user-id="{{ user.id }}">Unblock</button>
+                                    {% else %}
+                                        <button class="btn btn-sm btn-outline-danger block-user-btn" data-user-id="{{ user.id }}">Block</button>
+                                    {% endif %}
+                                    <button class="btn btn-sm btn-outline-secondary ms-2 delete-user-btn" data-user-id="{{ user.id }}">Delete</button>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary view-user-btn" data-role="{{ user.role }}" data-user-id="{{ user.id }}">View Profile</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Notifications & Alerts -->
+            <div class="card shadow-sm p-4 dashboard-section mt-4" id="notifications">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <h4 class="mb-0"><i class="bi bi-bell me-2"></i>Unread Notifications</h4>
+                        <span class="badge bg-info text-dark" style="animation: pulse 2s infinite;">Live</span>
+                    </div>
+                    <button class="btn btn-sm btn-outline-success" id="markAllReadBtn" onclick="markAllNotificationsRead()">
+                        <i class="bi bi-check-all me-1"></i>Mark All as Read
+                    </button>
+                </div>
+                <div class="list-group" id="notificationsList">
+                    {% if notifications_list %}
+                        {% for n in notifications_list %}
+                        <div class="list-group-item d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="fw-bold">{{ n.message }}</div>
+                                <small class="text-muted">{{ n.receiver_role|title }} • {{ n.created_at.strftime('%Y-%m-%d %H:%M') if n.created_at else '' }}</small>
+                            </div>
+                            <span class="badge bg-warning text-dark">Unread</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="list-group-item text-muted">No unread notifications.</div>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- Audit & Logs -->
+            <div class="card shadow-sm p-4 dashboard-section mt-4" id="audit">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Audit & Logs</h4>
+                    <span class="text-muted small">Last 5 events</span>
+                </div>
+
+                <!-- Cleanup Options -->
+                <div class="row g-3 mb-4 p-3 bg-light border rounded">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Auto-Cleanup Schedule</label>
+                        <select class="form-select" id="autoCleanupSelect">
+                            <option value="">Disabled</option>
+                            <option value="7">Delete after 1 week</option>
+                            <option value="14">Delete after 2 weeks</option>
+                            <option value="30">Delete after 1 month</option>
+                            <option value="60">Delete after 2 months</option>
+                            <option value="90">Delete after 3 months</option>
+                            <option value="180">Delete after 6 months</option>
+                        </select>
+                        <small class="text-muted">Automatically delete logs older than selected period</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Manual Cleanup</label>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-danger btn-sm" id="deleteSelectedBtn" disabled>
+                                <i class="bi bi-trash me-1"></i>Delete Selected
+                            </button>
+                            <button class="btn btn-outline-warning btn-sm" id="clearAllLogsBtn">
+                                <i class="bi bi-exclamation-triangle me-1"></i>Clear All Logs
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 30px;">
+                                    <input type="checkbox" class="form-check-input" id="selectAllLogs">
+                                </th>
+                                <th>Timestamp</th>
+                                <th>Receiver</th>
+                                <th>Message</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="auditLogsBody">
+                            {% if audit_rows %}
+                                {% for a in audit_rows %}
+                                <tr class="audit-row" data-log-id="{{ a['id'] }}">
+                                    <td style="width: 30px;">
+                                        <input type="checkbox" class="form-check-input log-checkbox" value="{{ a['id'] }}" data-id="{{ a['id'] }}">
+                                    </td>
+                                    <td>{{ a['created_at'].strftime('%Y-%m-%d %H:%M') if a['created_at'] else '' }}</td>
+                                    <td>{{ a['receiver_role']|title }} #{{ a['receiver_id'] }}</td>
+                                    <td>{{ a['message'] }}</td>
+                                    <td>
+                                        {% if a['is_read'] %}
+                                            <span class="badge bg-success">Read</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Info</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr><td colspan="5" class="text-center text-muted">No audit entries.</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+
+            <!-- Export & Reports -->
+            <div class="card shadow-sm p-4 dashboard-section mt-4" id="reports">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0"><i class="bi bi-download me-2"></i>Export & Reports</h4>
+                    <span class="text-muted small">Quick downloads</span>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm h-100 p-3">
+                            <h6 class="fw-bold">User Summary</h6>
+                            <p class="text-muted small mb-2">Excel of all users and roles</p>
+                            <a class="btn btn-sm btn-outline-primary w-100" href="/admin/export/users">Export Excel</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm h-100 p-3">
+                            <h6 class="fw-bold">Jobs & Applications</h6>
+                            <p class="text-muted small mb-2">Active/closed jobs with applicants</p>
+                            <a class="btn btn-sm btn-outline-primary w-100" href="/admin/export/jobs">Export Excel</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm h-100 p-3">
+                            <h6 class="fw-bold">Audit Trail</h6>
+                            <p class="text-muted small mb-2">Recent admin actions</p>
+                            <a class="btn btn-sm btn-outline-primary w-100" href="/admin/export/audit">Download Log (Excel)</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card shadow-sm p-4 dashboard-section" id="feedbacks">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <div>
+                        <h4 class="mb-2">Platform & Session Feedbacks</h4>
+                        <p class="text-muted small mb-0">Monitor student ratings and qualitative feedback for mentors and the platform.</p>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle border">
+                        <thead class="table-light">
+                            <tr>
+                                <th>User</th>
+                                <th>Type</th>
+                                <th>Rating</th>
+                                <th>Comment</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if user_feedbacks %}
+                                {% for fb in user_feedbacks %}
+                                <tr>
+                                    <td>{{ fb.user_name }}</td>
+                                    <td><span class="badge bg-info text-dark">{{ fb.type }}</span></td>
+                                    <td>
+                                        <div class="text-warning">
+                                            {% for i in range(fb.rating) %}<i class="bi bi-star-fill"></i>{% endfor %}
+                                        </div>
+                                    </td>
+                                    <td><small>{{ fb.comment }}</small></td>
+                                    <td>{{ fb.created_at.strftime('%Y-%m-%d') }}</td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr><td colspan="5" class="text-center text-muted">No feedback received yet.</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {# Mentor verification module removed #}
+            {# <div class="card shadow-sm p-4 dashboard-section" id="verify-mentors">
+                <h4 class="mb-3">Mentor Verification Center</h4>
+                <p class="text-muted">Track mentor approvals with clear pending, verified, and rejected queues.</p>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm p-3 bg-warning bg-opacity-10">
+                            <div class="small text-muted">Pending Verification</div>
+                            <div class="h4 mb-0" id="pending-mentors-count">{{ pending_mentors_count if pending_mentors_count is defined else pending_mentors|length }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm p-3 bg-success bg-opacity-10">
+                            <div class="small text-muted">Verified Mentors</div>
+                            <div class="h4 mb-0">{{ verified_mentors_count if verified_mentors_count is defined else verified_mentors|length }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm p-3 bg-danger bg-opacity-10">
+                            <div class="small text-muted">Rejected Mentors</div>
+                            <div class="h4 mb-0">{{ rejected_mentors_count if rejected_mentors_count is defined else rejected_mentors|length }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="nav nav-tabs mb-3" id="mentorVerifyTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="pending-mentors-tab" data-bs-toggle="tab" data-bs-target="#pending-mentors-pane" type="button" role="tab" aria-controls="pending-mentors-pane" aria-selected="true">
+                            Pending <span class="badge bg-warning text-dark ms-1" id="pending-mentors-badge">{{ pending_mentors_count if pending_mentors_count is defined else pending_mentors|length }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="verified-mentors-tab" data-bs-toggle="tab" data-bs-target="#verified-mentors-pane" type="button" role="tab" aria-controls="verified-mentors-pane" aria-selected="false">
+                            Verified <span class="badge bg-success ms-1">{{ verified_mentors_count if verified_mentors_count is defined else verified_mentors|length }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="rejected-mentors-tab" data-bs-toggle="tab" data-bs-target="#rejected-mentors-pane" type="button" role="tab" aria-controls="rejected-mentors-pane" aria-selected="false">
+                            Rejected <span class="badge bg-danger ms-1">{{ rejected_mentors_count if rejected_mentors_count is defined else rejected_mentors|length }}</span>
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="mentorVerifyTabsContent">
+                    <div class="tab-pane fade show active" id="pending-mentors-pane" role="tabpanel" aria-labelledby="pending-mentors-tab" tabindex="0">
+                        {% if pending_mentors %}
+                        <div class="table-responsive mt-2">
+                            <table class="table align-middle border">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Mentor</th>
+                                        <th>Email</th>
+                                        <th>Document</th>
+                                        <th>MOU</th>
+                                        <th>MOU Details</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                        <th>Profile</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pending-mentors-tbody">
+                                    {% for mentor in pending_mentors %}
+                                    <tr>
+                                        <td>{{ mentor.name }} <br><small class="text-muted">{{ mentor.expertise or 'N/A' }}</small></td>
+                                        <td>{{ mentor.email or 'N/A' }}</td>
+                                        <td>
+                                            {% if mentor.verification_file %}
+                                                <a href="{{ url_for('uploaded_file', filename=mentor.verification_file) }}" target="_blank">View Document</a>
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if mentor.agreement_accepted %}
+                                                <span class="badge bg-success">Accepted</span>
+                                                {% if mentor.has_agreement_pdf %}
+                                                    <div><a href="/admin/mou/pdf/{{ mentor.id }}" target="_blank">View MOU PDF</a></div>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="badge bg-warning text-dark">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if mentor.agreement_accepted %}
+                                                <small class="d-block">✓ Signed by: {{ mentor.agreement_signature_name or 'N/A' }}</small>
+                                                {% if mentor.agreement_accepted_at %}
+                                                    <small class="d-block text-muted">{{ mentor.agreement_accepted_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                                {% endif %}
+                                            {% else %}
+                                                <small class="text-muted">Not signed</small>
+                                            {% endif %}
+                                        </td>
+                                        <td><span class="badge bg-warning text-dark">Pending</span></td>
+                                        <td>
+                                            {% if mentor.agreement_accepted %}
+                                                <button class="btn btn-sm btn-success approve-mentor-btn" data-profile-id="{{ mentor.id }}">Approve</button>
+                                            {% else %}
+                                                <button class="btn btn-sm btn-secondary" disabled>Awaiting MOU</button>
+                                            {% endif %}
+                                            <button class="btn btn-sm btn-danger reject-btn" data-profile-id="{{ mentor.id }}">Reject</button>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary view-profile-btn" data-profile-id="{{ mentor.id }}">View Profile</button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                            <p class="text-muted" id="no-pending-mentors-msg">No pending mentor verifications.</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="tab-pane fade" id="verified-mentors-pane" role="tabpanel" aria-labelledby="verified-mentors-tab" tabindex="0">
+                        {% if verified_mentors %}
+                        <div class="table-responsive mt-2">
+                            <table class="table align-middle border">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Mentor</th>
+                                        <th>Email</th>
+                                        <th>Company</th>
+                                        <th>MOU</th>
+                                        <th>Signed Details</th>
+                                        <th>Status</th>
+                                        <th>Profile</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for mentor in verified_mentors %}
+                                    <tr>
+                                        <td>{{ mentor.name }} <br><small class="text-muted">{{ mentor.expertise or 'N/A' }}</small></td>
+                                        <td>{{ mentor.email or 'N/A' }}</td>
+                                        <td>{{ mentor.company or 'N/A' }}</td>
+                                        <td>
+                                            {% if mentor.has_agreement_pdf %}
+                                                <a href="/admin/mou/pdf/{{ mentor.id }}" target="_blank">View MOU PDF</a>
+                                            {% elif mentor.agreement_accepted %}
+                                                <span class="badge bg-success">Accepted</span>
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if mentor.agreement_signature_name %}
+                                                <small class="d-block">{{ mentor.agreement_signature_name }}</small>
+                                                {% if mentor.agreement_signature_at %}
+                                                    <small class="d-block text-muted">{{ mentor.agreement_signature_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><span class="badge bg-success">Verified</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary view-profile-btn" data-profile-id="{{ mentor.id }}">View Profile</button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                            <p class="text-muted">No verified mentors yet.</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="tab-pane fade" id="rejected-mentors-pane" role="tabpanel" aria-labelledby="rejected-mentors-tab" tabindex="0">
+                        {% if rejected_mentors %}
+                        <div class="table-responsive mt-2">
+                            <table class="table align-middle border">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Mentor</th>
+                                        <th>Email</th>
+                                        <th>Company</th>
+                                        <th>Rejection Reason</th>
+                                        <th>MOU</th>
+                                        <th>Actions</th>
+                                        <th>Profile</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for mentor in rejected_mentors %}
+                                    <tr>
+                                        <td>{{ mentor.name }} <br><small class="text-muted">{{ mentor.expertise or 'N/A' }}</small></td>
+                                        <td>{{ mentor.email or 'N/A' }}</td>
+                                        <td>{{ mentor.company or 'N/A' }}</td>
+                                        <td>{{ mentor.rejection_reason or 'No reason provided' }}</td>
+                                        <td>
+                                            {% if mentor.has_agreement_pdf %}
+                                                <a href="/admin/mou/pdf/{{ mentor.id }}" target="_blank">View MOU PDF</a>
+                                            {% elif mentor.agreement_accepted %}
+                                                <span class="badge bg-success">Accepted</span>
+                                            {% else %}
+                                                <span class="badge bg-warning text-dark">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if mentor.agreement_accepted %}
+                                                <button class="btn btn-sm btn-success approve-mentor-btn" data-profile-id="{{ mentor.id }}">Approve Now</button>
+                                            {% else %}
+                                                <button class="btn btn-sm btn-secondary" disabled>Awaiting MOU</button>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary view-profile-btn" data-profile-id="{{ mentor.id }}">View Profile</button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                            <p class="text-muted">No rejected mentors.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div> #}
+
+            <div class="card shadow-sm p-4 dashboard-section" id="verify-companies">
+                <h4 class="mb-3">Company Verification</h4>
+                <p class="text-muted">Review business profiles with clear queues for pending, verified, and rejected companies.</p>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm p-3 bg-warning bg-opacity-10">
+                            <div class="small text-muted">Pending Verification</div>
+                            <div class="h4 mb-0">{{ pending_companies|length }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm p-3 bg-success bg-opacity-10">
+                            <div class="small text-muted">Verified Companies</div>
+                            <div class="h4 mb-0">{{ verified_companies|length }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm p-3 bg-danger bg-opacity-10">
+                            <div class="small text-muted">Rejected Companies</div>
+                            <div class="h4 mb-0">{{ rejected_companies|length }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="nav nav-tabs mb-3" id="companyVerifyTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="pending-companies-tab" data-bs-toggle="tab" data-bs-target="#pending-companies-pane" type="button" role="tab" aria-controls="pending-companies-pane" aria-selected="true">
+                            Pending <span class="badge bg-warning text-dark ms-1">{{ pending_companies|length }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="verified-companies-tab" data-bs-toggle="tab" data-bs-target="#verified-companies-pane" type="button" role="tab" aria-controls="verified-companies-pane" aria-selected="false">
+                            Verified <span class="badge bg-success ms-1">{{ verified_companies|length }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="rejected-companies-tab" data-bs-toggle="tab" data-bs-target="#rejected-companies-pane" type="button" role="tab" aria-controls="rejected-companies-pane" aria-selected="false">
+                            Rejected <span class="badge bg-danger ms-1">{{ rejected_companies|length }}</span>
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="companyVerifyTabsContent">
+                    <div class="tab-pane fade show active" id="pending-companies-pane" role="tabpanel" aria-labelledby="pending-companies-tab" tabindex="0">
+                        {% if pending_companies %}
+                        <div class="table-responsive mt-2">
+                            <table class="table align-middle border">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Company</th>
+                                        <th>Email</th>
+                                        <th>Verification Document</th>
+                                        <th>MOU</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                        <th>Profile</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for c in pending_companies %}
+                                    <tr>
+                                        <td>{{ c.company_name or '—' }}</td>
+                                        <td>{{ c.company_email or '—' }}</td>
+                                        <td>
+                                            {% set doc = c.company_doc or c.auth_doc %}
+                                            {% if doc %}
+                                                <a href="{{ url_for('uploaded_file', filename=doc) }}" target="_blank">View Document</a>
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if c.agreement_accepted %}
+                                                <span class="badge bg-success">Signed</span>
+                                                {% if c.agreement_pdf %}
+                                                    <div><a href="/admin/company-mou/pdf/{{ c.recruiter_id }}" target="_blank">View MOU PDF</a></div>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="badge bg-warning text-dark">Awaiting Signature</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><span class="badge bg-warning text-dark">Pending</span></td>
+                                        <td>
+                                            {% if c.agreement_accepted %}
+                                                <a href="/admin/approve-company/{{ c.recruiter_id }}" class="btn btn-sm btn-success">Counter Sign & Approve</a>
+                                            {% else %}
+                                                <button class="btn btn-sm btn-secondary" disabled>Awaiting Signature</button>
+                                            {% endif %}
+                                            <a href="/admin/reject-company/{{ c.recruiter_id }}" class="btn btn-sm btn-danger ms-2">Reject</a>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary view-company-btn" data-recruiter-id="{{ c.recruiter_id }}">View Profile</button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                            <p class="text-muted">No pending company verifications.</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="tab-pane fade" id="verified-companies-pane" role="tabpanel" aria-labelledby="verified-companies-tab" tabindex="0">
+                        {% if verified_companies %}
+                        <div class="table-responsive mt-2">
+                            <table class="table align-middle border">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Company</th>
+                                        <th>Email</th>
+                                        <th>MOU Status</th>
+                                        <th>Counter Signed By</th>
+                                        <th>Counter Signed At</th>
+                                        <th>MOU PDF</th>
+                                        <th>Profile</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for c in verified_companies %}
+                                    <tr>
+                                        <td>{{ c.company_name or '—' }}</td>
+                                        <td>{{ c.company_email or '—' }}</td>
+                                        <td><span class="badge bg-success">Verified</span></td>
+                                        <td>{{ c.admin_countersigned_by or 'Admin' }}</td>
+                                        <td>{% if c.admin_countersigned_at %}{{ c.admin_countersigned_at.strftime('%Y-%m-%d %H:%M') }}{% else %}<span class="text-muted">N/A</span>{% endif %}</td>
+                                        <td>
+                                            {% if c.agreement_pdf %}
+                                                <a href="/admin/company-mou/pdf/{{ c.recruiter_id }}" target="_blank">View MOU PDF</a>
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary view-company-btn" data-recruiter-id="{{ c.recruiter_id }}">View Profile</button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                            <p class="text-muted">No verified companies yet.</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="tab-pane fade" id="rejected-companies-pane" role="tabpanel" aria-labelledby="rejected-companies-tab" tabindex="0">
+                        {% if rejected_companies %}
+                        <div class="table-responsive mt-2">
+                            <table class="table align-middle border">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Company</th>
+                                        <th>Email</th>
+                                        <th>Status</th>
+                                        <th>MOU</th>
+                                        <th>Actions</th>
+                                        <th>Profile</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for c in rejected_companies %}
+                                    <tr>
+                                        <td>{{ c.company_name or '—' }}</td>
+                                        <td>{{ c.company_email or '—' }}</td>
+                                        <td><span class="badge bg-danger">Rejected</span></td>
+                                        <td>
+                                            {% if c.agreement_pdf %}
+                                                <a href="/admin/company-mou/pdf/{{ c.recruiter_id }}" target="_blank">View MOU PDF</a>
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if c.agreement_accepted %}
+                                                <a href="/admin/approve-company/{{ c.recruiter_id }}" class="btn btn-sm btn-success">Approve Now</a>
+                                            {% else %}
+                                                <button class="btn btn-sm btn-secondary" disabled>Awaiting Signature</button>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary view-company-btn" data-recruiter-id="{{ c.recruiter_id }}">View Profile</button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                            <p class="text-muted">No rejected companies.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm p-4 dashboard-section" id="jobs">
+                <h4 class="mb-3"><i class="bi bi-briefcase me-2"></i>Job Moderation</h4>
+                <p class="text-muted">Active job postings across the platform.</p>
+                
+                {% if jobs %}
+                <div class="table-responsive mt-3">
+                    <table class="table table-hover align-middle border">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Job Title</th>
+                                <th>Company</th>
+                                <th>Location</th>
+                                <th>Type</th>
+                                <th>Applications</th>
+                                <th>Posted Date</th>
+                                <th>Status</th>
+                                <th>Details</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for job in jobs %}
+                            <tr id="job-row-{{ job.id }}">
+                                <td><code>{{ job.id }}</code></td>
+                                <td><strong>{{ job.title }}</strong></td>
+                                <td>{{ job.company_name or 'N/A' }}</td>
+                                <td>{{ job.location or 'N/A' }}</td>
+                                <td><span class="badge badge-primary">{{ job.job_type or 'N/A' }}</span></td>
+                                <td>{{ job.application_count or 0 }}</td>
+                                <td>{{ job.created_at.strftime('%Y-%m-%d') if job.created_at else 'N/A' }}</td>
+                                <td>
+                                    {% if job.status == 'active' %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% elif job.status == 'closed' %}
+                                        <span class="badge bg-secondary">Closed</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">{{ job.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-info view-job-btn" data-job-id="{{ job.id }}">View</button>
+                                </td>
+                                <td>
+                                    {% if job.status == 'pending' %}
+                                        <button class="btn btn-sm btn-outline-success approve-job-btn" data-job-id="{{ job.id }}">Activate</button>
+                                        <button class="btn btn-sm btn-outline-danger block-job-btn ms-1" data-job-id="{{ job.id }}">Block</button>
+                                    {% elif job.status == 'active' %}
+                                        <button class="btn btn-sm btn-outline-danger close-job-btn" data-job-id="{{ job.id }}">Close</button>
+                                        <button class="btn btn-sm btn-outline-danger block-job-btn ms-1" data-job-id="{{ job.id }}">Block</button>
+                                    {% else %}
+                                        <button class="btn btn-sm btn-outline-success approve-job-btn" data-job-id="{{ job.id }}">Activate</button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                    <div class="alert alert-info">No jobs posted yet.</div>
+                {% endif %}
+            </div>
+
+            <div class="card shadow-sm p-4 dashboard-section" id="complaints">
+                <h4 class="mb-3">Platform Support & Complaints</h4>
+                <div class="alert alert-secondary">Handle complaints and maintain security backups.</div>
+            </div>
+
+            <div class="card shadow-sm p-4 dashboard-section" id="settings">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0"><i class="bi bi-gear me-2"></i>Admin Settings</h4>
+                    <span class="badge bg-success" id="settingsStatusBadge">Ready</span>
+                </div>
+                <div id="settingsAlert" class="alert alert-info d-none">Loading settings…</div>
+
+                <div class="row g-3">
+                    <!-- Security Settings -->
+                    <div class="col-lg-6">
+                        <div class="p-3 border rounded h-100 bg-light">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold mb-0">Security Settings</h6>
+                                <span class="badge bg-dark">Security</span>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-12">
+                                    <label class="form-label mb-1">Change Admin Password</label>
+                                    <input type="password" class="form-control mb-2" id="adminCurrentPassword" placeholder="Current password">
+                                    <input type="password" class="form-control mb-2" id="adminNewPassword" placeholder="New password">
+                                    <input type="password" class="form-control" id="adminConfirmPassword" placeholder="Confirm password">
+                                    <button class="btn btn-primary w-100 mt-3" id="savePasswordBtn">
+                                        <i class="bi bi-shield-lock me-1"></i>Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Platform Control (Maintenance Mode) -->
+                    <div class="col-lg-6">
+                        <div class="p-3 border rounded h-100 bg-light">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold mb-0">Platform Maintenance</h6>
+                                <span class="badge bg-warning text-dark">Platform</span>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="maintenanceModeSwitch">
+                                <label class="form-check-label" for="maintenanceModeSwitch">Enable Maintenance Mode</label>
+                            </div>
+                            <div class="mt-2 small text-muted">
+                                When enabled, users will see a maintenance message and be unable to use the platform.
+                            </div>
+                            <button class="btn btn-warning w-100 mt-3" id="saveMaintenanceBtn">
+                                <i class="bi bi-tools me-1"></i>Save Maintenance Setting
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .dashboard-section { 
+        display: none !important; 
+        animation: fadeIn 0.3s ease; 
+    }
+    .dashboard-section.active-section { 
+        display: block !important; 
+    }
+    @keyframes fadeIn { 
+        from { opacity: 0; transform: translateY(10px); } 
+        to { opacity: 1; transform: translateY(0); } 
+    }
+</style>
+
+<script>
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const isActive = sidebar.classList.toggle('active');
+    
+    // Create or remove backdrop overlay for mobile
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+        let backdrop = document.getElementById('sidebarBackdrop');
+        if (isActive && !backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.id = 'sidebarBackdrop';
+            backdrop.style.cssText = `
+                position: fixed;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                height: calc(100vh - 70px);
+                background: rgba(0, 0, 0, 0.3);
+                z-index: 1199;
+                transition: opacity 0.3s ease;
+            `;
+            backdrop.addEventListener('click', toggleSidebar);
+            document.body.appendChild(backdrop);
+        } else if (!isActive && backdrop) {
+            backdrop.remove();
+        }
+    }
+}
+
+// Close sidebar when clicking nav items on mobile
+function closeSidebarOnNavClick() {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar.classList.contains('active')) {
+            toggleSidebar();
+        }
+    }
+}
+
+// Listen for window resize to handle mobile/desktop switching
+window.addEventListener('resize', () => {
+    const sidebar = document.querySelector('.sidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    if (window.innerWidth > 768) {
+        sidebar.classList.remove('active');
+        if (backdrop) backdrop.remove();
+    }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const links = document.querySelectorAll(".sidebar .nav-item");
+    const sections = document.querySelectorAll(".dashboard-section");
+
+    function showSection(id) {
+        console.log('Attempting to show section:', id);
+
+        const hero = document.getElementById('adminControlHero');
+        if (hero) {
+            if (id === 'overview') {
+                hero.style.display = 'block';
+            } else {
+                hero.style.display = 'none';
+            }
+        }
+        
+        // Hide all sections
+        sections.forEach(sec => {
+            sec.classList.remove("active-section");
+            sec.style.display = 'none';
+        });
+        
+        // Show target section
+        const target = document.getElementById(id);
+        if (target) {
+            target.classList.add("active-section");
+            target.style.display = 'block';
+            console.log('✓ Section activated:', id);
+        } else {
+            console.error('✗ Section not found:', id);
+        }
+        
+        // Update active link
+        links.forEach(link => {
+            link.classList.remove("active");
+            const href = link.getAttribute("href");
+            if(href === "#" + id) {
+                link.classList.add("active");
+            }
+        });
+    }
+
+    // Attach click handlers
+    links.forEach(link => {
+        link.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const hash = link.getAttribute("href");
+            console.log('Link clicked:', hash);
+            if (hash && hash.startsWith("#")) {
+                const sectionId = hash.substring(1);
+                showSection(sectionId);
+                closeSidebarOnNavClick();
+                // Update URL without page reload
+                if (history.pushState) {
+                    history.pushState(null, '', hash);
+                }
+            }
+            return false;
+        });
+    });
+
+    // Handle browser back/forward
+    window.addEventListener('popstate', () => {
+        const hash = window.location.hash.substring(1);
+        showSection(hash || "overview");
+    });
+
+    // Show initial section
+    const hash = window.location.hash.substring(1);
+    const initialSection = hash || "overview";
+    console.log('Loading initial section:', initialSection);
+    showSection(initialSection);
+    
+    // Users tab filtering and actions
+    const tabs = document.querySelectorAll('#userTabs .nav-link');
+    const rows = document.querySelectorAll('#usersTable tbody tr');
+    tabs.forEach(t => t.addEventListener('click', (e) => {
+        e.preventDefault();
+        tabs.forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        const role = t.getAttribute('data-role').toLowerCase();
+        rows.forEach(r => {
+            if (role === 'all' || r.getAttribute('data-role') === role) r.style.display = '';
+            else r.style.display = 'none';
+        });
+    }));
+
+    function swapToUnblock(btn) {
+        btn.textContent = 'Unblock';
+        btn.classList.remove('btn-outline-danger');
+        btn.classList.add('btn-danger');
+        btn.classList.remove('block-user-btn');
+        btn.classList.add('unblock-user-btn');
+        btn.dataset.bound = '0';
+    }
+
+    function swapToBlock(btn) {
+        btn.textContent = 'Block';
+        btn.classList.remove('btn-danger');
+        btn.classList.add('btn-outline-danger');
+        btn.classList.remove('unblock-user-btn');
+        btn.classList.add('block-user-btn');
+        btn.dataset.bound = '0';
+    }
+
+    function attachUnblockHandlers() {
+        const unblockBtns = document.querySelectorAll('.unblock-user-btn');
+        console.log('[Unblock Users] Found ' + unblockBtns.length + ' unblock buttons');
+        unblockBtns.forEach(btn => {
+            if (btn.dataset.bound === '1') return;
+            btn.dataset.bound = '1';
+            btn.addEventListener('click', async () => {
+                const userId = btn.getAttribute('data-user-id');
+                const row = btn.closest('tr');
+                const role = row.getAttribute('data-role');
+                if (!role) { console.error('[Unblock User] Missing role for row'); return; }
+                if (!role) { console.error('[Block User] Missing role for row'); return; }
+                
+                console.log('[Unblock User] Unblocking user ' + userId + ' (role: ' + role + ')');
+                
+                if (!confirm('Are you sure you want to unblock this user?')) return;
+                
+                btn.disabled = true;
+                try {
+                    console.log('[Unblock User] Sending request to /admin/unblock-user');
+                    const res = await fetch('/admin/unblock-user', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: userId, role: role })
+                    });
+                    const data = await res.json();
+                    console.log('[Unblock User] Response:', data);
+                    
+                    if (data.success) {
+                        swapToBlock(btn);
+                        btn.disabled = false;
+                        alert('User unblocked successfully');
+                        attachBlockHandlers();
+                    } else {
+                        alert('Failed to unblock user: ' + (data.error || 'Unknown error'));
+                        btn.disabled = false;
+                    }
+                } catch (e) {
+                    console.error('[Unblock User] Error:', e);
+                    alert('Error unblocking user');
+                    btn.disabled = false;
+                }
+            });
+        });
+    }
+
+    function attachBlockHandlers() {
+        const blockBtns = document.querySelectorAll('.block-user-btn');
+        console.log('[Block Users] Found ' + blockBtns.length + ' block buttons');
+        blockBtns.forEach(btn => {
+            if (btn.dataset.bound === '1') return;
+            btn.dataset.bound = '1';
+            btn.addEventListener('click', async () => {
+                const userId = btn.getAttribute('data-user-id');
+                const row = btn.closest('tr');
+                const role = row.getAttribute('data-role');
+                
+                console.log('[Block User] Blocking user ' + userId + ' (role: ' + role + ')');
+                
+                if (!confirm('Are you sure you want to block this user?')) return;
+                
+                btn.disabled = true;
+                try {
+                    console.log('[Block User] Sending request to /admin/block-user');
+                    const res = await fetch('/admin/block-user', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: userId, role: role })
+                    });
+                    const data = await res.json();
+                    console.log('[Block User] Response:', data);
+                    
+                    if (data.success) {
+                        swapToUnblock(btn);
+                        btn.disabled = false;
+                        alert('User blocked successfully');
+                        attachUnblockHandlers();
+                    } else {
+                        alert('Failed to block user: ' + (data.error || 'Unknown error'));
+                        btn.disabled = false;
+                    }
+                } catch (e) {
+                    console.error('[Block User] Error:', e);
+                    alert('Error blocking user');
+                    btn.disabled = false;
+                }
+            });
+        });
+    }
+
+    attachBlockHandlers();
+    attachUnblockHandlers();
+
+    // Delete user functionality
+    const deleteBtns = document.querySelectorAll('.delete-user-btn');
+    console.log('[Delete Users] Found ' + deleteBtns.length + ' delete buttons');
+    deleteBtns.forEach(btn => btn.addEventListener('click', async () => {
+        const userId = btn.getAttribute('data-user-id');
+        const row = btn.closest('tr');
+        const role = row.getAttribute('data-role');
+        
+        console.log('[Delete User] Deleting user ' + userId + ' (role: ' + role + ')');
+        
+        if (!confirm('Are you sure you want to DELETE this user? This action cannot be undone!')) return;
+        
+        btn.disabled = true;
+        try {
+            console.log('[Delete User] Sending request to /admin/delete-user');
+            const res = await fetch('/admin/delete-user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, role: role })
+            });
+            const data = await res.json();
+            console.log('[Delete User] Response:', data);
+            
+            if (data.success) {
+                row.style.opacity = '0.3';
+                setTimeout(() => row.remove(), 300);
+                alert('User deleted successfully');
+            } else {
+                alert('Failed to delete user: ' + (data.error || 'Unknown error'));
+                btn.disabled = false;
+            }
+        } catch (e) {
+            console.error('[Delete User] Error:', e);
+            alert('Error deleting user');
+            btn.disabled = false;
+        }
+    }));
+
+    // View profile modal for any user
+    document.querySelectorAll('.view-user-btn').forEach(btn => btn.addEventListener('click', async () => {
+        const role = btn.getAttribute('data-role');
+        const uid = btn.getAttribute('data-user-id');
+        // create modal container if not exists
+        let modalEl = document.getElementById('viewUserModal');
+        if (!modalEl) {
+            modalEl = document.createElement('div');
+            modalEl.innerHTML = `
+            <div class="modal fade" id="viewUserModal" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">User Profile</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body" id="viewUserBody">Loading...</div>
+                  <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>
+                </div>
+              </div>
+            </div>`;
+            document.body.appendChild(modalEl);
+        }
+        const viewModal = new bootstrap.Modal(document.getElementById('viewUserModal'));
+        document.getElementById('viewUserBody').innerHTML = '<p class="text-muted">Loading…</p>';
+        viewModal.show();
+        try {
+            const res = await fetch(`/admin/user-profile/${encodeURIComponent(role)}/${encodeURIComponent(uid)}`);
+            const data = await res.json();
+            if (!data.success) {
+                document.getElementById('viewUserBody').innerHTML = `<div class="alert alert-danger">${data.error || 'Could not load profile'}</div>`;
+                return;
+            }
+            const p = data.profile;
+            let html = '';
+            if (role.toLowerCase() === 'mentor') {
+                html = `
+                    <div class="row align-items-start mb-3">
+                        <div class="col-md-4 text-center">
+                            ${p.photo_file ? `<img src="/uploads/${p.photo_file}" alt="Photo" style="max-width: 150px; border-radius: 8px;">` : '<div class="text-muted small">No photo</div>'}
+                        </div>
+                        <div class="col-md-8">
+                            <h5>${p.mentor_name || 'N/A'} <small class="text-muted">(${p.mentor_email || 'N/A'})</small></h5>
+                            <div class="mt-1"><strong>Verification Status:</strong> <span class="badge ${p.verification_status === 'approved' ? 'bg-success' : p.verification_status === 'rejected' ? 'bg-danger' : 'bg-warning'}">${p.verification_status || 'N/A'}</span></div>
+                            <div class="mt-2">${p.verification_file ? `<a href="/uploads/${p.verification_file}" target="_blank" class="btn btn-sm btn-outline-primary">View Verification</a>` : ''}</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Expertise:</strong><br>${p.expertise || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Mentoring Areas:</strong><br>${p.mentoring_areas || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Company:</strong><br>${p.company || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Designation:</strong><br>${p.designation || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Experience:</strong><br>${p.experience || 'N/A'} years
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Mode:</strong><br>${p.mode || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Session Duration:</strong><br>${p.session_duration || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Max Candidates:</strong><br>${p.max_candidates || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Available Days:</strong><br>${p.available_days || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Time Slot:</strong><br>${p.time_slot || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Communication:</strong><br>${p.communication || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>LinkedIn:</strong><br>${p.linkedin ? `<a href="${p.linkedin}" target="_blank">${p.linkedin}</a>` : 'N/A'}
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <strong>Bio:</strong><br>${p.bio || 'N/A'}
+                        </div>
+                    </div>
+                `;
+            } else if (role.toLowerCase() === 'candidate') {
+                const u = p.user; 
+                const cp = p.candidate_profile || {};
+                html = `
+                    <div class="row align-items-start mb-3">
+                        <div class="col-md-4 text-center">
+                            ${cp.photo_file ? `<img src="/uploads/${cp.photo_file}" alt="Photo" style="max-width: 150px; border-radius: 8px;">` : '<div class="text-muted small">No photo</div>'}
+                        </div>
+                        <div class="col-md-8">
+                            <h5>${u.name || 'N/A'} <small class="text-muted">(${u.email || 'N/A'})</small></h5>
+                            <div class="mt-1"><strong>Headline:</strong> ${cp.headline || 'N/A'}</div>
+                            <div class="mt-1"><strong>Phone:</strong> ${cp.phone || 'N/A'}</div>
+                            <div class="mt-2">${cp.resume_file ? `<a href="/uploads/${cp.resume_file}" target="_blank" class="btn btn-sm btn-outline-primary">View Resume</a>` : ''}</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>First Name:</strong><br>${cp.first_name || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Last Name:</strong><br>${cp.last_name || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Current Location:</strong><br>${cp.current_location || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Preferred Work Mode:</strong><br>${cp.preferred_work_mode || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Job Type Preference:</strong><br>${cp.job_type_preference || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Open to Relocation:</strong><br>${cp.open_to_relocation || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Notice Period:</strong><br>${cp.notice_period || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Primary Skills:</strong><br>${cp.primary_skills || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Secondary Skills:</strong><br>${cp.secondary_skills || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Degree:</strong><br>${cp.degree || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>College/University:</strong><br>${cp.college_university || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Specialization:</strong><br>${cp.specialization || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Graduation Year:</strong><br>${cp.graduation_year || 'N/A'}
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <strong>Bio:</strong><br>${cp.bio || 'N/A'}
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <strong>Work Experience:</strong><br>${cp.work_experience || 'N/A'}
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <strong>Projects:</strong><br>${cp.projects || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>LinkedIn:</strong><br>${cp.linkedin_url ? `<a href="${cp.linkedin_url}" target="_blank">${cp.linkedin_url}</a>` : 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>GitHub:</strong><br>${cp.github_url ? `<a href="${cp.github_url}" target="_blank">${cp.github_url}</a>` : 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Portfolio:</strong><br>${cp.portfolio_url ? `<a href="${cp.portfolio_url}" target="_blank">${cp.portfolio_url}</a>` : 'N/A'}
+                        </div>
+                    </div>
+                `;
+            } else if (role.toLowerCase() === 'recruiter') {
+                const u = p.user; 
+                const rp = p.recruiter_profile || {};
+                html = `
+                    <div class="row align-items-start mb-3">
+                        <div class="col-md-4 text-center">
+                            ${rp.logo_file ? `<img src="/uploads/${rp.logo_file}" alt="Logo" style="max-width: 150px; border-radius: 8px;">` : '<div class="text-muted small">No logo</div>'}
+                        </div>
+                        <div class="col-md-8">
+                            <h5>${u.name || 'N/A'} <small class="text-muted">(${u.email || 'N/A'})</small></h5>
+                            <div class="mt-1"><strong>Company:</strong> ${rp.company_name || 'N/A'}</div>
+                            <div class="mt-1"><strong>Verification:</strong> <span class="badge ${rp.verification_status === 'approved' ? 'bg-success' : rp.verification_status === 'rejected' ? 'bg-danger' : 'bg-warning'}">${rp.verification_status || 'N/A'}</span></div>
+                            <div class="mt-2 d-flex gap-2 flex-wrap">
+                                ${rp.company_doc ? `<a href="/uploads/${rp.company_doc}" target="_blank" class="btn btn-sm btn-outline-primary">Company Doc</a>` : ''}
+                                ${rp.auth_doc ? `<a href="/uploads/${rp.auth_doc}" target="_blank" class="btn btn-sm btn-outline-primary">Authorization</a>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Full Name:</strong><br>${rp.full_name || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Phone:</strong><br>${rp.phone || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Designation:</strong><br>${rp.designation || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>LinkedIn:</strong><br>${rp.linkedin ? `<a href="${rp.linkedin}" target="_blank">${rp.linkedin}</a>` : 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Company Type:</strong><br>${rp.company_type || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Company Size:</strong><br>${rp.company_size || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Industry:</strong><br>${rp.industry || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Website:</strong><br>${rp.website ? `<a href="${rp.website}" target="_blank">${rp.website}</a>` : 'N/A'}
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <strong>Address:</strong><br>${rp.address || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Roles:</strong><br>${rp.roles || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Experience Levels:</strong><br>${rp.experience_levels || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Job Types:</strong><br>${rp.job_types || 'N/A'}
+                        </div>
+                    </div>
+                `;
+            } else {
+                html = `<pre>${JSON.stringify(p, null, 2)}</pre>`;
+            }
+            document.getElementById('viewUserBody').innerHTML = html;
+        } catch (e) {
+            document.getElementById('viewUserBody').innerHTML = `<div class="alert alert-danger">Error loading profile</div>`;
+        }
+    }));
+
+    // Company profile viewer from Verify Companies section
+    document.querySelectorAll('.view-company-btn').forEach(btn => btn.addEventListener('click', async () => {
+        const uid = btn.getAttribute('data-recruiter-id');
+        // reuse user modal container if present
+        let modalEl = document.getElementById('viewUserModal');
+        if (!modalEl) {
+            modalEl = document.createElement('div');
+            modalEl.innerHTML = `
+            <div class="modal fade" id="viewUserModal" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Company Profile</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body" id="viewUserBody">Loading...</div>
+                  <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>
+                </div>
+              </div>
+            </div>`;
+            document.body.appendChild(modalEl);
+        }
+        const viewModal = new bootstrap.Modal(document.getElementById('viewUserModal'));
+        const body = document.getElementById('viewUserBody');
+        body.innerHTML = '<p class="text-muted">Loading…</p>';
+        viewModal.show();
+        try {
+            const res = await fetch(`/admin/user-profile/recruiter/${encodeURIComponent(uid)}`);
+            const data = await res.json();
+            if (!data.success) {
+                body.innerHTML = `<div class="alert alert-danger">${data.error || 'Could not load profile'}</div>`;
+                return;
+            }
+            const u = data.profile.user || {}; 
+            const rp = data.profile.recruiter_profile || {};
+            const docUrl = rp.company_doc ? `/uploads/${rp.company_doc}` : null;
+            const authUrl = rp.auth_doc ? `/uploads/${rp.auth_doc}` : null;
+            const logoUrl = rp.logo_file ? `/uploads/${rp.logo_file}` : null;
+            const geoTagUrl = rp.geo_tag_pdf ? `/uploads/${rp.geo_tag_pdf}` : null;
+            const isImg = (f) => /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(f || '');
+
+            body.innerHTML = `
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm p-3 text-center">
+                            ${logoUrl ? (isImg(logoUrl) ? `<img src="${logoUrl}" class="img-fluid rounded mb-2" alt="logo">` : `<a href="${logoUrl}" target="_blank" class="btn btn-sm btn-outline-primary">View Logo</a>`) : '<div class="text-muted small">No logo uploaded</div>'}
+                            <h5 class="mt-2">${rp.company_name || '—'}</h5>
+                            <div class="small text-muted">${rp.industry || ''}</div>
+                            <div class="mt-2">
+                                <a href="${rp.website || '#'}" target="_blank">${rp.website || ''}</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card border-0 shadow-sm p-3">
+                            <h6 class="fw-bold">Company Details</h6>
+                            <div class="row small">
+                                <div class="col-md-6"><strong>Type:</strong> ${rp.company_type || '—'}</div>
+                                <div class="col-md-6"><strong>Size:</strong> ${rp.company_size || '—'}</div>
+                                <div class="col-md-12 mt-1"><strong>Address:</strong> ${rp.address || '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Headquarters:</strong> ${rp.headquarters_location || '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Founded Year:</strong> ${rp.founded_year || '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Registration No:</strong> ${rp.company_registration || '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Company LinkedIn:</strong> ${rp.company_linkedin ? `<a href="${rp.company_linkedin}" target="_blank">View</a>` : '—'}</div>
+                                <div class="col-md-12 mt-1"><strong>Hiring Locations:</strong> ${rp.hiring_locations || '—'}</div>
+                                <div class="col-md-12 mt-1"><strong>Specific Locations:</strong> ${rp.specific_locations || '—'}</div>
+                                <div class="col-md-12 mt-1"><strong>Roles:</strong> ${rp.roles || '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Experience:</strong> ${rp.experience_levels || '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Job Types:</strong> ${rp.job_types || '—'}</div>
+                            </div>
+                            <hr>
+                            <h6 class="fw-bold">Admin Contact</h6>
+                            <div class="row small">
+                                <div class="col-md-6"><strong>Name:</strong> ${rp.full_name || u.name || '—'}</div>
+                                <div class="col-md-6"><strong>Email:</strong> ${u.email || '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Work Email:</strong> ${rp.work_email || '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Designation:</strong> ${rp.designation || '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Phone:</strong> ${rp.phone || '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Recruiting Experience:</strong> ${rp.recruiting_experience || '—'} years</div>
+                                <div class="col-md-12 mt-1"><strong>Specialization:</strong> ${rp.specialization || '—'}</div>
+                                <div class="col-md-12 mt-1"><strong>Languages:</strong> ${rp.languages || '—'}</div>
+                                <div class="col-md-12 mt-1"><strong>LinkedIn:</strong> ${rp.linkedin ? `<a href="${rp.linkedin}" target="_blank">${rp.linkedin}</a>` : '—'}</div>
+                                <div class="col-md-6 mt-1"><strong>Interview Mode:</strong> ${rp.interview_mode || '—'}</div>
+                            </div>
+                            <hr>
+                            <h6 class="fw-bold">Verification Documents</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="border rounded p-2">
+                                        <div class="small text-muted">Company Document</div>
+                                        ${docUrl ? (isImg(docUrl) ? `<img src="${docUrl}" class="img-fluid rounded" />` : `<a href="${docUrl}" target="_blank">View Document</a>`) : 'N/A'}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="border rounded p-2">
+                                        <div class="small text-muted">Authorization Proof</div>
+                                        ${authUrl ? (isImg(authUrl) ? `<img src="${authUrl}" class="img-fluid rounded" />` : `<a href="${authUrl}" target="_blank">View Document</a>`) : 'N/A'}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="border rounded p-2">
+                                        <div class="small text-muted">Company Geotag Photos PDF</div>
+                                        ${geoTagUrl ? `<a href="${geoTagUrl}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bi bi-file-pdf me-1"></i>View PDF</a>` : 'N/A'}
+                                    </div>
+                                </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        } catch (e) {
+            body.innerHTML = `<div class="alert alert-danger">Error loading profile</div>`;
+        }
+    }));
+});
+</script>
+
+<!-- Reject reason modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Reject Mentor Verification</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Reason for rejection</label>
+                    <textarea id="rejectReason" class="form-control" rows="4" placeholder="Provide a short reason..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="submitReject" class="btn btn-danger">Send Rejection</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const rejectButtons = document.querySelectorAll('.reject-btn');
+    let currentProfileId = null;
+    const rejectModal = new bootstrap.Modal(document.getElementById('rejectModal'));
+    const reasonInput = document.getElementById('rejectReason');
+    const submitBtn = document.getElementById('submitReject');
+
+    function updatePendingMentorUiAfterAction() {
+        const pendingTbody = document.getElementById('pending-mentors-tbody');
+        const pendingRowsCount = pendingTbody ? pendingTbody.querySelectorAll('tr').length : 0;
+        const pendingBadge = document.getElementById('pending-mentors-badge');
+        const pendingCountCard = document.getElementById('pending-mentors-count');
+
+        if (pendingBadge) pendingBadge.textContent = pendingRowsCount;
+        if (pendingCountCard) pendingCountCard.textContent = pendingRowsCount;
+
+        if (pendingRowsCount === 0) {
+            const pendingPane = document.getElementById('pending-mentors-pane');
+            if (pendingPane && !document.getElementById('no-pending-mentors-msg')) {
+                const msg = document.createElement('p');
+                msg.id = 'no-pending-mentors-msg';
+                msg.className = 'text-muted';
+                msg.textContent = 'No pending mentor verifications.';
+                pendingPane.appendChild(msg);
+            }
+        }
+    }
+
+    rejectButtons.forEach(btn => btn.addEventListener('click', () => {
+        currentProfileId = btn.getAttribute('data-profile-id');
+        reasonInput.value = '';
+        rejectModal.show();
+    }));
+
+    submitBtn.addEventListener('click', async () => {
+        const reason = reasonInput.value.trim();
+        if (!currentProfileId) return;
+        submitBtn.disabled = true;
+        try {
+            const res = await fetch(`/admin/reject-mentor/${currentProfileId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reason })
+            });
+            const data = await res.json();
+            if (data.success) {
+                rejectModal.hide();
+                const row = document.querySelector(`.reject-btn[data-profile-id="${currentProfileId}"]`)?.closest('tr');
+                if (row) row.remove();
+                updatePendingMentorUiAfterAction();
+                showNotification('Mentor rejected successfully.', 'success');
+            } else {
+                alert('Failed to reject mentor');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Error sending rejection');
+        } finally {
+            submitBtn.disabled = false;
+        }
+    });
+
+    // Handle approve mentor buttons
+    const approveMentorButtons = document.querySelectorAll('.approve-mentor-btn');
+    approveMentorButtons.forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const profileId = this.getAttribute('data-profile-id');
+            if (!confirm('Are you sure you want to approve this mentor?')) return;
+            
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Approving...';
+            
+            try {
+                const response = await fetch(`/admin/approve-mentor/${profileId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Remove the row from the table
+                    const row = this.closest('tr');
+                    if (row) row.remove();
+                    updatePendingMentorUiAfterAction();
+                    
+                    // Show success notification
+                    showNotification('Mentor approved successfully!', 'success');
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to approve mentor'));
+                    this.disabled = false;
+                    this.innerHTML = 'Approve';
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Error: ' + error.message);
+                this.disabled = false;
+                this.innerHTML = 'Approve';
+            }
+        });
+    });
+
+    // Helper function to show notifications
+    function showNotification(message, type = 'success') {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+        alertDiv.innerHTML = `
+            <strong>${type === 'success' ? '<i class="bi bi-check-circle-fill me-2"></i>' : '<i class="bi bi-exclamation-triangle-fill me-2"></i>'}${message}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alertDiv);
+        setTimeout(() => {
+            alertDiv.classList.remove('show');
+            setTimeout(() => alertDiv.remove(), 150);
+        }, 3000);
+    }
+
+        // view profile modal logic
+        const viewBtns = document.querySelectorAll('.view-profile-btn');
+        const profileModalEl = document.createElement('div');
+        profileModalEl.innerHTML = `
+        <div class="modal fade" id="viewMentorModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">Mentor Profile</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="mentorProfileBody">
+                        <p class="text-muted">Loading…</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        document.body.appendChild(profileModalEl);
+        const profileModal = new bootstrap.Modal(document.getElementById('viewMentorModal'));
+
+        viewBtns.forEach(b => b.addEventListener('click', async () => {
+            const pid = b.getAttribute('data-profile-id');
+            const body = document.getElementById('mentorProfileBody');
+            body.innerHTML = '<p class="text-muted">Loading…</p>';
+            profileModal.show();
+            try {
+                const res = await fetch(`/admin/mentor-profile/${pid}`);
+                const data = await res.json();
+                if (!data.success) {
+                    body.innerHTML = `<div class="alert alert-danger">${data.error || 'Could not load profile'}</div>`;
+                    return;
+                }
+                const p = data.profile;
+                body.innerHTML = `
+                    <h5>${p.mentor_name} <small class="text-muted">(${p.mentor_email})</small></h5>
+                    <p><strong>Expertise:</strong> ${p.expertise || ''}</p>
+                    <p><strong>Designation:</strong> ${p.designation || ''}</p>
+                    <p><strong>Company:</strong> ${p.company || ''}</p>
+                    <p><strong>LinkedIn:</strong> <a href="${p.linkedin || '#'}" target="_blank">${p.linkedin || 'N/A'}</a></p>
+                    <p><strong>Mentoring Areas:</strong> ${p.mentoring_areas || ''}</p>
+                    <p><strong>Mentor Category:</strong> ${p.mentor_category ? p.mentor_category.split(',').map(c=>`<span class=\"badge bg-primary me-1\">${c}</span>`).join(' ') : 'N/A'}</p>
+                    <p><strong>Highest Qualification:</strong> ${p.highest_qualification || 'N/A'}</p>
+                    <p><strong>Current Role:</strong> ${p.current_role || 'N/A'}</p>
+                    <p><strong>Overall Experience:</strong> ${p.overall_experience || '0'} Years</p>
+                    <p><strong>Session Format:</strong> ${p.session_format || 'N/A'}</p>
+                    <p><strong>Preferred Languages:</strong> ${p.preferred_languages || 'N/A'}</p>
+                    <p><strong>Professional Email:</strong> ${p.professional_email || 'N/A'}</p>
+                    <p><strong>Declaration:</strong> ${p.mentor_declaration ? 'Confirmed' : 'Not Provided'}</p>
+                    <p><strong>Bio:</strong><br>${p.bio || ''}</p>
+                    <p><strong>Verification Type:</strong> ${p.verification_type || ''}</p>
+                    <p><strong>Verification File:</strong> ${p.verification_file ? `<a href="/uploads/${p.verification_file}" target="_blank">View</a>` : 'N/A'}</p>
+                `;
+            } catch (e) {
+                body.innerHTML = `<div class="alert alert-danger">Error loading profile</div>`;
+            }
+        }));
+});
+</script>
+
+<script>
+// Platform health monitoring
+let previousHealthData = {};
+
+async function parseJsonSafe(res) {
+    const text = await res.text();
+    if (!text) return {};
+    try {
+        return JSON.parse(text);
+    } catch (_err) {
+        return {};
+    }
+}
+
+async function refreshHealth() {
+    const container = document.getElementById('healthStatus');
+    if (!container) return;
+    if (healthRequestInFlight || isPollingPaused()) return;
+    healthRequestInFlight = true;
+    
+    // Don't show loading on auto-refresh, only on manual refresh
+    const isManualRefresh = !container.querySelector('.card');
+    if (isManualRefresh) {
+        container.innerHTML = '<div class="col-12 text-center text-muted"><i class="bi bi-hourglass-split"></i> Loading...</div>';
+    }
+    
+    try {
+        const res = await fetch('/admin/platform-health');
+        const data = await parseJsonSafe(res);
+        if (!res.ok) {
+            const msg = data.error || `Request failed (${res.status})`;
+            container.innerHTML = '<div class="col-12 text-center text-danger">' + msg + '</div>';
+            notePollFailure();
+            return;
+        }
+        
+        if (data.success) {
+            const h = data.health;
+            const totalUsers = h.candidates + h.recruiters + h.mentors;
+            
+            // Build the HTML
+            const healthHTML = `
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm p-3 health-card" data-metric="users" data-value="${totalUsers}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small text-muted">Total Users</div>
+                                <h5 class="mb-0 metric-value">${totalUsers}</h5>
+                            </div>
+                            <i class="bi bi-people text-primary" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm p-3 health-card" data-metric="jobs" data-value="${h.active_jobs}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small text-muted">Active Jobs</div>
+                                <h5 class="mb-0 metric-value">${h.active_jobs}</h5>
+                            </div>
+                            <i class="bi bi-briefcase text-info" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm p-3 health-card" data-metric="applications" data-value="${h.applications}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small text-muted">Applications</div>
+                                <h5 class="mb-0 metric-value">${h.applications}</h5>
+                            </div>
+                            <i class="bi bi-file-earmark-text text-warning" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm p-3 health-card" data-metric="notifications" data-value="${h.unread_notifications}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small text-muted">Notifications</div>
+                                <h5 class="mb-0 metric-value">${h.unread_notifications} unread</h5>
+                            </div>
+                            <i class="bi bi-bell text-danger" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = healthHTML;
+            
+            // Highlight changes
+            setTimeout(() => {
+                const cards = container.querySelectorAll('.health-card');
+                cards.forEach(card => {
+                    const metric = card.getAttribute('data-metric');
+                    const currentValue = card.getAttribute('data-value');
+                    
+                    if (previousHealthData[metric] && previousHealthData[metric] !== currentValue) {
+                        // Value changed, highlight it
+                        card.style.transition = 'all 0.3s ease';
+                        card.style.transform = 'scale(1.05)';
+                        card.style.boxShadow = '0 4px 20px rgba(79, 182, 232, 0.3)';
+                        
+                        setTimeout(() => {
+                            card.style.transform = 'scale(1)';
+                            card.style.boxShadow = '';
+                        }, 500);
+                    }
+                    
+                    if (currentValue) {
+                        previousHealthData[metric] = currentValue;
+                    }
+                });
+            }, 100);
+            notePollSuccess();
+            
+        } else {
+            container.innerHTML = '<div class="col-12 text-center text-danger">Error loading health metrics</div>';
+            notePollFailure();
+        }
+    } catch (e) {
+        container.innerHTML = '<div class="col-12 text-center text-danger">Error: ' + e.message + '</div>';
+        notePollFailure();
+    } finally {
+        healthRequestInFlight = false;
+    }
+}
+
+// Notifications management
+async function refreshNotifications() {
+    const container = document.getElementById('notificationsList');
+    if (!container) return;
+    if (notificationsRequestInFlight || isPollingPaused()) return;
+    notificationsRequestInFlight = true;
+    
+    try {
+        const res = await fetch('/admin/get-unread-notifications');
+        const data = await parseJsonSafe(res);
+        if (!res.ok) {
+            console.error('Notifications API failed:', res.status, data);
+            notePollFailure();
+            return;
+        }
+        
+        if (data.success) {
+            if (data.notifications && data.notifications.length > 0) {
+                container.innerHTML = data.notifications.map(n => `
+                    <div class="list-group-item d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="fw-bold">${n.message}</div>
+                            <small class="text-muted">${n.receiver_role} • ${n.created_at}</small>
+                        </div>
+                        <span class="badge bg-warning text-dark">Unread</span>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<div class="list-group-item text-muted">No unread notifications.</div>';
+            }
+            notePollSuccess();
+        }
+    } catch (e) {
+        console.error('Error refreshing notifications:', e);
+        notePollFailure();
+    } finally {
+        notificationsRequestInFlight = false;
+    }
+}
+
+async function markAllNotificationsRead() {
+    const btn = document.getElementById('markAllReadBtn');
+    if (!btn) return;
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Processing...';
+    
+    try {
+        const res = await fetch('/admin/mark-all-read', { method: 'POST' });
+        const data = await parseJsonSafe(res);
+        
+        if (res.ok && data.success) {
+            // Refresh notifications list
+            await refreshNotifications();
+            // Refresh health metrics to update notification count
+            refreshHealth();
+        } else {
+            alert('Failed: ' + (data.error || 'Unknown error'));
+        }
+    } catch (e) {
+        alert('Error marking notifications as read');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-all me-1"></i>Mark All as Read';
+    }
+}
+
+const SETTINGS_DEFAULT = {
+    session_timeout_minutes: 30,
+    // maintenance_mode and maintenance_message removed
+    platform_name: 'HireHub',
+    system_timezone: 'UTC',
+    enable_registrations: true,
+    allowed_roles: ['admin', 'company'],
+    failed_login_limit: 5,
+    enable_email_notifications: true,
+    alert_new_registrations: true,
+    alert_job_reports: true,
+    alert_verification_requests: true,
+    auto_approve_jobs: false,
+    auto_hide_threshold: 5,
+    log_admin_actions: true,
+    log_retention_days: 90,
+    auto_refresh_health: true,
+    auto_refresh_notifications: true,
+    refresh_interval_ms: 5000
+};
+
+let adminSettings = { ...SETTINGS_DEFAULT };
+let refreshTimer = null;
+let healthRequestInFlight = false;
+let notificationsRequestInFlight = false;
+let pollFailureCount = 0;
+let pollingPausedUntil = 0;
+
+function clampInterval(ms) {
+    return Math.min(Math.max(ms, 3000), 60000);
+}
+
+function isPollingPaused() {
+    return Date.now() < pollingPausedUntil;
+}
+
+function notePollFailure() {
+    pollFailureCount += 1;
+    if (pollFailureCount >= 4) {
+        pollingPausedUntil = Date.now() + 30000;
+    }
+}
+
+function notePollSuccess() {
+    pollFailureCount = 0;
+    pollingPausedUntil = 0;
+}
+
+function showSettingsAlert(type, message) {
+    const alertBox = document.getElementById('settingsAlert');
+    if (!alertBox) return;
+    alertBox.classList.remove('d-none', 'alert-info', 'alert-success', 'alert-danger', 'alert-warning');
+    alertBox.classList.add(`alert-${type}`);
+    alertBox.textContent = message;
+}
+
+function showNotification(message, type = 'success') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+    alertDiv.innerHTML = `
+        <strong>${type === 'success' ? '<i class="bi bi-check-circle-fill me-2"></i>' : '<i class="bi bi-exclamation-triangle-fill me-2"></i>'}${message}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alertDiv);
+    setTimeout(() => {
+        alertDiv.classList.remove('show');
+        setTimeout(() => alertDiv.remove(), 150);
+    }, 3000);
+}
+
+function setButtonLoading(btn, isLoading, loadingText) {
+    if (!btn) return;
+    if (isLoading) {
+        btn.dataset.originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = loadingText || 'Working...';
+    } else {
+        btn.disabled = false;
+        if (btn.dataset.originalText) btn.innerHTML = btn.dataset.originalText;
+    }
+}
+
+function applySettingsToForm(settings) {
+    const s = { ...SETTINGS_DEFAULT, ...settings };
+    const setChecked = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+    const setValue = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+
+    setValue('sessionTimeout', String(s.session_timeout_minutes));
+
+    // Maintenance Mode Save Button Handler
+    const maintenanceSwitch = document.getElementById('maintenanceModeSwitch');
+    const saveMaintenanceBtn = document.getElementById('saveMaintenanceBtn');
+    // Initialize switch from already loaded settings
+    if (maintenanceSwitch) {
+        maintenanceSwitch.checked = !!s.maintenance_mode;
+    }
+    if (saveMaintenanceBtn && maintenanceSwitch) {
+        saveMaintenanceBtn.addEventListener('click', async () => {
+            saveMaintenanceBtn.disabled = true;
+            saveMaintenanceBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+            try {
+                const res = await fetch('/admin/set-maintenance-mode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ maintenance_mode: maintenanceSwitch.checked })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showNotification('Maintenance mode ' + (data.maintenance_mode ? 'enabled' : 'disabled'), 'success');
+                } else {
+                    showNotification(data.error || 'Failed to update maintenance mode', 'danger');
+                }
+            } catch (e) {
+                showNotification('Error updating maintenance mode', 'danger');
+            } finally {
+                saveMaintenanceBtn.disabled = false;
+                saveMaintenanceBtn.innerHTML = '<i class="bi bi-tools me-1"></i>Save Maintenance Setting';
+            }
+        });
+    }
+    setValue('platformName', s.platform_name || '');
+    setValue('systemTimezone', s.system_timezone || 'UTC');
+    setChecked('enableRegistrations', !!s.enable_registrations);
+    setValue('failedAttempts', s.failed_login_limit || 5);
+    setChecked('emailNotifications', !!s.enable_email_notifications);
+    setChecked('alertRegistrations', !!s.alert_new_registrations);
+    setChecked('alertJobReports', !!s.alert_job_reports);
+    setChecked('alertVerifications', !!s.alert_verification_requests);
+    setChecked('autoRefreshHealth', !!s.auto_refresh_health);
+    setChecked('autoRefreshNotifications', !!s.auto_refresh_notifications);
+    setValue('refreshInterval', Math.round((s.refresh_interval_ms || 5000) / 1000));
+    setChecked('autoApproveJobs', !!s.auto_approve_jobs);
+    setValue('autoHideThreshold', s.auto_hide_threshold || 5);
+    setChecked('logAdminActions', !!s.log_admin_actions);
+    setValue('logRetention', String(s.log_retention_days || 90));
+
+    const allowed = new Set(s.allowed_roles || []);
+    const roleAdminEl = document.getElementById('roleAdmin');
+    const roleCompanyEl = document.getElementById('roleCompany');
+    if (roleAdminEl) roleAdminEl.checked = allowed.has('admin');
+    if (roleCompanyEl) roleCompanyEl.checked = allowed.has('company');
+
+    const badge = document.getElementById('settingsStatusBadge');
+    if (badge) {
+        badge.textContent = 'Ready';
+        badge.className = 'badge bg-success';
+    }
+}
+
+function gatherSettingsFromForm() {
+    const getChecked = (id) => { const el = document.getElementById(id); return el ? el.checked : false; };
+    const getValue = (id, def='') => { const el = document.getElementById(id); return el ? el.value : def; };
+
+    const allowedRoles = [];
+    const roleAdminEl = document.getElementById('roleAdmin');
+    const roleCompanyEl = document.getElementById('roleCompany');
+    if (roleAdminEl && roleAdminEl.checked) allowedRoles.push('admin');
+    if (roleCompanyEl && roleCompanyEl.checked) allowedRoles.push('company');
+
+    return {
+        session_timeout_minutes: parseInt(getValue('sessionTimeout', '30'), 10),
+        // maintenance_mode and maintenance_message removed
+        platform_name: getValue('platformName', ''),
+        system_timezone: getValue('systemTimezone', 'UTC'),
+        enable_registrations: getChecked('enableRegistrations'),
+        allowed_roles: allowedRoles,
+        failed_login_limit: parseInt(getValue('failedAttempts', '5'), 10),
+        enable_email_notifications: getChecked('emailNotifications'),
+        alert_new_registrations: getChecked('alertRegistrations'),
+        alert_job_reports: getChecked('alertJobReports'),
+        alert_verification_requests: getChecked('alertVerifications'),
+        auto_refresh_health: getChecked('autoRefreshHealth'),
+        auto_refresh_notifications: getChecked('autoRefreshNotifications'),
+        refresh_interval_ms: clampInterval((parseInt(getValue('refreshInterval', '5'), 10) * 1000)),
+        auto_approve_jobs: getChecked('autoApproveJobs'),
+        auto_hide_threshold: parseInt(getValue('autoHideThreshold', '5'), 10),
+        log_admin_actions: getChecked('logAdminActions'),
+        log_retention_days: parseInt(getValue('logRetention', '90'), 10)
+    };
+}
+
+async function changeAdminPassword() {
+    console.log('changeAdminPassword called');
+    const currentPassword = document.getElementById('adminCurrentPassword').value;
+    const newPassword = document.getElementById('adminNewPassword').value;
+    const confirmPassword = document.getElementById('adminConfirmPassword').value;
+
+    console.log('Password fields:', { 
+        current: currentPassword ? '***' : 'empty', 
+        new: newPassword ? '***' : 'empty', 
+        confirm: confirmPassword ? '***' : 'empty' 
+    });
+
+    const btn = document.getElementById('savePasswordBtn');
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        showNotification('Please fill all password fields', 'warning');
+        return;
+    }
+    if (newPassword !== confirmPassword) {
+        showNotification('New and confirm passwords do not match', 'danger');
+        return;
+    }
+
+    setButtonLoading(btn, true, '<span class="spinner-border spinner-border-sm"></span> Updating...');
+    try {
+        console.log('Sending password change request...');
+        const payload = { current_password: currentPassword, new_password: newPassword, confirm_password: confirmPassword };
+        console.log('Payload:', payload);
+        
+        const res = await fetch('/admin/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        console.log('Response status:', res.status);
+        console.log('Response headers:', res.headers);
+        
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error('HTTP Error:', res.status, errorText);
+            throw new Error(`HTTP ${res.status}: ${errorText}`);
+        }
+        
+        const data = await res.json();
+        console.log('Response data:', data);
+        if (!data.success) throw new Error(data.error || 'Password update failed');
+        showNotification(data.message || 'Password changed successfully!', 'success');
+        document.getElementById('adminCurrentPassword').value = '';
+        document.getElementById('adminNewPassword').value = '';
+        document.getElementById('adminConfirmPassword').value = '';
+    } catch (e) {
+        console.error('Password change error:', e);
+        showNotification(e.message || 'Error updating password', 'danger');
+    } finally {
+        setButtonLoading(btn, false);
+    }
+}
+
+function applyRefreshTimer(settings) {
+    if (refreshTimer) clearInterval(refreshTimer);
+    const interval = clampInterval(settings.refresh_interval_ms || 5000);
+    refreshTimer = setInterval(() => {
+        if (isPollingPaused()) return;
+        if (settings.auto_refresh_health) refreshHealth();
+        if (settings.auto_refresh_notifications) refreshNotifications();
+    }, interval);
+}
+
+async function loadSettingsFromServer() {
+    showSettingsAlert('info', 'Loading settings…');
+    const badge = document.getElementById('settingsStatusBadge');
+    if (badge) { badge.textContent = 'Loading'; badge.className = 'badge bg-warning text-dark'; }
+    try {
+        const res = await fetch('/admin/settings-data');
+        const data = await parseJsonSafe(res);
+        if (!res.ok || !data.success) throw new Error(data.error || `Failed to load settings (${res.status})`);
+        adminSettings = { ...SETTINGS_DEFAULT, ...(data.settings || {}) };
+        applySettingsToForm(adminSettings);
+        applyRefreshTimer(adminSettings);
+        showSettingsAlert('success', 'Settings loaded');
+    } catch (e) {
+        showSettingsAlert('danger', e.message || 'Error loading settings');
+    }
+}
+
+async function saveSettingsToServer() {
+    const btn = document.getElementById('saveSettingsBtn');
+    setButtonLoading(btn, true, '<span class="spinner-border spinner-border-sm"></span> Saving...');
+    showSettingsAlert('info', 'Saving settings…');
+    try {
+        const payload = gatherSettingsFromForm();
+        const res = await fetch('/admin/settings-save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await parseJsonSafe(res);
+        if (!res.ok || !data.success) throw new Error(data.error || `Save failed (${res.status})`);
+        adminSettings = { ...SETTINGS_DEFAULT, ...(data.settings || {}) };
+        applySettingsToForm(adminSettings);
+        applyRefreshTimer(adminSettings);
+        showSettingsAlert('success', 'Settings saved and applied');
+        document.getElementById('adminNewPassword').value = '';
+        document.getElementById('adminConfirmPassword').value = '';
+    } catch (e) {
+        showSettingsAlert('danger', e.message || 'Error saving settings');
+    } finally {
+        setButtonLoading(btn, false);
+    }
+}
+
+async function forceLogoutAllUsers() {
+    const btn = document.getElementById('forceLogoutBtn');
+    if (!confirm('Force logout all users? They will need to sign in again.')) return;
+    setButtonLoading(btn, true, '<span class="spinner-border spinner-border-sm"></span> Forcing...');
+    try {
+        const res = await fetch('/admin/settings-force-logout', { method: 'POST' });
+        const data = await parseJsonSafe(res);
+        if (!res.ok || !data.success) throw new Error(data.error || `Failed to force logout (${res.status})`);
+        showSettingsAlert('success', data.message || 'Logout enforced');
+    } catch (e) {
+        showSettingsAlert('danger', e.message || 'Error forcing logout');
+    } finally {
+        setButtonLoading(btn, false);
+    }
+}
+
+async function triggerBackup() {
+    const btn = document.getElementById('backupBtn');
+    setButtonLoading(btn, true, '<span class="spinner-border spinner-border-sm"></span> Backing up...');
+    try {
+        const res = await fetch('/admin/backup', { method: 'POST' });
+        const data = await parseJsonSafe(res);
+        if (!res.ok || !data.success) throw new Error(data.error || `Backup failed (${res.status})`);
+        showSettingsAlert('success', data.message || 'Backup started');
+    } catch (e) {
+        showSettingsAlert('danger', e.message || 'Backup error');
+    } finally {
+        setButtonLoading(btn, false);
+    }
+}
+
+async function triggerExport(type) {
+    const btn = document.getElementById(type === 'users' ? 'exportUsersBtn' : 'exportJobsBtn');
+    setButtonLoading(btn, true, '<span class="spinner-border spinner-border-sm"></span> Exporting...');
+    try {
+        const res = await fetch(`/admin/export/${type}`, { method: 'POST' });
+        const data = await parseJsonSafe(res);
+        if (!res.ok || !data.success) throw new Error(data.error || `Export failed (${res.status})`);
+        const link = data.export_url ? ` Download: ${data.export_url}` : '';
+        showSettingsAlert('success', (data.message || 'Export queued.') + link);
+    } catch (e) {
+        showSettingsAlert('danger', e.message || 'Export error');
+    } finally {
+        setButtonLoading(btn, false);
+    }
+}
+
+function resetToDefaultsUI() {
+    adminSettings = { ...SETTINGS_DEFAULT };
+    applySettingsToForm(adminSettings);
+    applyRefreshTimer(adminSettings);
+    showSettingsAlert('info', 'Defaults restored (not yet saved)');
+}
+
+// Audit & Logs functions
+function updateDeleteButtonState() {
+    const deleteBtn = document.getElementById('deleteSelectedBtn');
+    const checkboxes = document.querySelectorAll('.log-checkbox:checked');
+    const isDisabled = checkboxes.length === 0;
+    deleteBtn.disabled = isDisabled;
+    console.log('Update button state - Checked boxes:', checkboxes.length, 'Button disabled:', isDisabled);
+}
+
+function setupAuditListeners() {
+    const selectAllCheckbox = document.getElementById('selectAllLogs');
+    const logCheckboxes = document.querySelectorAll('.log-checkbox');
+    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+    const clearAllLogsBtn = document.getElementById('clearAllLogsBtn');
+    const autoCleanupSelect = document.getElementById('autoCleanupSelect');
+
+    console.log('Setting up audit listeners. Found:', {
+        selectAllCheckbox: !!selectAllCheckbox,
+        logCheckboxes: logCheckboxes.length,
+        deleteSelectedBtn: !!deleteSelectedBtn,
+        clearAllLogsBtn: !!clearAllLogsBtn,
+        autoCleanupSelect: !!autoCleanupSelect
+    });
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            logCheckboxes.forEach(checkbox => checkbox.checked = this.checked);
+            updateDeleteButtonState();
+        });
+    }
+
+    logCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateDeleteButtonState);
+    });
+
+    if (deleteSelectedBtn) {
+        deleteSelectedBtn.addEventListener('click', async () => {
+            console.log('Delete button clicked');
+            const checkedBoxes = document.querySelectorAll('.log-checkbox:checked');
+            console.log('Checked boxes count:', checkedBoxes.length);
+            
+            const selectedIds = [];
+            checkedBoxes.forEach(box => {
+                const id = box.getAttribute('data-log-id');
+                if (id) selectedIds.push(parseInt(id));
+            });
+            
+            if (selectedIds.length === 0) {
+                alert('No logs selected');
+                return;
+            }
+            
+            if (!confirm(`Delete ${selectedIds.length} selected log(s)?`)) return;
+            
+            try {
+                const res = await fetch('/admin/delete-logs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ log_ids: selectedIds })
+                });
+                
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    throw new Error(`HTTP error! status: ${res.status}, body: ${errorText}`);
+                }
+                
+                const data = await res.json();
+                console.log('Response data:', data);
+                
+                if (data.success) {
+                    alert(`Deleted ${data.deleted_count} log entries`);
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to delete logs'));
+                }
+            } catch (e) {
+                console.error('Delete error:', e);
+                alert('Error: ' + e.message);
+            }
+        });
+    }
+
+    if (clearAllLogsBtn) {
+        clearAllLogsBtn.addEventListener('click', async () => {
+            if (!confirm('This will delete ALL audit logs. Are you sure?')) return;
+
+            try {
+                const res = await fetch('/admin/clear-all-logs', { method: 'POST' });
+                
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                
+                const data = await res.json();
+                if (data.success) {
+                    alert('All logs cleared');
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to clear logs'));
+                }
+            } catch (e) {
+                console.error('Clear all error:', e);
+                alert('Error: ' + e.message);
+            }
+        });
+    }
+
+    if (autoCleanupSelect) {
+        autoCleanupSelect.addEventListener('change', async function() {
+            const days = this.value;
+            try {
+                const res = await fetch('/admin/set-cleanup-schedule', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ days: days ? parseInt(days) : null })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert(data.message || 'Cleanup schedule updated');
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to update schedule'));
+                    this.value = '';
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+                this.value = '';
+            }
+        });
+    }
+}
+// Job moderation & settings wiring
+document.addEventListener('DOMContentLoaded', () => {
+    // Initial load
+    refreshHealth();
+    refreshNotifications();
+    loadSettingsFromServer();
+    // Initialize audit/log UI listeners
+    setupAuditListeners();
+
+    const saveBtn = document.getElementById('saveSettingsBtn');
+    if (saveBtn) saveBtn.addEventListener('click', saveSettingsToServer);
+
+    const resetBtn = document.getElementById('resetSettingsBtn');
+    if (resetBtn) resetBtn.addEventListener('click', resetToDefaultsUI);
+
+    const forceBtn = document.getElementById('forceLogoutBtn');
+    if (forceBtn) forceBtn.addEventListener('click', forceLogoutAllUsers);
+
+    const backupBtn = document.getElementById('backupBtn');
+    if (backupBtn) backupBtn.addEventListener('click', triggerBackup);
+
+    const exportUsersBtn = document.getElementById('exportUsersBtn');
+    if (exportUsersBtn) exportUsersBtn.addEventListener('click', () => triggerExport('users'));
+    const exportJobsBtn = document.getElementById('exportJobsBtn');
+    if (exportJobsBtn) exportJobsBtn.addEventListener('click', () => triggerExport('jobs'));
+
+    const savePasswordBtn = document.getElementById('savePasswordBtn');
+    if (savePasswordBtn) {
+        console.log('Password change button found, attaching event listener');
+        savePasswordBtn.addEventListener('click', changeAdminPassword);
+    } else {
+        console.error('savePasswordBtn not found!');
+    }
+
+    // Maintenance mode controls removed
+
+    document.querySelectorAll('.close-job-btn').forEach(btn => btn.addEventListener('click', async () => {
+        const jobId = btn.getAttribute('data-job-id');
+        if (!confirm('Are you sure you want to close this job?')) return;
+        btn.disabled = true;
+        try {
+            const res = await fetch(`/admin/close-job/${jobId}`, { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                const row = document.getElementById(`job-row-${jobId}`);
+                if (row) {
+                    row.querySelector('td:nth-child(8)').innerHTML = '<span class="badge bg-secondary">Closed</span>';
+                    btn.remove();
+                }
+                alert('Job closed successfully');
+                refreshHealth();
+            } else {
+                alert('Failed: ' + (data.error || 'Unknown error'));
+                btn.disabled = false;
+            }
+        } catch (e) {
+            alert('Error closing job');
+            btn.disabled = false;
+        }
+    }));
+
+    document.querySelectorAll('.view-job-btn').forEach(btn => btn.addEventListener('click', () => {
+        window.open(`/view-job/${btn.getAttribute('data-job-id')}`, '_blank');
+    }));
+
+    // Approve / Block handlers
+    document.querySelectorAll('.approve-job-btn').forEach(btn => btn.addEventListener('click', async () => {
+        const jobId = btn.getAttribute('data-job-id');
+        if (!confirm('Activate this job and make it visible to candidates?')) return;
+        btn.disabled = true;
+        try {
+            const res = await fetch(`/admin/approve-job/${jobId}`, { method: 'POST' });
+            const data = await parseJsonSafe(res);
+            if (res.ok && data.success) {
+                const row = document.getElementById(`job-row-${jobId}`);
+                if (row) row.querySelector('td:nth-child(8)').innerHTML = '<span class="badge bg-success">Active</span>';
+                alert('Job activated');
+            } else {
+                alert('Failed: ' + (data.error || `Request failed (${res.status})`));
+                btn.disabled = false;
+            }
+        } catch (e) {
+            alert('Error activating job');
+            btn.disabled = false;
+        }
+    }));
+
+    document.querySelectorAll('.block-job-btn').forEach(btn => btn.addEventListener('click', async () => {
+        const jobId = btn.getAttribute('data-job-id');
+        if (!confirm('Block this job (hide from candidates)?')) return;
+        btn.disabled = true;
+        try {
+            const res = await fetch(`/admin/reject-job/${jobId}`, { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                const row = document.getElementById(`job-row-${jobId}`);
+                if (row) row.querySelector('td:nth-child(8)').innerHTML = '<span class="badge bg-warning text-dark">Blocked</span>';
+                alert('Job blocked');
+            } else {
+                alert('Failed: ' + (data.error || 'Unknown'));
+                btn.disabled = false;
+            }
+        } catch (e) {
+            alert('Error blocking job');
+            btn.disabled = false;
+        }
+    }));
+});
+
+</script>
+
+<script>
+// Settings JS relocated to bottom to avoid rendering as text
+</script>
+
+        </div><!-- End Content -->
+    </div><!-- End Dashboard Container -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    (function () {
+        if (window.__professionalAlertInstalled) return;
+        window.__professionalAlertInstalled = true;
+
+        const style = document.createElement('style');
+        style.textContent = `
+            #pro-alert-container { position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 12px; max-width: min(420px, calc(100vw - 24px)); }
+            .pro-alert { background: #fff; border-radius: 14px; box-shadow: 0 16px 40px rgba(15,42,68,.18); border-left: 5px solid #4FB6E8; padding: 14px 14px 14px 16px; color: #1F2933; font: 500 14px/1.45 Inter,Segoe UI,sans-serif; transform: translateY(-10px); opacity: 0; transition: all .22s ease; white-space: pre-line; display:flex; gap:10px; align-items:flex-start; }
+            .pro-alert.show { opacity: 1; transform: translateY(0); }
+            .pro-alert.success { border-left-color: #10b981; }
+            .pro-alert.error { border-left-color: #ef4444; }
+            .pro-alert.warning { border-left-color: #f59e0b; }
+            .pro-alert .icon { font-size: 16px; margin-top: 1px; }
+            .pro-alert .content { flex: 1; }
+            .pro-alert .close-btn { border: 0; background: transparent; color: #64748b; font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px; }
+            @media (max-width: 768px) { #pro-alert-container { left: 10px; right: 10px; top: 10px; max-width: none; } }
+        `;
+        document.head.appendChild(style);
+
+        const typeOf = (message) => {
+            const text = String(message || '').toLowerCase();
+            if (text.includes('error') || text.includes('failed') || text.includes('not found') || text.includes('could not')) return 'error';
+            if (text.includes('warning') || text.includes('please') || text.includes('required') || text.includes('invalid')) return 'warning';
+            if (text.includes('success') || text.includes('submitted') || text.includes('saved') || text.includes('generated') || text.includes('approved')) return 'success';
+            return 'info';
+        };
+
+        const iconOf = (type) => type === 'success' ? '✅' : (type === 'error' || type === 'warning') ? '⚠️' : 'ℹ️';
+
+        window.alert = function (message) {
+            let container = document.getElementById('pro-alert-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'pro-alert-container';
+                document.body.appendChild(container);
+            }
+
+            const type = typeOf(message);
+            const toast = document.createElement('div');
+            toast.className = `pro-alert ${type}`;
+            toast.innerHTML = `<div class="icon">${iconOf(type)}</div><div class="content">${String(message || '')}</div><button class="close-btn" aria-label="Close">×</button>`;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+
+            const close = () => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 220); };
+            toast.querySelector('.close-btn').addEventListener('click', close);
+            setTimeout(close, 5000);
+        };
+    })();
+</script>
+</body>
+</html>

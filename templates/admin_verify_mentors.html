@@ -1,0 +1,159 @@
+<!--admin_verify_mentors.html-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify Mentors</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="p-4">
+
+<h3>Pending Mentor Verifications</h3>
+
+<table class="table table-bordered mt-3">
+    <thead>
+        <tr>
+           <th>Name</th>
+            <th>Email</th>
+            <th>Company</th>
+            <th>Document</th>
+            <th>Agreement</th>
+            <th>Signature</th>
+            <th>MOU PDF</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for m in mentors %}
+        <tr>
+            <td>{{ m.name }}</td>
+            <td>{{ m.email }}</td>
+            <td>{{ m.company }}</td>
+            <td>
+                {% if m.verification_file %}
+                    <a href="/static/uploads/{{ m.verification_file }}" target="_blank">View</a>
+                {% else %}
+                    <span class="text-muted">Not uploaded</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if m.agreement_accepted %}
+                    <span class="badge bg-success">Accepted</span>
+                {% else %}
+                    <span class="badge bg-warning text-dark">Pending</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if m.agreement_signature_name %}
+                    <div class="fw-semibold">{{ m.agreement_signature_name }}</div>
+                    <div class="small text-muted">
+                        {{ m.agreement_signature_at.strftime('%Y-%m-%d %H:%M') if m.agreement_signature_at else '' }}
+                    </div>
+                {% else %}
+                    <span class="text-muted">Not signed</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if m.has_agreement_pdf %}
+                    <a href="/admin/mou/pdf/{{ m.id }}" target="_blank">View PDF</a>
+                {% else %}
+                    <span class="text-muted">Not available</span>
+                {% endif %}
+            </td>
+            <td>
+                <button class="btn btn-success btn-sm approve-btn" data-profile-id="{{ m.id }}" {% if not m.agreement_accepted %}disabled{% endif %}>
+                   Approve
+                </button>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="8" class="text-center text-muted">
+                No pending mentors
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    (function () {
+        if (window.__professionalAlertInstalled) return;
+        window.__professionalAlertInstalled = true;
+
+        const style = document.createElement('style');
+        style.textContent = `
+            #pro-alert-container { position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 12px; max-width: min(420px, calc(100vw - 24px)); }
+            .pro-alert { background: #fff; border-radius: 14px; box-shadow: 0 16px 40px rgba(15,42,68,.18); border-left: 5px solid #4FB6E8; padding: 14px 14px 14px 16px; color: #1F2933; font: 500 14px/1.45 Inter,Segoe UI,sans-serif; transform: translateY(-10px); opacity: 0; transition: all .22s ease; white-space: pre-line; display:flex; gap:10px; align-items:flex-start; }
+            .pro-alert.show { opacity: 1; transform: translateY(0); }
+            .pro-alert.success { border-left-color: #10b981; }
+            .pro-alert.error { border-left-color: #ef4444; }
+            .pro-alert.warning { border-left-color: #f59e0b; }
+            .pro-alert .icon { font-size: 16px; margin-top: 1px; }
+            .pro-alert .content { flex: 1; }
+            .pro-alert .close-btn { border: 0; background: transparent; color: #64748b; font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px; }
+            @media (max-width: 768px) { #pro-alert-container { left: 10px; right: 10px; top: 10px; max-width: none; } }
+        `;
+        document.head.appendChild(style);
+
+        const typeOf = (message) => {
+            const text = String(message || '').toLowerCase();
+            if (text.includes('error') || text.includes('failed') || text.includes('not found') || text.includes('could not')) return 'error';
+            if (text.includes('warning') || text.includes('please') || text.includes('required') || text.includes('invalid')) return 'warning';
+            if (text.includes('success') || text.includes('submitted') || text.includes('saved') || text.includes('generated') || text.includes('approved')) return 'success';
+            return 'info';
+        };
+
+        const iconOf = (type) => type === 'success' ? '✅' : (type === 'error' || type === 'warning') ? '⚠️' : 'ℹ️';
+
+        window.alert = function (message) {
+            let container = document.getElementById('pro-alert-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'pro-alert-container';
+                document.body.appendChild(container);
+            }
+
+            const type = typeOf(message);
+            const toast = document.createElement('div');
+            toast.className = `pro-alert ${type}`;
+            toast.innerHTML = `<div class="icon">${iconOf(type)}</div><div class="content">${String(message || '')}</div><button class="close-btn" aria-label="Close">×</button>`;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+
+            const close = () => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 220); };
+            toast.querySelector('.close-btn').addEventListener('click', close);
+            setTimeout(close, 5000);
+        };
+    })();
+</script>
+</body>
+</html>
+
+<script>
+document.querySelectorAll('.approve-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const profileId = this.dataset.profileId;
+        try {
+            const response = await fetch(`/admin/approve-mentor/${profileId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                alert('Mentor approved successfully!');
+                this.closest('tr').remove();
+                // Check if table is empty
+                if (document.querySelectorAll('tbody tr').length === 0) {
+                    location.reload();
+                }
+            } else {
+                alert('Error: ' + (data.error || 'Failed to approve mentor'));
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    });
+});
+</script>

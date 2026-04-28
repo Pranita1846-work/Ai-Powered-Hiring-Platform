@@ -1,0 +1,2768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruiter Dashboard - HireHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0F2A44;
+            --primary-dark: #081624;
+            --primary-light: #17385A;
+            --secondary: #13233A;
+            --secondary-dark: #0B1320;
+            --secondary-light: #1C3556;
+            --accent: #4FB6E8;
+            --accent-dark: #2F9FD9;
+            --accent-light: #7ED3F5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --background: #F5F7FB;
+            --card: #FFFFFF;
+            --text-primary: #172033;
+            --text-secondary: #64748B;
+            --border: #E5EAF0;
+            --dark: #0F2A44;
+            --gray: #64748B;
+            --light: #F5F7FB;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--light);
+            color: var(--dark);
+        }
+
+        /* ===== TOP BAR ===== */
+        .topbar {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1100;
+        }
+
+        .brand {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--primary);
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: color 0.3s;
+        }
+
+        .logout-btn:hover {
+            color: var(--primary);
+        }
+
+        /* ===== MAIN LAYOUT ===== */
+        .dashboard-container {
+            display: flex;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, #0f172a 0%, #13233A 100%);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem 0;
+            transition: transform 0.3s ease;
+            position: relative;
+            flex-shrink: 0;
+        }
+        
+        /* ===== MOBILE SIDEBAR FIX ===== */
+        @media (max-width: 768px) {
+        
+            /* Hide sidebar by default */
+            .sidebar {
+                position: fixed;
+                top: 60px;
+                left: 0;
+                width: 75vw;
+                max-width: 280px;
+                height: calc(100vh - 60px);
+                transform: translateX(-100%);
+                z-index: 1200;
+                padding: 1rem 0;
+                border-right: 1px solid rgba(0,0,0,0.1);
+                box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        
+            /* Show sidebar when hamburger is clicked */
+            .sidebar.active {
+                transform: translateX(0);
+            }
+        
+            /* Content should take full width */
+            .content {
+                width: 100%;
+                padding: 1rem;
+                flex: 1;
+            }
+            
+            /* Dashboard container on mobile */
+            .dashboard-container {
+                display: block;
+                position: relative;
+                min-height: calc(100vh - 60px);
+            }
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.9rem 1.5rem;
+            color: var(--gray);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .nav-item i {
+            font-size: 1.2rem;
+        }
+
+        .nav-item:hover {
+            background: rgba(79, 182, 232, 0.14);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: rgba(79, 182, 232, 0.22);
+            color: white;
+            border-left: 3px solid var(--accent);
+        }
+
+        .nav-item.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ===== CONTENT ===== */
+        .content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .section-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .stat-card, .info-card, .card-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 12px 30px rgba(15, 42, 68, 0.08);
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover, .card-item:hover {
+            box-shadow: 0 16px 34px rgba(15, 42, 68, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .stat-card i {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-card h4 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-card p {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .btn-primary-custom {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary-custom:hover {
+            background: #4f46e5;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(15, 42, 68, 0.3);
+        }
+
+        .btn-secondary-custom {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary-custom:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .completion-banner {
+            background: white;
+            border-left: 4px solid var(--warning);
+            padding: 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .badge-custom {
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-primary { background: rgba(99, 102, 241, 0.1); color: var(--primary); }
+        .badge-success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .badge-warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+
+        .progress-bar-custom {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transition: width 0.5s ease;
+        }
+
+        .locked-content {
+            filter: blur(4px);
+            position: relative;
+            pointer-events: none;
+        }
+
+        .locked-content::after {
+            content: "Complete profile, sign MOU, and wait for admin approval";
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #555;
+        }
+
+        /* If a modal is open, never let page-level lock overlays intercept modal clicks */
+        body.modal-open .locked-content,
+        body.modal-open .locked-content::after {
+            pointer-events: none !important;
+        }
+
+        /* Keep interview scheduling modals above sticky topbar/sidebar layers */
+        .modal-backdrop {
+            z-index: 2000 !important;
+        }
+
+        .modal {
+            z-index: 2050 !important;
+        }
+
+        /* ===== PROFILE ACTION BUTTONS ===== */
+        .profile-action-btn {
+            padding: 0.4rem 0.9rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: none;
+            background: white;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+
+        .profile-action-btn i {
+            font-size: 0.8rem;
+        }
+
+        .profile-action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-view-btn {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .profile-view-btn:hover {
+            background: rgba(79, 182, 232, 0.05);
+            border-color: var(--accent-dark);
+            color: var(--accent-dark);
+        }
+
+        .profile-edit-btn {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .profile-edit-btn:hover {
+            background: rgba(15, 42, 68, 0.05);
+            border-color: var(--primary-light);
+            color: var(--primary-light);
+        }
+
+        .profile-feedback-btn {
+            color: var(--warning);
+            border-color: var(--warning);
+        }
+
+        .profile-feedback-btn:hover {
+            background: rgba(245, 158, 11, 0.05);
+            border-color: #e0a700;
+            color: #d89700;
+        }
+
+        .profile-delete-btn {
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .profile-delete-btn:hover {
+            background: rgba(239, 68, 68, 0.05);
+            border-color: #dc2626;
+            color: #dc2626;
+        }
+
+        /* Make form labels bold and input fields normal weight */
+        .form-label {
+            font-weight: 600;
+        }
+
+        .form-control, .form-select {
+            font-weight: normal !important;
+        }
+
+        /* ===== AI CHATBOT ===== */
+        #ai-chatbot {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Toggle Button */
+        .chat-toggle {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        }
+
+        .chat-toggle img {
+            width: 32px;
+        }
+
+        /* Chat Box */
+        .chat-box {
+            width: 360px;
+            height: 520px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            animation: chatOpen 0.3s ease;
+        }
+
+        @keyframes chatOpen {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Header */
+        .chat-header {
+            background: #1e3a8a;
+            color: #fff;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .chat-title img {
+            width: 28px;
+        }
+
+        #chat-close {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        /* Body */
+        .chat-body {
+            flex: 1;
+            padding: 14px;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+
+        .chat-message {
+            max-width: 85%;
+            margin-bottom: 10px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+
+        .chat-message.bot {
+            background: #e0e7ff;
+            color: #1e3a8a;
+        }
+
+        .chat-message.user {
+            background: #2563eb;
+            color: #fff;
+            margin-left: auto;
+        }
+
+        /* Footer */
+        .chat-footer {
+            display: flex;
+            padding: 12px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .chat-footer input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            outline: none;
+        }
+
+        .chat-footer button {
+            margin-left: 8px;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0 16px;
+            cursor: pointer;
+        }
+
+        /* ===== UNIFIED ULTRA THEME (CANDIDATE/RECRUITER/ADMIN) ===== */
+        body {
+            background:
+                radial-gradient(circle at 8% 12%, rgba(79, 182, 232, 0.16), transparent 30%),
+                radial-gradient(circle at 88% 86%, rgba(15, 42, 68, 0.12), transparent 34%),
+                linear-gradient(145deg, #f4f8fd 0%, #ffffff 52%, #f6faff 100%);
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(15, 42, 68, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(15, 42, 68, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            opacity: 0.28;
+            z-index: 0;
+        }
+
+        .topbar {
+            box-shadow: 0 10px 30px rgba(15, 42, 68, 0.08);
+            border-bottom-color: rgba(15, 42, 68, 0.08);
+        }
+
+        .brand {
+            letter-spacing: 0.3px;
+            background: linear-gradient(135deg, #0f2a44, #2f9fd9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sidebar {
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 8px 0 24px rgba(5, 11, 20, 0.2);
+            overflow: hidden;
+        }
+
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            top: -100px;
+            right: -100px;
+            background: rgba(126, 211, 245, 0.14);
+            filter: blur(14px);
+        }
+
+        .nav-item {
+            border-radius: 12px;
+            margin: 0.25rem 0.7rem;
+            position: relative;
+        }
+
+        .nav-item.active {
+            border-left: none;
+            box-shadow: inset 0 0 0 1px rgba(126, 211, 245, 0.35), 0 8px 18px rgba(0, 0, 0, 0.2);
+        }
+
+        .content { position: relative; z-index: 1; }
+
+        .stat-card, .card-item, .info-card {
+            background: linear-gradient(170deg, #ffffff 0%, #f8fbff 100%);
+        }
+
+        .control-hero {
+            margin-bottom: 1.4rem;
+            border-radius: 20px;
+            padding: 1.2rem;
+            background: linear-gradient(135deg, #0f2a44 0%, #1a476f 58%, #2d77a8 100%);
+            color: #eef8ff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 18px 44px rgba(15, 42, 68, 0.26);
+        }
+
+        .control-hero::before {
+            content: '';
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            top: -100px;
+            right: -90px;
+            background: rgba(126, 211, 245, 0.24);
+            filter: blur(14px);
+        }
+
+        .control-hero-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 1fr;
+            gap: 1rem;
+            position: relative;
+            z-index: 1;
+            align-items: stretch;
+        }
+
+        .hero-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.12);
+            padding: 0.35rem 0.72rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 0.7rem;
+        }
+
+        .hero-title {
+            font-weight: 800;
+            font-size: clamp(1.2rem, 2.4vw, 1.9rem);
+            margin-bottom: 0.35rem;
+        }
+
+        .hero-sub {
+            color: rgba(238, 248, 255, 0.9);
+            font-size: 0.92rem;
+            margin: 0;
+        }
+
+        .hero-kpis {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.55rem;
+            margin-top: 0.95rem;
+        }
+
+        .hero-kpi {
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.23);
+            background: rgba(255, 255, 255, 0.11);
+            padding: 0.6rem;
+        }
+
+        .hero-kpi strong { display: block; font-size: 0.98rem; color: #fff; line-height: 1.1; }
+        .hero-kpi span { font-size: 0.74rem; color: rgba(238, 248, 255, 0.9); }
+
+        .hero-insight {
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.24);
+            background: rgba(255, 255, 255, 0.12);
+            padding: 0.9rem;
+            display: grid;
+            gap: 0.55rem;
+            align-content: start;
+        }
+
+        .insight-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.84rem;
+        }
+
+        .insight-row strong { color: #fff; }
+
+        .insight-bar {
+            height: 7px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        .insight-bar > span {
+            display: block;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #7ed3f5, #ffffff);
+            width: 78%;
+        }
+
+        @media (max-width: 768px) {
+            .control-hero-grid { grid-template-columns: 1fr; }
+            .hero-kpis { grid-template-columns: 1fr; }
+        }
+
+        /* Mobile adjustments for topbar */
+        @media (max-width: 768px) {
+            body {
+                overflow-x: hidden;
+            }
+            
+            .topbar {
+                padding: 0.6rem 1rem;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+            }
+        
+            .brand {
+                font-size: 1rem;
+                flex: 1;
+            }
+        
+            .user-info {
+                display: none;
+            }
+        
+            .user-avatar {
+                width: 32px;
+                height: 32px;
+                font-size: 0.85rem;
+            }
+
+            .user-section {
+                gap: 0.5rem;
+            }
+            
+            /* Nav items on mobile */
+            .nav-item {
+                padding: 0.75rem 1.25rem;
+                font-size: 0.95rem;
+            }
+
+            .nav-item i {
+                font-size: 1rem;
+            }
+
+            /* Sidebar text should not wrap */
+            .nav-item span {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            /* Tables */
+            table {
+                width: 100%;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    {% if maintenance_mode %}
+    <div style="background: #f59e0b; color: #222; text-align: center; padding: 8px 0; font-weight: 600;">
+        The platform is currently under maintenance. Some features may be unavailable.
+    </div>
+    {% endif %}
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+        <div class="brand">HireHub</div>
+        <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle menu">
+            <i class="bi bi-list"></i>
+        </button>
+        <div class="user-section">
+            <div class="user-avatar">R</div>
+            <div class="user-info">
+                <div class="user-name">Recruiter</div>
+                <div class="user-role">Recruiter</div>
+            </div>
+            <form method="POST" action="/logout" style="margin: 0;">
+                <button type="submit" class="logout-btn" title="Logout">
+                    <i class="bi bi-box-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- DASHBOARD CONTAINER -->
+    <div class="dashboard-container">
+        <!-- SIDEBAR -->
+        <div class="sidebar" id="sidebar">
+            <a href="/recruiter-dashboard?tab=overview" class="nav-item {{ 'active' if tab == 'overview' }}" onclick="toggleSidebar()">
+                <i class="bi bi-grid"></i>
+                <span>Overview</span>
+            </a>
+            <a href="/recruiter-dashboard?tab=profile" class="nav-item {{ 'active' if tab == 'profile' }}" onclick="toggleSidebar()">
+                <i class="bi bi-person"></i>
+                <span>Profile</span>
+            </a>
+            <a href="/recruiter-dashboard?tab=post" class="nav-item {{ 'active' if tab == 'post' }}" onclick="toggleSidebar()">
+                <i class="bi bi-plus-circle"></i>
+                <span>Post Job</span>
+            </a>
+            <a href="/recruiter-dashboard?tab=jobs" class="nav-item {{ 'active' if tab == 'jobs' }}" onclick="toggleSidebar()">
+                <i class="bi bi-briefcase"></i>
+                <span>Posted Jobs</span>
+            </a>
+            <a href="/applications" class="nav-item" onclick="toggleSidebar()">
+                <i class="bi bi-file-earmark-text"></i>
+                <span>Applications</span>
+            </a>
+            <a href="/interviews" class="nav-item" onclick="toggleSidebar()">
+                <i class="bi bi-calendar-event"></i>
+                <span>Interviews</span>
+            </a>
+            <a href="javascript:showFeedbackModal()" class="nav-item" onclick="toggleSidebar()">
+                <i class="bi bi-chat-dots"></i>
+                <span>Give Feedback</span>
+            </a>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="content">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{% if category == 'error' %}danger{% elif category == 'success' %}success{% elif category == 'warning' %}warning{% elif category == 'info' %}info{% else %}{{ category }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+                        <i class="bi bi-{% if category == 'error' or category == 'danger' %}exclamation-circle-fill{% elif category == 'success' %}check-circle-fill{% elif category == 'warning' %}exclamation-triangle-fill{% else %}info-circle-fill{% endif %}"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% if tab == 'overview' and request.endpoint == 'recruiter_dashboard' %}
+        <div class="control-hero">
+            <div class="control-hero-grid">
+                <div>
+                    <span class="hero-pill"><i class="bi bi-stars"></i> AI Hiring Command Center</span>
+                    <h3 class="hero-title">Build stronger pipelines. Hire faster.</h3>
+                    <p class="hero-sub">Monitor openings, application flow, and interview velocity in one extraordinary recruiter console.</p>
+
+                    <div class="hero-kpis">
+                        <div class="hero-kpi"><strong>{{ jobs_count|default(0) }}</strong><span>Live job postings</span></div>
+                        <div class="hero-kpi"><strong>{{ applications_count|default(0) }}</strong><span>Total applications</span></div>
+                        <div class="hero-kpi"><strong>{{ interviews_count|default(0) }}</strong><span>Interviews tracked</span></div>
+                    </div>
+                </div>
+                <div class="hero-insight">
+                    <div class="insight-row"><span>Verification state</span><strong>{{ verification_status|title if verification_status else 'Pending' }}</strong></div>
+                    <div class="insight-bar"><span style="width: {% if verification_status == 'approved' %}100{% elif verification_status == 'pending' %}65{% else %}35{% endif %}%;"></span></div>
+
+                    <div class="insight-row"><span>Pipeline energy</span><strong>{% if applications_count|default(0) > 20 %}High{% elif applications_count|default(0) > 5 %}Medium{% else %}Growing{% endif %}</strong></div>
+                    <div class="insight-bar"><span style="width: {{ [applications_count|default(0) * 4, 95]|min }}%;"></span></div>
+
+                    <div class="insight-row"><span>Offer momentum</span><strong>{{ offers_count|default(0) }}</strong></div>
+                    <div class="insight-bar"><span style="width: {{ [offers_count|default(0) * 12, 95]|min }}%;"></span></div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if profile_percent < 85 %}
+        <div class="completion-banner">
+            <div>
+                <h6 class="fw-bold mb-1">Step 1: Complete Recruiter Profile</h6>
+                <p class="mb-0 small text-muted">
+                    Complete at least <b>85%</b> of your profile to proceed to Step 2 (MOU Signing). Current completion: <b>{{ profile_percent }}%</b>
+                </p>
+            </div>
+
+            <a href="/recruiter-dashboard?tab=profile" class="btn btn-primary-custom">
+                Complete Profile
+            </a>
+        </div>
+        {% elif profile and not profile.agreement_accepted %}
+            {% if profile.mou_reset_reason == 'major_change' %}
+            <div class="completion-banner" style="border-left-color: #f59e0b;">
+                <div>
+                    <h6 class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill"></i> Re-Verification Required - Major Profile Changes Detected</h6>
+                    <p class="mb-0 small text-muted">
+                        You made major changes affecting your company's legal identity (company name, registration number, or verification documents). Your previous MOU has been invalidated. You must digitally sign the updated MOU again and submit for admin re-verification.
+                    </p>
+                </div>
+                <a href="/recruiter/mou" class="btn btn-warning">
+                    Re-sign MOU for Re-Verification
+                </a>
+            </div>
+            {% else %}
+            <div class="completion-banner" style="border-left-color: #0ea5e9;">
+                <div>
+                    <h6 class="fw-bold mb-1"><i class="bi bi-file-earmark-text"></i> Step 2: Sign Company MOU</h6>
+                    <p class="mb-0 small text-muted">
+                        Your profile is at least 85% complete. Please review and digitally sign the Memorandum of Understanding (MOU) to send your company for admin verification.
+                    </p>
+                </div>
+                <a href="/recruiter/mou" class="btn btn-primary-custom">
+                    Review & Sign MOU
+                </a>
+            </div>
+            {% endif %}
+        {% elif verification_status == 'pending' %}
+        <div class="completion-banner" style="border-left-color: #f59e0b;">
+            <div>
+                <h6 class="fw-bold mb-1"><i class="bi bi-clock-history"></i> Submitted for Admin Verification</h6>
+                <p class="mb-0 small text-muted">
+                    Your profile and digitally signed MOU have been submitted. The admin will review your company details and counter-sign the MOU to approve your account. You will receive notification once verification is complete.
+                </p>
+            </div>
+            <div>
+                <span class="badge bg-warning text-dark">Pending Admin Verification</span>
+            </div>
+        </div>
+        {% elif verification_status == 'rejected' %}
+        <div class="completion-banner" style="border-left-color: #ef4444;">
+            <div>
+                <h6 class="fw-bold mb-1"><i class="bi bi-x-circle"></i> Verification Rejected</h6>
+                <p class="mb-0 small text-muted">
+                    Your verification request was rejected by the admin. Please update your profile with valid company information and re-submit for approval. Ensure all company verification details are accurate.
+                </p>
+            </div>
+            <div>
+                <span class="badge bg-danger">Rejected</span>
+            </div>
+        </div>
+        {% elif verification_status == 'approved' and tab == 'profile' %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-left: 4px solid #10b981;">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <strong>Verified Recruiter:</strong> Your profile is verified and approved. You can edit profile information anytime. <strong>Minor changes</strong> (contact info, job categories, salary ranges) are updated instantly. <strong>Major changes</strong> (company name, registration documents) will invalidate your MOU and require admin re-verification.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+
+        <div class="{% if (profile_percent < 85 or verification_status != 'approved') and (tab!='profile') and request.endpoint not in ['review_test', 'interviews'] %}locked-content{% endif %}">
+
+            {% block dashboard_content %}
+            {% if tab=='profile' %}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h3 class="fw-bold mb-1">Recruiter Profile</h3>
+                    <div class="d-flex align-items-center mt-1">
+                        <div class="me-3 small fw-bold">Completion: <span id="completionPercent">{{ profile_percent or 0 }}</span>%</div>
+                        <div class="progress-bar-custom" style="width: 240px;">
+                            <div id="completionBar" class="bg-warning h-100" style="width: {{ profile_percent or 0 }}%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    {% if profile %}
+                    <button type="button" class="profile-action-btn profile-view-btn" onclick="toggleView(true)" title="View Profile">
+                        <i class="bi bi-eye"></i> View
+                    </button>
+                    <button type="button" class="profile-action-btn profile-edit-btn" onclick="toggleEditMode(true)" title="Edit Profile">
+                        <i class="bi bi-pencil"></i> Edit
+                    </button>
+                    <form method="POST" action="/recruiter/delete-profile" onsubmit="return confirm('Delete your recruiter profile?');" class="d-inline">
+                        <button type="submit" class="profile-action-btn profile-delete-btn" title="Delete Profile">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </form>
+                    {% if profile.agreement_pdf and profile.agreement_accepted %}
+                    <a href="/recruiter/mou/pdf" target="_blank" class="profile-action-btn" style="background: #10b981; color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;" title="View Signed MOU">
+                        <i class="bi bi-file-earmark-pdf"></i> View MOU
+                    </a>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if profile %}
+            <div id="view-mode" class="info-card mb-3">
+                <div class="d-flex align-items-center mb-1">
+                    {% if profile.logo_file %}
+                        <img src="{{ url_for('static', filename='uploads/' + profile.logo_file) }}" alt="Company Logo" style="max-height: 180px; max-width: 400px; object-fit: contain;" class="me-2">
+                    {% endif %}
+                    <div class="fw-bold fs-1">{{ profile.company_name }}</div>
+                </div>
+                
+                <!-- Personal Info Section -->
+                <h6 class="fw-bold mt-3 mb-2" style="border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem;">Personal Information</h6>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Name</small>
+                        <div class="fw-semibold">{{ profile.full_name }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Phone</small>
+                        <div class="fw-semibold">{{ profile.phone }}</div>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Designation</small>
+                        <div class="fw-semibold">{{ profile.designation }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Official Work Email</small>
+                        <div class="fw-semibold">{{ profile.work_email or 'N/A' }}</div>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Years of Experience</small>
+                        <div class="fw-semibold">{{ profile.recruiting_experience or 'N/A' }} years</div>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">LinkedIn</small>
+                        {% if profile.linkedin %}<a href="{{ profile.linkedin }}" target="_blank">View Profile</a>{% else %}<span class="text-muted">N/A</span>{% endif %}
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Recruitment Specialization</small>
+                        <div class="fw-semibold">
+                            {% if profile.specialization %}
+                                {% for spec in profile.specialization.split(',') %}
+                                    <span class="badge bg-info me-1">{{ spec.strip() }}</span>
+                                {% endfor %}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Languages Spoken</small>
+                        <div class="fw-semibold">
+                            {% if profile.languages %}
+                                {% for lang in profile.languages.split(',') %}
+                                    <span class="badge bg-secondary me-1">{{ lang.strip() }}</span>
+                                {% endfor %}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                
+                <!-- Company Info Section -->
+                <h6 class="fw-bold mt-3 mb-2" style="border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem;">Company Information</h6>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Company Name</small>
+                        <div class="fw-semibold">{{ profile.company_name }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Registration Number (CIN)</small>
+                        <div class="fw-semibold">{{ profile.company_registration or 'N/A' }}</div>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-3">
+                        <small class="text-muted d-block">Company Type</small>
+                        <div class="fw-semibold">{{ profile.company_type or 'N/A' }}</div>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block">Founded Year</small>
+                        <div class="fw-semibold">{{ profile.founded_year or 'N/A' }}</div>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block">Company Size</small>
+                        <div class="fw-semibold">{{ profile.company_size or 'N/A' }}</div>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block">Industry Type</small>
+                        <div class="fw-semibold">{{ profile.industry or 'N/A' }}</div>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Headquarters Location</small>
+                        <div class="fw-semibold">{{ profile.headquarters_location or 'N/A' }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Website</small>
+                        {% if profile.website %}<a href="{{ profile.website }}" target="_blank">{{ profile.website }}</a>{% else %}<span class="text-muted">N/A</span>{% endif %}
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Company LinkedIn Page</small>
+                        {% if profile.company_linkedin %}<a href="{{ profile.company_linkedin }}" target="_blank">View on LinkedIn</a>{% else %}<span class="text-muted">N/A</span>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Address</small>
+                        <div class="fw-semibold">{{ profile.address or 'N/A' }}</div>
+                    </div>
+                </div>
+                <hr>
+                
+                <!-- Hiring Preferences Section -->
+                <h6 class="fw-bold mt-3 mb-2" style="border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem;">Hiring Preferences</h6>
+                <div class="row mb-2">
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Roles</small>
+                        <div class="fw-semibold">{{ profile.roles or 'N/A' }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Experience Levels</small>
+                        <div class="fw-semibold">{{ profile.experience_levels or 'N/A' }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Job Types</small>
+                        <div class="fw-semibold">{{ profile.job_types or 'N/A' }}</div>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Primary Hiring Locations</small>
+                        <div class="fw-semibold">
+                            {% if profile.hiring_locations %}
+                                {% for loc in profile.hiring_locations.split(',') %}
+                                    <span class="badge bg-success me-1">{{ loc.strip() }}</span>
+                                {% endfor %}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </div>
+                        {% if profile.specific_locations %}
+                            <small class="text-muted d-block mt-1">Specific Cities: {{ profile.specific_locations }}</small>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Interview Mode</small>
+                        <div class="fw-semibold"><span class="badge bg-primary">{{ profile.interview_mode or 'N/A' }}</span></div>
+                    </div>
+                </div>
+                <hr>
+                
+                <!-- Documents Section -->
+                <h6 class="fw-bold mt-3 mb-2">Verification Documents</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Registration Doc</small>
+                        {% if profile.company_doc %}
+                        <a href="{{ url_for('static', filename='uploads/' + profile.company_doc) }}" target="_blank">View</a>
+                        {% else %}<span class="text-muted">N/A</span>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Authorization Doc</small>
+                        {% if profile.auth_doc %}
+                        <a href="{{ url_for('static', filename='uploads/' + profile.auth_doc) }}" target="_blank">View</a>
+                        {% else %}<span class="text-muted">N/A</span>{% endif %}
+                    </div>
+                    <div class="col-md-6 mt-2">
+                        <small class="text-muted d-block">Company Geotag Photos PDF</small>
+                        {% if profile.geo_tag_pdf %}
+                        <a href="{{ url_for('static', filename='uploads/' + profile.geo_tag_pdf) }}" target="_blank">View PDF</a>
+                        {% else %}<span class="text-muted">N/A</span>{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div id="edit-mode" class="info-card {% if profile %}d-none{% endif %}">
+                <form method="POST" action="/save-recruiter-profile" enctype="multipart/form-data">
+                    <h6 class="fw-bold mb-2">Section 1: Personal Info</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" name="full_name" class="form-control" value="{{ profile.full_name if profile }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Phone</label>
+                            <input type="text" name="phone" class="form-control" value="{{ profile.phone if profile }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Designation</label>
+                            <input type="text" name="designation" class="form-control" value="{{ profile.designation if profile }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Official Work Email <span class="text-danger">*</span></label>
+                            <input type="email" name="work_email" class="form-control" value="{{ profile.work_email if profile }}" placeholder="name@company.com" required>
+                            <small class="text-muted">Must be your company domain email</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">LinkedIn</label>
+                            <input type="url" name="linkedin" class="form-control" value="{{ profile.linkedin if profile }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Years of Recruiting Experience</label>
+                            <input type="number" name="recruiting_experience" class="form-control" value="{{ profile.recruiting_experience if profile }}" min="0" max="70" placeholder="e.g., 5">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Recruitment Specialization</label>
+                            <div class="border rounded p-3" style="background-color: #f8fafc;">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="specialization" value="Tech Hiring" id="spec_tech" 
+                                        {% if profile and 'Tech Hiring' in (profile.specialization or '') %}checked{% endif %}>
+                                    <label class="form-check-label" for="spec_tech">Tech Hiring</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="specialization" value="Contract Hiring" id="spec_contract"
+                                        {% if profile and 'Contract Hiring' in (profile.specialization or '') %}checked{% endif %}>
+                                    <label class="form-check-label" for="spec_contract">Contract Hiring</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="specialization" value="Campus Hiring" id="spec_campus"
+                                        {% if profile and 'Campus Hiring' in (profile.specialization or '') %}checked{% endif %}>
+                                    <label class="form-check-label" for="spec_campus">Campus Hiring</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="specialization" value="Non-Tech Hiring" id="spec_nontech"
+                                        {% if profile and 'Non-Tech Hiring' in (profile.specialization or '') %}checked{% endif %}>
+                                    <label class="form-check-label" for="spec_nontech">Non-Tech Hiring</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Languages Spoken</label>
+                            <div class="border rounded p-3" style="background-color: #f8fafc;">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="languages" value="English" id="lang_en"
+                                        {% if profile and 'English' in (profile.languages or '') %}checked{% endif %}>
+                                    <label class="form-check-label" for="lang_en">English</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="languages" value="Hindi" id="lang_hi"
+                                        {% if profile and 'Hindi' in (profile.languages or '') %}checked{% endif %}>
+                                    <label class="form-check-label" for="lang_hi">Hindi</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="languages" value="Marathi" id="lang_es"
+                                        {% if profile and 'Marathi' in (profile.languages or '') %}checked{% endif %}>
+                                    <label class="form-check-label" for="lang_es">Marathi</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="languages" value="French" id="lang_fr"
+                                        {% if profile and 'French' in (profile.languages or '') %}checked{% endif %}>
+                                    <label class="form-check-label" for="lang_fr">French</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="languages" value="Spanish" id="lang_zh"
+                                        {% if profile and 'Spanish' in (profile.languages or '') %}checked{% endif %}>
+                                    <label class="form-check-label" for="lang_zh">Spanish</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-2">Section 2: Company Info</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Company Name</label>
+                            <input type="text" name="company_name" class="form-control" value="{{ profile.company_name if profile }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Company Registration Number (CIN) <span class="text-muted">(Optional)</span></label>
+                            <input type="text" name="company_registration" class="form-control" value="{{ profile.company_registration if profile }}" placeholder="e.g., U72900DL1965PTC003619">
+                            <small class="text-muted">Optional: leave empty to save as NA</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Type</label>
+                            <input type="text" name="company_type" class="form-control" value="{{ profile.company_type if profile }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Company Founded Year</label>
+                            <input type="number" name="founded_year" class="form-control" value="{{ profile.founded_year if profile }}" min="1800" max="2099" placeholder="e.g., 2010">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Size</label>
+                            <input type="text" name="company_size" class="form-control" value="{{ profile.company_size if profile }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Industry</label>
+                            <input type="text" name="industry" class="form-control" value="{{ profile.industry if profile }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Website</label>
+                            <input type="url" name="website" class="form-control" value="{{ profile.website if profile }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Headquarters Location <span class="text-danger">*</span></label>
+                            <input type="text" name="headquarters_location" class="form-control location-autocomplete" value="{{ profile.headquarters_location if profile }}" placeholder="Start typing city, state, country..." required>
+                            <small class="text-muted">City, State, Country format</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Company LinkedIn Page URL</label>
+                            <input type="url" name="company_linkedin" class="form-control" value="{{ profile.company_linkedin if profile }}" placeholder="https://linkedin.com/company/...">
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Address</label>
+                            <input type="text" name="address" class="form-control" value="{{ profile.address if profile }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Company Logo</label>
+                            <input type="file" name="logo_file" class="form-control">
+                            {% if profile and profile.logo_file %}
+                            <small class="text-muted">Current: {{ profile.logo_file }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-2">Section 3: Hiring Preferences</h6>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Roles</label>
+                            <input type="text" name="roles" class="form-control" value="{{ profile.roles if profile }}" placeholder="e.g., Frontend, Backend">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Experience Levels</label>
+                            <input type="text" name="experience_levels" class="form-control" value="{{ profile.experience_levels if profile }}" placeholder="e.g., Junior, Mid, Senior">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Job Types</label>
+                            <input type="text" name="job_types" class="form-control" value="{{ profile.job_types if profile }}" placeholder="e.g., Full-time, Contract">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Primary Hiring Locations <span class="text-danger">*</span></label>
+                            <div class="border rounded p-3" style="background-color: #f8fafc;">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="hiring_locations" value="Remote" id="loc_remote"
+                                        {% if profile and 'Remote' in (profile.hiring_locations or '') %}checked{% endif %}>
+                                    <label class="form-check-label" for="loc_remote">Remote</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="hiring_locations" value="On-Site" id="loc_onsite"
+                                        {% if profile and 'On-Site' in (profile.hiring_locations or '') %}checked{% endif %}>
+                                    <label class="form-check-label" for="loc_onsite">On-Site</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="hiring_locations" value="Hybrid" id="loc_hybrid"
+                                        {% if profile and 'Hybrid' in (profile.hiring_locations or '') %}checked{% endif %}>
+                                    <label class="form-check-label" for="loc_hybrid">Hybrid</label>
+                                </div>
+                            </div>
+                            <input type="text" name="specific_locations" class="form-control location-autocomplete mt-3" value="{{ profile.specific_locations if profile }}" placeholder="Specific cities (e.g., Mumbai, Bangalore, Delhi)">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Interview Mode Preference <span class="text-danger">*</span></label>
+                            <div class="border rounded p-3" style="background-color: #f8fafc;">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="interview_mode" value="Online" id="interview_online"
+                                        {% if profile and profile.interview_mode == 'Online' %}checked{% endif %} required>
+                                    <label class="form-check-label" for="interview_online">Online</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="interview_mode" value="Offline" id="interview_offline"
+                                        {% if profile and profile.interview_mode == 'Offline' %}checked{% endif %} required>
+                                    <label class="form-check-label" for="interview_offline">Offline</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="interview_mode" value="Hybrid" id="interview_hybrid"
+                                        {% if profile and profile.interview_mode == 'Hybrid' %}checked{% endif %} required>
+                                    <label class="form-check-label" for="interview_hybrid">Hybrid</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                    </div>
+
+                    <h6 class="fw-bold mb-2">Section 4: Verification Docs</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Registration Doc</label>
+                            <input type="file" name="company_doc" class="form-control">
+                            {% if profile and profile.company_doc %}
+                            <small class="text-muted">Current: {{ profile.company_doc }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Authorization Doc</label>
+                            <input type="file" name="auth_doc" class="form-control">
+                            {% if profile and profile.auth_doc %}
+                            <small class="text-muted">Current: {{ profile.auth_doc }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Authorization Document Format (Sample)</label>
+                            <div class="pt-2">
+                                <a href="{{ url_for('static', filename='images/auth.png') }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-box-arrow-up-right me-1"></i>Open Sample Format
+                                </a>
+                            </div>
+                            <small class="text-muted d-block mt-2">Click to open sample authorization format</small>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-2 mt-3">Section 5: Company Geotag Photos (2-3 photos combined in one PDF)</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Geotag Photos PDF</label>
+                            <input type="file" name="geo_tag_pdf" class="form-control" accept=".pdf">
+                            <small class="text-muted">Upload a PDF containing 2-3 location photos with geotag data</small>
+                            {% if profile and profile.geo_tag_pdf %}
+                            <div class="mt-2">
+                                <small class="text-muted">Current: {{ profile.geo_tag_pdf }}</small><br>
+                                <a href="{{ url_for('static', filename='uploads/' + profile.geo_tag_pdf) }}" target="_blank" class="btn btn-sm btn-outline-primary mt-1">
+                                    <i class="bi bi-file-pdf me-1"></i>View PDF
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary-custom">
+                            <i class="bi bi-check-circle me-2"></i>Save Profile
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Real-time Profile Completion Calculator -->
+                <script>
+                    // Essential fields for completion percentage (CIN and other optional fields are excluded)
+                    const profileFields = [
+                        'full_name',
+                        'phone',
+                        'designation',
+                        'linkedin',
+                        'company_name',
+                        'company_type',
+                        'company_size',
+                        'industry',
+                        'roles',
+                        'experience_levels'
+                    ];
+                    
+                    function calculateCompletionPercentage() {
+                        let filledCount = 0;
+                        const totalFields = profileFields.length;
+                        
+                        profileFields.forEach(fieldName => {
+                            let field = document.querySelector(`[name="${fieldName}"]`);
+                            
+                            if (field) {
+                                let value = '';
+                                
+                                if (field.type === 'checkbox') {
+                                    // For checkboxes, check if any checkbox with this name is checked
+                                    const checkboxes = document.querySelectorAll(`input[name="${fieldName}"][type="checkbox"]`);
+                                    const checkedOne = Array.from(checkboxes).some(cb => cb.checked);
+                                    value = checkedOne ? 'filled' : '';
+                                } else if (field.type === 'radio') {
+                                    // For radio buttons, check if any is selected
+                                    const radios = document.querySelectorAll(`input[name="${fieldName}"][type="radio"]`);
+                                    const checkedOne = Array.from(radios).some(rb => rb.checked);
+                                    value = checkedOne ? 'filled' : '';
+                                } else if (field.type === 'file') {
+                                    // For file inputs, check if a file has been selected or if it has a value
+                                    value = field.value || (field.dataset.filename ? 'filled' : '');
+                                } else {
+                                    // For text, number, email, url inputs
+                                    value = field.value ? field.value.trim() : '';
+                                }
+                                
+                                // Count as filled if it has a non-empty value
+                                if (value && value !== '0' && value !== 'None') {
+                                    filledCount++;
+                                }
+                            }
+                        });
+                        
+                        // Calculate percentage
+                        const percentage = Math.round((filledCount / totalFields) * 100);
+                        
+                        // Update display
+                        const completionPercent = document.getElementById('completionPercent');
+                        const completionBar = document.getElementById('completionBar');
+                        
+                        if (completionPercent) {
+                            completionPercent.textContent = percentage;
+                        }
+                        
+                        if (completionBar) {
+                            completionBar.style.width = percentage + '%';
+                            
+                            // Change color based on percentage
+                            if (percentage >= 80) {
+                                completionBar.className = 'bg-success h-100';
+                            } else if (percentage >= 60) {
+                                completionBar.className = 'bg-info h-100';
+                            } else if (percentage >= 40) {
+                                completionBar.className = 'bg-warning h-100';
+                            } else {
+                                completionBar.className = 'bg-danger h-100';
+                            }
+                        }
+                    }
+                    
+                    // Add event listeners to all form inputs
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Add listeners to all input, select, and textarea elements
+                        const formElements = document.querySelectorAll('#edit-mode input, #edit-mode select, #edit-mode textarea');
+                        
+                        formElements.forEach(element => {
+                            element.addEventListener('input', calculateCompletionPercentage);
+                            element.addEventListener('change', calculateCompletionPercentage);
+                        });
+                        
+                        // Initial calculation
+                        calculateCompletionPercentage();
+                    });
+                </script>
+            </div>
+            
+            {% elif tab=='overview' %}
+            <h3 class="fw-bold mb-4">Recruiter Dashboard</h3>
+
+            <!-- STATS -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card text-center">
+                        <i class="bi bi-briefcase"></i>
+                        <h4>{{ jobs_count }}</h4>
+                        <p>Jobs Posted</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card text-center">
+                        <i class="bi bi-people"></i>
+                        <h4>{{ applications_count }}</h4>
+                        <p>Applications</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card text-center">
+                        <i class="bi bi-calendar-check"></i>
+                        <h4>{{ interviews_count }}</h4>
+                        <p>Interviews</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card text-center">
+                        <i class="bi bi-award"></i>
+                        <h4>{{ offers_count }}</h4>
+                        <p>Offers Sent</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EXTRA INFO -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="info-card">
+                        <h6 class="fw-bold mb-2">Verification Status</h6>
+                        {% if profile and not profile.agreement_accepted %}
+                            <span class="badge bg-info text-dark">MOU Signature Pending</span>
+                        {% elif verification_status == 'approved' %}
+                            <span class="badge bg-success">Verified</span>
+                        {% elif verification_status == 'rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">Pending Admin Verification</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="info-card">
+                        <h6 class="fw-bold mb-2">Upcoming Interviews</h6>
+                        {% if upcoming_interviews and upcoming_interviews|length > 0 %}
+                        <ul class="small mb-0">
+                            {% for interview in upcoming_interviews %}
+                            <li>
+                                <strong>{{ interview.interview_time or 'TBD' }}</strong> – {{ interview.job_title }}
+                                <br><small class="text-muted">{{ interview.candidate_name }}</small>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="small text-muted mb-0">No interviews scheduled in the next 7 days</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="info-card">
+                        <h6 class="fw-bold mb-2">AI Insight</h6>
+                        <p class="small mb-0">
+                            Low response detected on one job. Suggested skills: React, Docker
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUICK ACTIONS -->
+            <div class="info-card">
+                <h6 class="fw-bold mb-3">Quick Actions</h6>
+
+                    <a href="/recruiter-dashboard?tab=post" class="btn btn-primary-custom me-2">
+                        <i class="bi bi-plus-circle"></i> Post Job
+                    </a>
+
+                <a href="/applications" class="btn btn-outline-primary rounded-pill px-4 me-2">
+                    View Applications
+                </a>
+
+                <a href="/interviews" class="btn btn-outline-primary rounded-pill px-4">
+                    Schedule Interview
+                </a>
+            </div>
+            
+            {% elif tab=='post' %}
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 8px 8px 0 0; padding: 20px 24px; border-left: 4px solid #3b82f6;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="bi bi-briefcase-fill" style="font-size: 1.5rem;"></i>
+                        <div>
+                            <h5 style="margin: 0; font-weight: 700; font-size: 1.25rem;">Create Job Posting</h5>
+                            <p style="margin: 4px 0 0 0; font-size: 0.875rem; opacity: 0.9;">Post a new job opportunity to attract top talent</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="/post-job">
+                        <h6 class="fw-bold">Job Information</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Job Title</label>
+                                <input id="jd_job_title" name="title" type="text" class="form-control" placeholder="eg: Software Engineer" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Department</label>
+                                <input name="department" type="text" class="form-control" placeholder="eg: Engineering">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Job Type</label>
+                                <select name="job_type" class="form-select">
+                                    <option selected>Full-Time</option>
+                                    <option>Part-Time</option>
+                                    <option>Internship</option>
+                                    <option>Contract</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Employment Mode</label>
+                                <select id="jd_employment_type" name="employment_mode" class="form-select">
+                                    <option selected>Onsite</option>
+                                    <option>Remote</option>
+                                    <option>Hybrid</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">No. of Openings</label>
+                                <input name="openings" type="number" min="1" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label mb-0">Job Description</label>
+                                <button type="button" id="generateJdBtn" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-magic me-1"></i>Generate JD
+                                </button>
+                            </div>
+                            <textarea id="jd_description" name="description" class="form-control" rows="12" placeholder="Use 'Generate JD' to auto-create a professional, structured description."></textarea>
+                            <small class="text-muted d-block mt-2">
+                                Auto-generates: Job Summary, Key Responsibilities, Required Skills, Preferred Qualifications, Benefits, and Company Overview.
+                            </small>
+                        </div>
+
+                        <h6 class="fw-bold">Skills & Qualifications</h6>
+                        <div class="mb-3">
+                            <label class="form-label">Required Skills</label>
+                            <input id="jd_skills" name="skills" type="text" class="form-control" placeholder="Python, Flask, React">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Min Experience (Years)</label>
+                                <input id="jd_min_exp" name="min_experience" type="number" class="form-control">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Max Experience (Years)</label>
+                                <input id="jd_max_exp" name="max_experience" type="number" class="form-control">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Education Level</label>
+                                <input name="education" type="text" class="form-control" placeholder="Diploma, Graduate, ...">
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold">Location & Salary</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Job Location</label>
+                                <input id="jd_location" name="location" type="text" class="form-control location-autocomplete" placeholder="Start typing city or Remote...">
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle"></i> Start typing for location suggestions
+                                </small>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Salary Min</label>
+                                <input name="salary_min" type="text" class="form-control">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Salary Max</label>
+                                <input name="salary_max" type="text" class="form-control">
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold">Application Details</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Application Deadline</label>
+                                <input name="deadline" type="date" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Interview Mode</label>
+                                <select name="interview_mode" class="form-select">
+                                    <option>Online</option>
+                                    <option>Offline</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success px-4"><i class="bi bi-check2-circle me-1"></i>Post Job</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% elif tab=='jobs' %}
+            <!-- Enhanced Posted Jobs Section -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h3 class="fw-bold mb-1">Posted Jobs</h3>
+                        <p class="text-muted small mb-0">Manage and track all your job postings</p>
+                    </div>
+                    <a href="/recruiter-dashboard?tab=post" class="btn btn-primary-custom">
+                        <i class="bi bi-plus-circle me-2"></i>Post New Job
+                    </a>
+                </div>
+
+                <!-- Filters & Search -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-body p-3">
+                        <div class="row g-3">
+                            <div class="col-md-5">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                                    <input type="text" id="jobSearchInput" class="form-control border-start-0" placeholder="Search jobs by title, department...">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select" id="statusFilter">
+                                    <option value="">All Status</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Closed">Closed</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select" id="typeFilter">
+                                    <option value="">All Types</option>
+                                    <option value="Full-Time">Full-Time</option>
+                                    <option value="Part-Time">Part-Time</option>
+                                    <option value="Internship">Internship</option>
+                                    <option value="Contract">Contract</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" id="sortBy">
+                                    <option value="recent">Most Recent</option>
+                                    <option value="oldest">Oldest First</option>
+                                    <option value="applicants">Most Applicants</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if jobs %}
+                    <!-- Jobs List -->
+                    {% for job in jobs %}
+                    <div class="card border-0 shadow-sm mb-3 job-card" data-job-id="{{ job.id }}">
+                        <div class="card-body p-4">
+                            <div class="row align-items-start">
+                                <!-- Left: Job Info -->
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-start mb-2">
+                                        <div class="flex-grow-1">
+                                            <h5 class="fw-bold mb-1">{{ job.title }}</h5>
+                                            <div class="d-flex flex-wrap gap-2 mb-2">
+                                                <span class="badge bg-light text-dark border"><i class="bi bi-building me-1"></i>{{ job.department or 'General' }}</span>
+                                                <span class="badge bg-primary">{{ job.job_type or 'Full-Time' }}</span>
+                                                <span class="badge bg-info text-dark"><i class="bi bi-geo-alt me-1"></i>{{ job.employment_mode or job.location or 'Onsite' }}</span>
+                                                {% if job.salary_min and job.salary_max %}
+                                                <span class="badge bg-success"><i class="bi bi-currency-dollar me-1"></i>{{ job.salary_min }} - {{ job.salary_max }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            {% if job.status == 'active' %}
+                                                <span class="badge bg-success px-3 py-2">Active</span>
+                                            {% elif job.status == 'pending' %}
+                                                <span class="badge bg-warning text-dark px-3 py-2">Pending</span>
+                                            {% elif job.status == 'closed' %}
+                                                <span class="badge bg-secondary px-3 py-2">Closed</span>
+                                            {% else %}
+                                                <span class="badge bg-muted px-3 py-2">{{ job.status }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3 small text-muted">
+                                        <div class="col-auto">
+                                            <i class="bi bi-briefcase me-1"></i>{{ job.min_experience or 0 }}-{{ job.max_experience or 0 }} years
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="bi bi-calendar-event me-1"></i>Posted: {{ job.created_at.strftime('%b %d, %Y') if job.created_at else 'N/A' }}
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="bi bi-clock me-1"></i>Deadline: {{ job.deadline.strftime('%b %d, %Y') if job.deadline else 'No deadline' }}
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="bi bi-people me-1"></i>Openings: {{ job.openings or 1 }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Right: Stats & Actions -->
+                                <div class="col-md-4">
+                                    <!-- Applicant Pipeline -->
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="small text-muted">Applicants Pipeline</span>
+                                            <span class="badge bg-primary-subtle text-primary">{{ job.application_count or 0 }} Total</span>
+                                        </div>
+                                        <div class="d-flex gap-1 mb-1">
+                                            <div class="flex-fill bg-primary" style="height: 4px; opacity: 0.8;"></div>
+                                            <div class="flex-fill bg-info" style="height: 4px; opacity: 0.6;"></div>
+                                            <div class="flex-fill bg-warning" style="height: 4px; opacity: 0.4;"></div>
+                                            <div class="flex-fill bg-success" style="height: 4px; opacity: 0.2;"></div>
+                                        </div>
+                                        <div class="d-flex justify-content-between small text-muted">
+                                            <span>Applied</span>
+                                            <span>Shortlisted</span>
+                                            <span>Interview</span>
+                                            <span>Offered</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Actions -->
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleJobDetails({{ job.id }})" title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <a href="/recruiter-dashboard?tab=edit-job&job_id={{ job.id }}" class="btn btn-sm btn-outline-secondary" title="Edit Job">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button
+                                            class="btn btn-sm btn-outline-info"
+                                            data-job-id="{{ job.id }}"
+                                            onclick="shareJob(this)"
+                                            title="Share Link">
+                                            <i class="bi bi-share"></i>
+                                        </button>
+                                        <form action="/duplicate-job/{{ job.id }}" method="POST" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-warning" title="Duplicate">
+                                                <i class="bi bi-files"></i>
+                                            </button>
+                                        </form>
+                                        <form action="/toggle-job-status/{{ job.id }}" method="POST" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-success" title="{% if job.deadline and job.deadline >= today %}Pause Job{% else %}Resume Job{% endif %}">
+                                                <i class="bi bi-{% if job.deadline and job.deadline >= today %}pause-circle{% else %}play-circle{% endif %}"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Expandable Job Details -->
+                            <div id="jobDetails{{ job.id }}" class="d-none border-top pt-4 mt-4">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h6 class="fw-bold mb-3"><i class="bi bi-file-text me-2"></i>Job Description</h6>
+                                        <p class="text-muted" style="white-space: pre-line;">{{ job.description or 'No description provided.' }}</p>
+                                        
+                                        <h6 class="fw-bold mb-2 mt-4"><i class="bi bi-wrench me-2"></i>Required Skills</h6>
+                                        <p class="text-muted">{{ job.skills or 'Not specified' }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="bg-light p-3 rounded-3">
+                                            <h6 class="fw-bold mb-3"><i class="bi bi-bar-chart me-2"></i>Job Overview</h6>
+                                            
+                                            <div class="mb-3">
+                                                <small class="text-muted d-block fw-bold"><i class="bi bi-cash-coin me-1"></i>SALARY</small>
+                                                <span class="fw-semibold">{% if job.salary_min and job.salary_max %}{{ job.salary_min }} - {{ job.salary_max }}{% else %}Not Disclosed{% endif %}</span>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <small class="text-muted d-block fw-bold"><i class="bi bi-graph-up me-1"></i>EXPERIENCE</small>
+                                                <span class="fw-semibold">{{ job.min_experience or 0 }} - {{ job.max_experience or 0 }} Years</span>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <small class="text-muted d-block fw-bold"><i class="bi bi-mortarboard me-1"></i>EDUCATION</small>
+                                                <span class="fw-semibold">{{ job.education or 'Not specified' }}</span>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <small class="text-muted d-block fw-bold"><i class="bi bi-people me-1"></i>OPENINGS</small>
+                                                <span class="fw-semibold">{{ job.openings or 'Not specified' }}</span>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <small class="text-muted d-block fw-bold"><i class="bi bi-calendar-event me-1"></i>DEADLINE</small>
+                                                <span class="fw-semibold">{{ job.deadline.strftime('%b %d, %Y') if job.deadline else 'Not specified' }}</span>
+                                            </div>
+                                            
+                                            <div class="mb-0">
+                                                <small class="text-muted d-block fw-bold"><i class="bi bi-camera-video me-1"></i>INTERVIEW MODE</small>
+                                                <span class="fw-semibold">{{ job.interview_mode or 'Not specified' }}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mt-3">
+                                            <a href="/recruiter-dashboard?tab=edit-job&job_id={{ job.id }}" class="btn btn-outline-primary w-100">
+                                                <i class="bi bi-pencil me-2"></i>Edit This Job
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                {% else %}
+                    <!-- Empty State -->
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center py-5">
+                            <div class="mb-3">
+                                <i class="bi bi-briefcase text-muted" style="font-size: 4rem;"></i>
+                            </div>
+                            <h5 class="fw-bold mb-2">No Jobs Posted Yet</h5>
+                            <p class="text-muted mb-4">Start by creating your first job posting to attract top talent.</p>
+                            <a href="/recruiter-dashboard?tab=post" class="btn btn-primary-custom px-4">
+                                <i class="bi bi-plus-circle me-2"></i>Post Your First Job
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% elif tab=='edit-job' %}
+            <!-- Edit Job Section -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="fw-bold mb-0">Edit Job</h3>
+                    <a href="/recruiter-dashboard?tab=jobs" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Jobs
+                    </a>
+                </div>
+
+                {% if edit_job %}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <form method="POST" action="/edit-job/{{ edit_job.id }}">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Job Title *</label>
+                                    <input type="text" name="title" class="form-control" value="{{ edit_job.title }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Department *</label>
+                                    <input type="text" name="department" class="form-control" value="{{ edit_job.department }}" required>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Location *</label>
+                                    <input type="text" name="location" class="form-control location-autocomplete" value="{{ edit_job.location }}" required>
+                                    <small class="text-muted">
+                                        <i class="bi bi-info-circle"></i> Start typing for suggestions
+                                    </small>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Job Type *</label>
+                                    <select name="job_type" class="form-select" required>
+                                        <option value="Full-Time" {% if edit_job.job_type == 'Full-Time' %}selected{% endif %}>Full-Time</option>
+                                        <option value="Part-Time" {% if edit_job.job_type == 'Part-Time' %}selected{% endif %}>Part-Time</option>
+                                        <option value="Contract" {% if edit_job.job_type == 'Contract' %}selected{% endif %}>Contract</option>
+                                        <option value="Internship" {% if edit_job.job_type == 'Internship' %}selected{% endif %}>Internship</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Employment Mode *</label>
+                                    <select name="employment_mode" class="form-select" required>
+                                        <option value="Onsite" {% if edit_job.employment_mode == 'Onsite' %}selected{% endif %}>Onsite</option>
+                                        <option value="Remote" {% if edit_job.employment_mode == 'Remote' %}selected{% endif %}>Remote</option>
+                                        <option value="Hybrid" {% if edit_job.employment_mode == 'Hybrid' %}selected{% endif %}>Hybrid</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Minimum Salary</label>
+                                    <input type="number" name="salary_min" class="form-control" value="{{ edit_job.salary_min }}" placeholder="e.g., 50000">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Maximum Salary</label>
+                                    <input type="number" name="salary_max" class="form-control" value="{{ edit_job.salary_max }}" placeholder="e.g., 80000">
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Minimum Experience (Years) *</label>
+                                    <input type="number" name="min_experience" class="form-control" value="{{ edit_job.min_experience }}" required min="0">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Maximum Experience (Years) *</label>
+                                    <input type="number" name="max_experience" class="form-control" value="{{ edit_job.max_experience }}" required min="0">
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Education Required *</label>
+                                    <input type="text" name="education" class="form-control" value="{{ edit_job.education }}" placeholder="e.g., Bachelor's Degree" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Number of Openings *</label>
+                                    <input type="number" name="openings" class="form-control" value="{{ edit_job.openings }}" required min="1">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Application Deadline</label>
+                                    <input type="date" name="deadline" class="form-control" value="{{ edit_job.deadline }}">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Job Description *</label>
+                                <textarea name="description" class="form-control" rows="6" required>{{ edit_job.description }}</textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Required Skills *</label>
+                                <textarea name="skills" class="form-control" rows="3" placeholder="e.g., Python, JavaScript, SQL" required>{{ edit_job.skills }}</textarea>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Interview Mode *</label>
+                                <select name="interview_mode" class="form-select" required>
+                                    <option value="Online" {% if edit_job.interview_mode == 'Online' %}selected{% endif %}>Online</option>
+                                    <option value="In-Person" {% if edit_job.interview_mode == 'In-Person' %}selected{% endif %}>In-Person</option>
+                                    <option value="Hybrid" {% if edit_job.interview_mode == 'Hybrid' %}selected{% endif %}>Hybrid</option>
+                                </select>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-success px-4">
+                                    <i class="bi bi-check-circle me-2"></i>Update Job
+                                </button>
+                                <a href="/recruiter-dashboard?tab=jobs" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle me-2"></i>Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-danger">Job not found</div>
+                {% endif %}
+            </div>
+
+            {% endif %}
+            {% endblock %}
+
+            <style>
+                .job-card {
+                    transition: transform 0.2s, box-shadow 0.2s;
+                }
+                .job-card:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.12) !important;
+                }
+                [data-bs-toggle="collapse"]:not(.collapsed) .show-more {
+                    display: none !important;
+                }
+                [data-bs-toggle="collapse"]:not(.collapsed) .show-less {
+                    display: inline !important;
+                }
+            </style>
+
+            <script>
+                // Toggle job details expandable section
+                function toggleJobDetails(jobId) {
+                    const detailsElement = document.getElementById('jobDetails' + jobId);
+                    if (detailsElement) {
+                        detailsElement.classList.toggle('d-none');
+                    }
+                }
+
+                function shareJob(btn) {
+                    const jobId = btn.dataset.jobId;
+                    const jobUrl = window.location.origin + '/recruiter-dashboard?tab=jobs&job_id=' + jobId;
+
+                    if (navigator.share) {
+                        navigator.share({
+                            title: 'Job Posting',
+                            url: jobUrl
+                        });
+                    } else {
+                        navigator.clipboard.writeText(jobUrl);
+                        alert('Job link copied to clipboard!');
+                    }
+                }
+                // Filter functionality
+                document.getElementById('jobSearchInput')?.addEventListener('input', filterJobs);
+                document.getElementById('statusFilter')?.addEventListener('change', filterJobs);
+                document.getElementById('typeFilter')?.addEventListener('change', filterJobs);
+
+                function filterJobs() {
+                    const search = document.getElementById('jobSearchInput').value.toLowerCase();
+                    const status = document.getElementById('statusFilter').value;
+                    const type = document.getElementById('typeFilter').value;
+
+                    document.querySelectorAll('.job-card').forEach(card => {
+                        const text = card.textContent.toLowerCase();
+                        const matchSearch = !search || text.includes(search);
+                        const matchStatus = !status || text.includes(status.toLowerCase());
+                        const matchType = !type || text.includes(type.toLowerCase());
+
+                        card.style.display = (matchSearch && matchStatus && matchType) ? '' : 'none';
+                    });
+                }
+            </script>
+
+        </div>
+    </main>
+</div>
+
+<script>
+    function toggleEditMode(show) {
+        const edit = document.getElementById('edit-mode');
+        const view = document.getElementById('view-mode');
+        if (!edit) return;
+        if (show) {
+            edit.classList.remove('d-none');
+            if (view) view.classList.add('d-none');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            edit.classList.add('d-none');
+            if (view) view.classList.remove('d-none');
+        }
+    }
+
+    function toggleView(show) {
+        const edit = document.getElementById('edit-mode');
+        const view = document.getElementById('view-mode');
+        if (!view) return;
+        if (show) {
+            view.classList.remove('d-none');
+            if (edit) edit.classList.add('d-none');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    // Location Autocomplete Script
+    function initLocationAutocomplete() {
+        const locationInputs = document.querySelectorAll('.location-autocomplete');
+        
+        locationInputs.forEach(input => {
+            let debounceTimer = null;
+            
+            const container = document.createElement('div');
+            container.className = 'location-autocomplete-container';
+            container.style.cssText = 'position: relative;';
+            input.parentNode.insertBefore(container, input);
+            container.appendChild(input);
+            
+            const resultsDiv = document.createElement('div');
+            resultsDiv.className = 'location-autocomplete-results';
+            resultsDiv.style.cssText = `
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: white;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                max-height: 300px;
+                overflow-y: auto;
+                z-index: 1000;
+                display: none;
+                margin-top: 4px;
+            `;
+            container.appendChild(resultsDiv);
+            
+            input.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                const query = this.value.trim();
+                
+                if (query.length < 2) {
+                    resultsDiv.style.display = 'none';
+                    return;
+                }
+                
+                debounceTimer = setTimeout(() => {
+                    fetchLocationSuggestions(query, resultsDiv, input);
+                }, 300);
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (!container.contains(e.target)) {
+                    resultsDiv.style.display = 'none';
+                }
+            });
+        });
+    }
+    
+    async function fetchLocationSuggestions(query, resultsDiv, input) {
+        try {
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=8&addressdetails=1`,
+                {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                }
+            );
+            
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            const data = await response.json();
+            displaySuggestions(data, resultsDiv, input);
+        } catch (error) {
+            console.error('Error fetching location suggestions:', error);
+            resultsDiv.innerHTML = '<div style="padding: 12px; color: #ef4444; font-size: 0.875rem;"><i class="bi bi-exclamation-circle"></i> Unable to load suggestions</div>';
+            resultsDiv.style.display = 'block';
+        }
+    }
+    
+    function displaySuggestions(locations, resultsDiv, input) {
+        if (!locations || locations.length === 0) {
+            resultsDiv.innerHTML = '<div style="padding: 12px; color: #6b7280; font-size: 0.875rem;"><i class="bi bi-info-circle"></i> No locations found</div>';
+            resultsDiv.style.display = 'block';
+            return;
+        }
+        
+        resultsDiv.innerHTML = '';
+        
+        locations.forEach(location => {
+            const item = document.createElement('div');
+            item.className = 'location-autocomplete-item';
+            item.style.cssText = `
+                padding: 12px 16px;
+                cursor: pointer;
+                transition: background 0.2s;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 0.9rem;
+            `;
+            
+            let displayName = location.display_name;
+            const parts = displayName.split(',').map(p => p.trim());
+            
+            let shortName = '';
+            if (parts.length > 0) {
+                if (parts.length >= 3) {
+                    shortName = `${parts[0]}, ${parts[parts.length-2]}, ${parts[parts.length-1]}`;
+                } else {
+                    shortName = displayName;
+                }
+            }
+            
+            item.innerHTML = `
+                <div style="font-weight: 500; color: #1f2933; margin-bottom: 2px;">
+                    <i class="bi bi-geo-alt-fill" style="color: #4fb6e8; margin-right: 6px;"></i>
+                    ${shortName}
+                </div>
+                <div style="font-size: 0.75rem; color: #6b7280; margin-left: 22px;">
+                    ${location.type ? location.type.charAt(0).toUpperCase() + location.type.slice(1) : 'Location'}
+                </div>
+            `;
+            
+            item.addEventListener('mouseenter', function() {
+                this.style.background = '#f8fafc';
+            });
+            item.addEventListener('mouseleave', function() {
+                this.style.background = 'white';
+            });
+            
+            item.addEventListener('click', function() {
+                input.value = shortName;
+                resultsDiv.style.display = 'none';
+                
+                const event = new Event('change', { bubbles: true });
+                input.dispatchEvent(event);
+            });
+            
+            resultsDiv.appendChild(item);
+        });
+        
+        resultsDiv.style.display = 'block';
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initLocationAutocomplete);
+    } else {
+        initLocationAutocomplete();
+    }
+</script>
+
+<!-- ===== AI CHATBOT WIDGET ===== -->
+<div id="ai-chatbot">
+    <div class="chat-toggle">
+        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="AI">
+    </div>
+
+    <div class="chat-box">
+        <div class="chat-header">
+            <div class="chat-title">
+                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png">
+                <span>Chat with AI</span>
+            </div>
+            <button id="chat-close">✕</button>
+        </div>
+
+        <div class="chat-body" id="chat-body">
+            <div class="chat-message bot">
+                👋 Hi! I'm your AI assistant.  
+                Ask me anything about <b>HireHub</b>.
+            </div>
+        </div>
+
+        <div class="chat-footer">
+            <input type="text" id="chat-input" placeholder="Type your question..." />
+            <button id="chat-send">➤</button>
+        </div>
+    </div>
+</div>
+
+<script>
+
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const isActive = sidebar.classList.toggle('active');
+    
+    // Create or remove backdrop overlay for mobile
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+        let backdrop = document.getElementById('sidebarBackdrop');
+        if (isActive && !backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.id = 'sidebarBackdrop';
+            backdrop.style.cssText = `
+                position: fixed;
+                top: 60px;
+                left: 0;
+                width: 100%;
+                height: calc(100vh - 60px);
+                background: rgba(0, 0, 0, 0.4);
+                z-index: 1199;
+                transition: opacity 0.3s ease;
+            `;
+            backdrop.addEventListener('click', toggleSidebar);
+            document.body.appendChild(backdrop);
+        } else if (!isActive && backdrop) {
+            backdrop.remove();
+        }
+    }
+}
+
+// Close sidebar when clicking nav items on mobile
+function closeSidebarOnNavClick() {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar.classList.contains('active')) {
+            toggleSidebar();
+        }
+    }
+}
+
+// Listen for window resize to handle mobile/desktop switching
+window.addEventListener('resize', () => {
+    const sidebar = document.querySelector('.sidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    if (window.innerWidth > 768) {
+        sidebar.classList.remove('active');
+        if (backdrop) backdrop.remove();
+    }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    // ===== Automatic Job Description Generator (Post Job Tab) =====
+    const generateJdBtn = document.getElementById('generateJdBtn');
+    const jdTitle = document.getElementById('jd_job_title');
+    const jdMinExp = document.getElementById('jd_min_exp');
+    const jdMaxExp = document.getElementById('jd_max_exp');
+    const jdLocation = document.getElementById('jd_location');
+    const jdEmployment = document.getElementById('jd_employment_type');
+    const jdSkills = document.getElementById('jd_skills');
+    const jdDescription = document.getElementById('jd_description');
+
+    function toTitleCase(value) {
+        return (value || '')
+            .toString()
+            .trim()
+            .toLowerCase()
+            .replace(/\b\w/g, (char) => char.toUpperCase());
+    }
+
+    function parseSkills(rawSkills) {
+        if (!rawSkills) return [];
+        return rawSkills
+            .split(',')
+            .map(skill => skill.trim())
+            .filter(Boolean)
+            .slice(0, 8);
+    }
+
+    function buildExperienceText(minVal, maxVal) {
+        const hasMin = minVal !== '' && minVal !== null && minVal !== undefined;
+        const hasMax = maxVal !== '' && maxVal !== null && maxVal !== undefined;
+
+        if (hasMin && hasMax) return `${minVal}-${maxVal} years`;
+        if (hasMin) return `${minVal}+ years`;
+        if (hasMax) return `Up to ${maxVal} years`;
+        return 'Relevant professional experience';
+    }
+
+    function generateJobDescriptionText() {
+        const jobTitle = toTitleCase(jdTitle?.value || 'Professional');
+        const location = (jdLocation?.value || 'Location to be discussed').trim();
+        const employmentType = (jdEmployment?.value || 'Full-Time').trim();
+        const experienceText = buildExperienceText(jdMinExp?.value, jdMaxExp?.value);
+        const skills = parseSkills(jdSkills?.value);
+
+        if (!jdTitle?.value?.trim()) {
+            alert('Please enter Job Title first to generate a tailored JD.');
+            jdTitle?.focus();
+            return null;
+        }
+
+        const coreSkills = skills.length ? skills : ['Communication', 'Problem Solving', 'Team Collaboration'];
+        const firstSkill = coreSkills[0] || 'core technical domain';
+
+        const responsibilities = [
+            `Design, execute, and continuously improve end-to-end workflows related to ${jobTitle} responsibilities.`,
+            `Collaborate with cross-functional stakeholders to deliver high-quality outcomes aligned with business priorities.`,
+            `Own day-to-day execution, ensuring timelines, quality benchmarks, and operational standards are consistently met.`,
+            `Apply ${firstSkill} and related competencies to solve practical challenges and drive measurable impact.`,
+            `Document processes, insights, and recommendations clearly for internal alignment and decision-making.`,
+            `Support continuous improvement initiatives by identifying risks, bottlenecks, and optimization opportunities.`
+        ];
+
+        const requiredSkills = coreSkills.map(skill => `• ${skill}`);
+
+        const preferredQualifications = [
+            `• Experience in a similar ${jobTitle} role within fast-paced, growth-oriented environments.`,
+            `• Demonstrated ability to balance execution speed with quality and attention to detail.`,
+            `• Strong communication and stakeholder management skills across teams.`
+        ];
+
+        const benefits = [
+            '• Competitive compensation aligned with market standards',
+            '• Learning and development opportunities with real growth pathways',
+            '• Collaborative, high-performance team culture',
+            `• Flexible work setup (${employmentType}) based on role needs`,
+            '• Opportunity to contribute to impactful, business-critical initiatives'
+        ];
+
+        return [
+            '1. Job Summary (2-3 lines)',
+            `${jobTitle} role focused on delivering high-quality outcomes in a ${employmentType} setup at ${location}.`,
+            `We are looking for professionals with ${experienceText} and strong capability in ${coreSkills.slice(0, 3).join(', ')} to drive execution and impact.`,
+            '',
+            '2. Key Responsibilities (5-7 bullet points)',
+            ...responsibilities.map(item => `• ${item}`),
+            '',
+            '3. Required Skills (bullet points)',
+            ...requiredSkills,
+            '',
+            '4. Preferred Qualifications (optional)',
+            ...preferredQualifications,
+            '',
+            '5. Benefits (optional but attractive)',
+            ...benefits,
+            '',
+            '6. Company Overview (2-3 lines, generic if not provided)',
+            'We are a growth-focused organization committed to building innovative, scalable, and people-first solutions.',
+            'Our teams value ownership, collaboration, and continuous learning while solving meaningful business challenges.',
+            'Join us to work on impactful initiatives in a supportive and high-performance environment.'
+        ].join('\n');
+    }
+
+    if (generateJdBtn && jdDescription) {
+        generateJdBtn.addEventListener('click', () => {
+            const generated = generateJobDescriptionText();
+            if (!generated) return;
+            jdDescription.value = generated;
+            jdDescription.focus();
+            jdDescription.setSelectionRange(jdDescription.value.length, jdDescription.value.length);
+        });
+    }
+
+    const toggle = document.querySelector('.chat-toggle');
+    const chatBox = document.querySelector('.chat-box');
+    const closeBtn = document.getElementById('chat-close');
+    const sendBtn = document.getElementById('chat-send');
+    const input = document.getElementById('chat-input');
+    const body = document.getElementById('chat-body');
+
+    toggle.addEventListener('click', () => {
+        chatBox.style.display = 'flex';
+    });
+
+    closeBtn.addEventListener('click', () => {
+        chatBox.style.display = 'none';
+    });
+
+    sendBtn.addEventListener('click', sendMessage);
+
+    input.addEventListener("keypress", e => {
+        if (e.key === "Enter") sendMessage();
+    });
+
+    function sendMessage() {
+        const text = input.value.trim();
+        if (!text) return;
+
+        addMessage(text, 'user');
+        input.value = '';
+
+        botReply(text);
+    }
+
+    function addMessage(text, type) {
+        const msg = document.createElement('div');
+        msg.className = `chat-message ${type}`;
+        msg.innerText = text;
+        body.appendChild(msg);
+        body.scrollTop = body.scrollHeight;
+    }
+
+    // 🔥 REAL AI BACKEND CALL (ROLE-AWARE)
+    async function botReply(text) {
+        addMessage("Typing...", "bot");
+
+        try {
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: text })
+            });
+
+            const data = await res.json();
+
+            // remove "Typing..."
+            const typingMsg = body.querySelector(".chat-message.bot:last-child");
+            if (typingMsg) typingMsg.remove();
+
+            addMessage(data.reply, "bot");
+
+        } catch (error) {
+            console.error("Chatbot error:", error);
+            addMessage("Sorry, something went wrong. Please try again.", "bot");
+        }
+    }
+});
+</script>
+
+<script>
+    // Maintenance mode alert
+    {% if user_role != 'admin' %}
+    async function showMaintenanceAlertIfNeeded() {
+        try {
+            const res = await fetch('/api/maintenance-status');
+            const data = await res.json();
+            if (data.maintenance) {
+                alert('The platform is currently under maintenance. Some features may be unavailable.');
+            }
+        } catch (e) {}
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', showMaintenanceAlertIfNeeded);
+    } else {
+        showMaintenanceAlertIfNeeded();
+    }
+    {% endif %}
+</script>
+
+<!-- FEEDBACK MODAL -->
+<div id="feedbackModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; overflow-y: auto; padding: 1rem;">
+            <div style="background: white; padding: 2rem; border-radius: 12px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); margin: auto;">
+        <h3 style="margin-top: 0; color: var(--primary);">Share Your Feedback</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Help us improve the platform. Your feedback is valuable to our admin team.</p>
+        
+        <form id="feedbackForm">
+            <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.75rem; color: var(--primary);">Rating</label>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(44px, 1fr)); gap: 0.5rem; align-items: center;">
+                            <label style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem; cursor: pointer;">
+                                <input type="radio" name="rating" value="1" style="cursor: pointer;" required>
+                                <span style="cursor: pointer; user-select: none; font-size: 1.4rem; line-height: 1;">⭐</span>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary);">1</span>
+                            </label>
+                            <label style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem; cursor: pointer;">
+                                <input type="radio" name="rating" value="2" style="cursor: pointer;">
+                                <span style="cursor: pointer; user-select: none; font-size: 1.4rem; line-height: 1;">⭐</span>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary);">2</span>
+                            </label>
+                            <label style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem; cursor: pointer;">
+                                <input type="radio" name="rating" value="3" style="cursor: pointer;">
+                                <span style="cursor: pointer; user-select: none; font-size: 1.4rem; line-height: 1;">⭐</span>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary);">3</span>
+                            </label>
+                            <label style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem; cursor: pointer;">
+                                <input type="radio" name="rating" value="4" style="cursor: pointer;">
+                                <span style="cursor: pointer; user-select: none; font-size: 1.4rem; line-height: 1;">⭐</span>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary);">4</span>
+                            </label>
+                            <label style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem; cursor: pointer;">
+                                <input type="radio" name="rating" value="5" style="cursor: pointer;">
+                                <span style="cursor: pointer; user-select: none; font-size: 1.4rem; line-height: 1;">⭐</span>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary);">5</span>
+                            </label>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--primary);">Your Feedback</label>
+                <textarea name="comment" placeholder="Tell us what you think..." required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; resize: vertical; min-height: 120px;"></textarea>
+            </div>
+
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button type="submit" style="flex: 1 1 160px; padding: 0.75rem; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Send Feedback</button>
+                <button type="button" onclick="closeFeedbackModal()" style="flex: 1 1 160px; padding: 0.75rem; background: var(--border); color: var(--text-primary); border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function showFeedbackModal() {
+        document.getElementById('feedbackModal').style.display = 'flex';
+    }
+
+    function closeFeedbackModal() {
+        document.getElementById('feedbackModal').style.display = 'none';
+        document.getElementById('feedbackForm').reset();
+    }
+
+    document.getElementById('feedbackForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(document.getElementById('feedbackForm'));
+        
+        try {
+            const res = await fetch('/submit-feedback', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                alert('Thank you for your feedback! We appreciate your input.');
+                closeFeedbackModal();
+            } else {
+                alert('Error: ' + (data.error || 'Failed to submit feedback'));
+            }
+        } catch (error) {
+            alert('Error submitting feedback: ' + error.message);
+        }
+    });
+
+    // Close modal when clicking outside
+    document.getElementById('feedbackModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeFeedbackModal();
+        }
+    });
+</script>
+
+<!-- Bootstrap JavaScript (required for dropdowns) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    (function () {
+        if (window.__professionalAlertInstalled) return;
+        window.__professionalAlertInstalled = true;
+
+        const style = document.createElement('style');
+        style.textContent = `
+            #pro-alert-container { position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 12px; max-width: min(420px, calc(100vw - 24px)); }
+            .pro-alert { background: #fff; border-radius: 14px; box-shadow: 0 16px 40px rgba(15,42,68,.18); border-left: 5px solid #4FB6E8; padding: 14px 14px 14px 16px; color: #1F2933; font: 500 14px/1.45 Inter,Segoe UI,sans-serif; transform: translateY(-10px); opacity: 0; transition: all .22s ease; white-space: pre-line; display:flex; gap:10px; align-items:flex-start; }
+            .pro-alert.show { opacity: 1; transform: translateY(0); }
+            .pro-alert.success { border-left-color: #10b981; }
+            .pro-alert.error { border-left-color: #ef4444; }
+            .pro-alert.warning { border-left-color: #f59e0b; }
+            .pro-alert .icon { font-size: 16px; margin-top: 1px; }
+            .pro-alert .content { flex: 1; }
+            .pro-alert .close-btn { border: 0; background: transparent; color: #64748b; font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px; }
+            @media (max-width: 768px) { #pro-alert-container { left: 10px; right: 10px; top: 10px; max-width: none; } }
+        `;
+        document.head.appendChild(style);
+
+        const typeOf = (message) => {
+            const text = String(message || '').toLowerCase();
+            if (text.includes('error') || text.includes('failed') || text.includes('not found') || text.includes('could not')) return 'error';
+            if (text.includes('warning') || text.includes('please') || text.includes('required') || text.includes('invalid')) return 'warning';
+            if (text.includes('success') || text.includes('submitted') || text.includes('saved') || text.includes('generated') || text.includes('approved')) return 'success';
+            return 'info';
+        };
+
+        const iconOf = (type) => type === 'success' ? '✅' : (type === 'error' || type === 'warning') ? '⚠️' : 'ℹ️';
+
+        window.alert = function (message) {
+            let container = document.getElementById('pro-alert-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'pro-alert-container';
+                document.body.appendChild(container);
+            }
+
+            const type = typeOf(message);
+            const toast = document.createElement('div');
+            toast.className = `pro-alert ${type}`;
+            toast.innerHTML = `<div class="icon">${iconOf(type)}</div><div class="content">${String(message || '')}</div><button class="close-btn" aria-label="Close">×</button>`;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+
+            const close = () => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 220); };
+            toast.querySelector('.close-btn').addEventListener('click', close);
+            setTimeout(close, 5000);
+        };
+    })();
+</script>
+</body>
+</html>

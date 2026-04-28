@@ -1,0 +1,432 @@
+{% extends 'base.html' %}
+
+{% block title %}Activity Timeline{% endblock %}
+
+{% block content %}
+<style>
+    .timeline-container {
+        background: #f8f9fa;
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    .timeline-header {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        text-align: center;
+        height: 100%;
+        transition: transform 0.3s;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stat-card h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-card p {
+        color: #6c757d;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    
+    .filters-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .filter-btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid #dee2e6;
+        background: white;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin: 0.25rem;
+    }
+    
+    .filter-btn:hover {
+        background: #6366f1;
+        color: white;
+        border-color: #6366f1;
+    }
+    
+    .filter-btn.active {
+        background: #6366f1;
+        color: white;
+        border-color: #6366f1;
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 3rem;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 1rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+    
+    .timeline-item {
+        position: relative;
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s;
+    }
+    
+    .timeline-item:hover {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        transform: translateX(5px);
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -2.5rem;
+        top: 1.5rem;
+        width: 1rem;
+        height: 1rem;
+        border-radius: 50%;
+        background: white;
+        border: 3px solid #6366f1;
+        z-index: 2;
+    }
+    
+    .timeline-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        margin-right: 1rem;
+    }
+    
+    .activity-application { background: #e3f2fd; color: #1976d2; }
+    .activity-test { background: #f3e5f5; color: #7b1fa2; }
+    .activity-interview { background: #fff3e0; color: #f57c00; }
+    .activity-profile { background: #e8f5e9; color: #388e3c; }
+    .activity-mentorship { background: #fce4ec; color: #c2185b; }
+    .activity-job { background: #e0f2f1; color: #00897b; }
+    
+    .activity-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        color: #212529;
+    }
+    
+    .activity-description {
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+    
+    .activity-time {
+        font-size: 0.85rem;
+        color: #adb5bd;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 1rem;
+    }
+    
+    .back-btn {
+        background: #6366f1;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s;
+    }
+    
+    .back-btn:hover {
+        background: #4f46e5;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .search-box {
+        position: relative;
+    }
+    
+    .search-box input {
+        padding-left: 2.5rem;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .search-box i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+    @media (max-width: 768px) {
+
+        /* Page padding */
+        .timeline-container {
+            padding: 1rem 0;
+        }
+    
+        /* Header stack */
+        .timeline-header .d-flex {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+    
+        /* Stats cards spacing */
+        .stat-card {
+            padding: 1rem;
+        }
+    
+        .stat-card h3 {
+            font-size: 1.5rem;
+        }
+    
+        /* Filters stack cleanly */
+        .filters-section .row > div {
+            margin-bottom: 1rem;
+        }
+    
+        /* Timeline layout fix */
+        .timeline {
+            padding-left: 0;
+        }
+    
+        .timeline::before {
+            display: none;
+        }
+    
+        .timeline-item {
+            padding: 1rem;
+        }
+    
+        .timeline-item::before {
+            display: none;
+        }
+    
+        /* Activity row stack */
+        .timeline-item .d-flex {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+    
+        .timeline-icon {
+            margin-right: 0;
+        }
+    
+        /* Badge alignment */
+        .timeline-item .badge {
+            align-self: flex-start;
+        }
+    
+        /* Disable hover animation on touch */
+        .timeline-item:hover {
+            transform: none;
+        }
+    }
+
+</style>
+
+<div class="timeline-container">
+    <div class="container">
+        <!-- Header -->
+        <div class="timeline-header">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="mb-0"><i class="fas fa-clock"></i> Activity Timeline</h2>
+                {% if user_role == 'mentor' %}
+                <a href="/mentor-dashboard" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                {% else %}
+                <a href="/candidate-dashboard" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                {% endif %}
+            </div>
+            <p class="text-muted mb-0">Track all your activities and interactions on the platform</p>
+        </div>
+
+        <!-- Statistics Cards -->
+        {% if activity_stats %}
+        <div class="row mb-4">
+            {% for stat in activity_stats %}
+            <div class="col-md-3 mb-3">
+                <div class="stat-card">
+                    <h3 class="text-primary">{{ stat.count }}</h3>
+                    <p>{{ stat.activity_type|capitalize }} Activities</p>
+                    {% if stat.last_activity %}
+                    <small class="text-muted">Last: {{ stat.last_activity.strftime('%b %d, %Y') }}</small>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Filters Section -->
+        <div class="filters-section">
+            <div class="row align-items-center">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <label class="mb-2"><strong>Filter by Type:</strong></label>
+                    <div>
+                        <button class="filter-btn {% if current_filter == 'all' %}active{% endif %}" onclick="filterActivities('all')">
+                            All
+                        </button>
+                        <button class="filter-btn {% if current_filter == 'application' %}active{% endif %}" onclick="filterActivities('application')">
+                            Applications
+                        </button>
+                        <button class="filter-btn {% if current_filter == 'test' %}active{% endif %}" onclick="filterActivities('test')">
+                            Tests
+                        </button>
+                        <button class="filter-btn {% if current_filter == 'interview' %}active{% endif %}" onclick="filterActivities('interview')">
+                            Interviews
+                        </button>
+                        <button class="filter-btn {% if current_filter == 'mentorship' %}active{% endif %}" onclick="filterActivities('mentorship')">
+                            Mentorship
+                        </button>
+                        <button class="filter-btn {% if current_filter == 'profile' %}active{% endif %}" onclick="filterActivities('profile')">
+                            Profile
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3 mb-md-0">
+                    <label class="mb-2"><strong>Time Period:</strong></label>
+                    <select class="form-select" onchange="filterByDate(this.value)">
+                        <option value="all" {% if current_date == 'all' %}selected{% endif %}>All Time</option>
+                        <option value="today" {% if current_date == 'today' %}selected{% endif %}>Today</option>
+                        <option value="week" {% if current_date == 'week' %}selected{% endif %}>Last 7 Days</option>
+                        <option value="month" {% if current_date == 'month' %}selected{% endif %}>Last 30 Days</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="mb-2"><strong>Search:</strong></label>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search activities..." value="{{ search_query or '' }}" onkeyup="handleSearch(event)">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        {% if activities %}
+        <div class="timeline">
+            {% for activity in activities %}
+            <div class="timeline-item">
+                <div class="d-flex">
+                    <div class="timeline-icon activity-{{ activity.activity_type }}">
+                        {% if activity.activity_type == 'application' %}
+                            <i class="fas fa-file-alt"></i>
+                        {% elif activity.activity_type == 'test' %}
+                            <i class="fas fa-clipboard-check"></i>
+                        {% elif activity.activity_type == 'interview' %}
+                            <i class="fas fa-video"></i>
+                        {% elif activity.activity_type == 'profile' %}
+                            <i class="fas fa-user"></i>
+                        {% elif activity.activity_type == 'mentorship' %}
+                            <i class="fas fa-chalkboard-teacher"></i>
+                        {% elif activity.activity_type == 'job' %}
+                            <i class="fas fa-briefcase"></i>
+                        {% else %}
+                            <i class="fas fa-bell"></i>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="activity-title">{{ activity.activity_title }}</div>
+                        <div class="activity-description">{{ activity.activity_description }}</div>
+                        <div class="activity-time">
+                            <i class="far fa-clock"></i>
+                            {{ activity.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                        </div>
+                    </div>
+                    <span class="badge bg-primary" style="height: fit-content;">
+                        {{ activity.activity_type|capitalize }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-history"></i>
+            <h4>No Activities Yet</h4>
+            <p class="text-muted">Your activity timeline will appear here as you interact with the platform</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function filterActivities(type) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('type', type);
+        url.searchParams.delete('search');
+        window.location.href = url.toString();
+    }
+    
+    function filterByDate(period) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('date', period);
+        window.location.href = url.toString();
+    }
+    
+    function handleSearch(event) {
+        if (event.key === 'Enter') {
+            const searchTerm = event.target.value.trim();
+            const url = new URL(window.location.href);
+            if (searchTerm) {
+                url.searchParams.set('search', searchTerm);
+            } else {
+                url.searchParams.delete('search');
+            }
+            window.location.href = url.toString();
+        }
+    }
+</script>
+{% endblock %}

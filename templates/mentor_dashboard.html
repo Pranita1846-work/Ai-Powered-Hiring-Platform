@@ -1,0 +1,2364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentor Dashboard - HireHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0F2A44;
+            --primary-dark: #081624;
+            --primary-light: #17385A;
+            --secondary: #13233A;
+            --secondary-dark: #0B1320;
+            --secondary-light: #1C3556;
+            --accent: #4FB6E8;
+            --accent-dark: #2F9FD9;
+            --accent-light: #7ED3F5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --background: #F5F7FB;
+            --card: #FFFFFF;
+            --text-primary: #172033;
+            --text-secondary: #64748B;
+            --border: #E5EAF0;
+            --dark: #0F2A44;
+            --gray: #64748B;
+            --light: #F5F7FB;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--light);
+            color: var(--dark);
+        }
+
+        /* ===== TOP BAR ===== */
+        .topbar {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1100;
+        }
+
+        .brand {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--primary);
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: color 0.3s;
+        }
+
+        .logout-btn:hover {
+            color: var(--primary);
+        }
+
+        /* ===== MAIN LAYOUT ===== */
+        .dashboard-container {
+            display: flex;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, #0f172a 0%, #13233A 100%);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem 0;
+            transition: transform 0.3s ease;
+            position: relative;
+            flex-shrink: 0;
+        }
+        
+        /* ===== MOBILE SIDEBAR FIX ===== */
+        @media (max-width: 768px) {
+        
+            /* Hide sidebar by default */
+            .sidebar {
+                position: fixed;
+                top: 60px;              /* height of topbar */
+                left: 0;
+                width: 75vw;
+                max-width: 280px;
+                height: calc(100vh - 60px);
+                transform: translateX(-100%);
+                z-index: 1200;
+                padding: 1rem 0;
+                border-right: 1px solid rgba(0,0,0,0.1);
+                box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        
+            /* Show sidebar when hamburger is clicked */
+            .sidebar.active {
+                transform: translateX(0);
+            }
+        
+            /* Content should take full width */
+            .content {
+                width: 100%;
+                padding: 1rem;
+                flex: 1;
+            }
+            
+            /* Dashboard container on mobile */
+            .dashboard-container {
+                display: block;
+                position: relative;
+                min-height: calc(100vh - 60px);
+            }
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.9rem 1.5rem;
+            color: var(--gray);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .nav-item i {
+            font-size: 1.2rem;
+        }
+
+        .nav-item:hover {
+            background: rgba(79, 182, 232, 0.14);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: rgba(79, 182, 232, 0.22);
+            color: white;
+            border-left: 3px solid var(--accent);
+        }
+
+        .nav-item.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .locked-content {
+            filter: blur(4px);
+            position: relative;
+            pointer-events: none;
+        }
+
+        .locked-content::after {
+            content: "Complete profile & wait for admin approval";
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #555;
+            background: rgba(255,255,255,0.7);
+            border-radius: 8px;
+            pointer-events: none;
+            filter: blur(0);
+        }
+
+        /* ===== CONTENT ===== */
+        .content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .section-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .stat-card, .info-card, .card-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 18px;
+            box-shadow: 0 12px 30px rgba(15, 42, 68, 0.08);
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover, .card-item:hover {
+            box-shadow: 0 16px 34px rgba(15, 42, 68, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .stat-card i {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-card h4 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-card p {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .btn-primary-custom {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary-custom:hover {
+            background: #4f46e5;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-secondary-custom {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary-custom:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .completion-banner {
+            background: white;
+            border-left: 4px solid var(--warning);
+            padding: 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .badge-custom {
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-primary { background: rgba(99, 102, 241, 0.1); color: var(--primary); }
+        .badge-success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .badge-warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+
+        .progress-bar-custom {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transition: width 0.5s ease;
+        }
+
+        .dashboard-section {
+            display: none;
+        }
+
+        .dashboard-section.active-section {
+            display: block;
+        }
+
+        /* ===== PROFILE ACTION BUTTONS ===== */
+        .profile-action-btn {
+            padding: 0.4rem 0.9rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: none;
+            background: white;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+
+        .profile-action-btn i {
+            font-size: 0.8rem;
+        }
+
+        .profile-action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-view-btn {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .profile-view-btn:hover {
+            background: rgba(79, 182, 232, 0.05);
+            border-color: var(--accent-dark);
+            color: var(--accent-dark);
+        }
+
+        .profile-edit-btn {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .profile-edit-btn:hover {
+            background: rgba(15, 42, 68, 0.05);
+            border-color: var(--primary-light);
+            color: var(--primary-light);
+        }
+
+        .profile-feedback-btn {
+            color: var(--warning);
+            border-color: var(--warning);
+        }
+
+        .profile-feedback-btn:hover {
+            background: rgba(245, 158, 11, 0.05);
+            border-color: #e0a700;
+            color: #d89700;
+        }
+
+        .profile-delete-btn {
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .profile-delete-btn:hover {
+            background: rgba(239, 68, 68, 0.05);
+            border-color: #dc2626;
+            color: #dc2626;
+        }
+
+        #profile-actions {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        /* ===== AI CHATBOT ===== */
+        #ai-chatbot {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Toggle Button */
+        .chat-toggle {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        }
+
+        .chat-toggle img {
+            width: 32px;
+        }
+
+        /* Chat Box */
+        .chat-box {
+            width: 360px;
+            height: 520px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            animation: chatOpen 0.3s ease;
+        }
+
+        @keyframes chatOpen {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Header */
+        .chat-header {
+            background: #1e3a8a;
+            color: #fff;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .chat-title img {
+            width: 28px;
+        }
+
+        #chat-close {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        /* Body */
+        .chat-body {
+            flex: 1;
+            padding: 14px;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+
+        .chat-message {
+            max-width: 85%;
+            margin-bottom: 10px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+
+        .chat-message.bot {
+            background: #e0e7ff;
+            color: #1e3a8a;
+        }
+
+        .chat-message.user {
+            background: #2563eb;
+            color: #fff;
+            margin-left: auto;
+        }
+
+        /* Footer */
+        .chat-footer {
+            display: flex;
+            padding: 12px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .chat-footer input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            outline: none;
+        }
+
+        .chat-footer button {
+            margin-left: 8px;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0 16px;
+            cursor: pointer;
+        }
+        /* ================= MENTOR DASHBOARD – MOBILE FIXES ================= */
+        
+        @media (max-width: 992px) {
+        
+            /* Layout: stack sidebar */
+            .dashboard-container {
+                flex-direction: column;
+            }
+        
+            /* Sidebar becomes horizontal nav */
+            .sidebar {
+                width: 100%;
+                display: flex;
+                overflow-x: auto;
+                padding: 0.5rem;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+        
+            .sidebar::-webkit-scrollbar {
+                height: 4px;
+            }
+        
+            .nav-item {
+                flex: 0 0 auto;
+                padding: 0.6rem 1rem;
+                font-size: 0.85rem;
+                border-left: none;
+                white-space: nowrap;
+            }
+        
+            .nav-item.active {
+                border-left: none;
+                border-bottom: 2px solid var(--primary);
+            }
+        
+            /* Content spacing */
+            .content {
+                padding: 1rem;
+            }
+        
+            /* Topbar */
+            .topbar {
+                padding: 0.75rem 1rem;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+        
+            .brand {
+                font-size: 1.1rem;
+            }
+        
+            .user-info {
+                display: none;
+            }
+        
+            .user-avatar {
+                width: 32px;
+                height: 32px;
+                font-size: 0.85rem;
+            }
+        
+            .user-section {
+                gap: 0.5rem;
+            }
+        
+            /* Nav items on mobile */
+            .nav-item {
+                padding: 0.75rem 1.25rem;
+                font-size: 0.95rem;
+            }
+        
+            .nav-item i {
+                font-size: 1rem;
+            }
+        
+            /* Sidebar text should not wrap */
+            .nav-item span {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        
+            /* Tables */
+            table {
+                width: 100%;
+                overflow-x: auto;
+                font-size: 0.9rem;
+            }
+        
+            table thead {
+                background: #f3f4f6;
+            }
+
+            .chat-box {
+                width: 92vw;
+                height: 70vh;
+                right: 0;
+            }
+        }
+
+        /* Mobile adjustments for topbar */
+        @media (max-width: 768px) {
+            body {
+                overflow-x: hidden;
+            }
+            
+            .topbar {
+                padding: 0.6rem 1rem;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+            }
+        
+            .brand {
+                font-size: 1rem;
+                flex: 1;
+            }
+        
+            .user-info {
+                display: none;
+            }
+        
+            .user-avatar {
+                width: 32px;
+                height: 32px;
+                font-size: 0.85rem;
+            }
+
+            .user-section {
+                gap: 0.5rem;
+            }
+            
+            /* Nav items on mobile */
+            .nav-item {
+                padding: 0.75rem 1.25rem;
+                font-size: 0.95rem;
+            }
+
+            .nav-item i {
+                font-size: 1rem;
+            }
+
+            /* Sidebar text should not wrap */
+            .nav-item span {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            /* Tables */
+            table {
+                width: 100%;
+                overflow-x: auto;
+                font-size: 0.9rem;
+            }
+            
+            table thead {
+                background: #f3f4f6;
+            }
+
+            th, td {
+                padding: 0.6rem 0.4rem;
+                white-space: normal;
+                word-break: break-word;
+            }
+
+            th {
+                font-size: 0.8rem;
+            }
+
+            /* Cards on mobile */
+            .card {
+                margin-bottom: 1rem;
+                border-radius: 8px;
+            }
+
+            .stat-card, .card-item {
+                padding: 1rem;
+            }
+
+            /* Buttons on mobile */
+            .btn {
+                font-size: 0.85rem;
+                padding: 0.4rem 0.8rem;
+            }
+
+            /* Content spacing */
+            .content {
+                padding: 1rem;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+    {% if maintenance_mode %}
+        <div style="background: #f59e0b; color: #222; text-align: center; padding: 8px 0; font-weight: 600;">
+            The platform is currently under maintenance. Some features may be unavailable.
+        </div>
+        {% endif %}
+
+        <!-- TOP BAR -->
+        <div class="topbar">
+            <!-- ☰ MOBILE SIDEBAR BUTTON (ADD THIS) -->
+            <button class="btn d-md-none me-2"
+                    onclick="toggleSidebar()"
+                    aria-label="Toggle sidebar">
+                <i class="bi bi-list fs-3"></i>
+            </button>
+            <div class="brand">HireHub</div>
+            <div class="user-section">
+                <div class="user-avatar">{{ profile.full_name[0] if profile and profile.full_name else 'M' }}</div>
+                <div class="user-info">
+                    <div class="user-name">{{ profile.full_name or 'Mentor' }}</div>
+                    <div class="user-role">Mentor</div>
+                </div>
+                <form action="/logout" method="POST" style="display: inline;">
+                    <button type="submit" class="logout-btn" title="Logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- MAIN LAYOUT -->
+        <div class="dashboard-container">
+            <!-- SIDEBAR -->
+            <div class="sidebar">
+                <a href="#dashboard" class="nav-item active" data-section="dashboard" onclick="toggleSidebar()">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+                
+                {% if profile_completed %}
+                    <a href="#profile" class="nav-item" data-section="profile" onclick="toggleSidebar()">
+                        <i class="bi bi-person-circle"></i>
+                        <span>My Profile</span>
+                    </a>
+                    <a href="#requests" class="nav-item {% if verification_status != 'approved' %}locked{% endif %}" data-section="requests" onclick="toggleSidebar()" {% if verification_status != 'approved' %}title="Admin verification pending" data-bs-toggle="tooltip" data-bs-placement="right"{% endif %}>
+                        <i class="bi bi-inbox-fill"></i>
+                        <span>Mentorship Requests</span>
+                    </a>
+                    <a href="#mentees" class="nav-item {% if verification_status != 'approved' %}locked{% endif %}" data-section="mentees" onclick="toggleSidebar()" {% if verification_status != 'approved' %}title="Admin verification pending" data-bs-toggle="tooltip" data-bs-placement="right"{% endif %}>
+                        <i class="bi bi-people"></i>
+                        <span>Active Mentees</span>
+                    </a>
+                    <a href="#notifications" class="nav-item {% if verification_status != 'approved' %}locked{% endif %}" data-section="notifications" onclick="toggleSidebar()" {% if verification_status != 'approved' %}title="Admin verification pending" data-bs-toggle="tooltip" data-bs-placement="right"{% endif %}>
+                        <i class="bi bi-bell"></i>
+                        <span>Notifications</span>
+                    </a>
+                    <a href="#schedule" class="nav-item {% if verification_status != 'approved' %}locked{% endif %}" data-section="schedule" onclick="toggleSidebar()" {% if verification_status != 'approved' %}title="Admin verification pending" data-bs-toggle="tooltip" data-bs-placement="right"{% endif %}>
+                        <i class="bi bi-calendar-event"></i>
+                        <span>My Schedule</span>
+                    </a>
+                    <a href="#feedback" class="nav-item {% if verification_status != 'approved' %}locked{% endif %}" data-section="feedback" onclick="toggleSidebar()" {% if verification_status != 'approved' %}title="Admin verification pending" data-bs-toggle="tooltip" data-bs-placement="right"{% endif %}>
+                        <i class="bi bi-star-fill"></i>
+                        <span>Feedback Given</span>
+                    </a>
+                    <a href="javascript:showFeedbackModal()" class="nav-item" onclick="toggleSidebar()">
+                        <i class="bi bi-chat-dots"></i>
+                        <span>Give Feedback</span>
+                    </a>
+                {% else %}
+                    <a href="#profile" class="nav-item" data-section="profile" onclick="toggleSidebar()">
+                        <i class="bi bi-pencil-square"></i>
+                        <span>Complete Profile</span>
+                    </a>
+                {% endif %}
+            </div>
+
+            <!-- CONTENT -->
+            <div class="content">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{% if category == 'error' %}danger{% elif category == 'success' %}success{% elif category == 'warning' %}warning{% elif category == 'info' %}info{% else %}{{ category }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+                        <i class="bi bi-{% if category == 'error' or category == 'danger' %}exclamation-circle-fill{% elif category == 'success' %}check-circle-fill{% elif category == 'warning' %}exclamation-triangle-fill{% else %}info-circle-fill{% endif %} me-2"></i> {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+                {% endwith %}
+                
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h3 class="fw-bold"><i class="bi bi-person-workspace me-2"></i>Welcome Mentor</h3>
+                        <p class="text-muted mb-0">Manage your profile & mentorship</p>
+                    </div>
+
+                    {% if profile %}
+                        {% if profile.verification_status == 'approved' %}
+                            <span class="badge bg-success fs-6">Verified Mentor</span>
+                        {% elif profile.verification_status == 'rejected' %}
+                                <span class="badge bg-danger fs-6">Rejected</span>
+                                {% if profile.rejection_reason %}
+                                    <div class="alert alert-danger mt-3">Your verification was rejected: <strong>{{ profile.rejection_reason }}</strong></div>
+                                {% endif %}
+                        {% else %}
+                            <span class="badge bg-warning text-dark fs-6">Pending Verification</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <div class="card p-4 mb-4 shadow-sm">
+                    <h6 class="fw-semibold mb-2">Profile Completion</h6>
+                    <div class="progress">
+                        <div class="progress-bar bg-success"
+                            id="completion-bar"
+                            style="width: {{ profile_percent }}%"
+                            data-auto="{{ 'false' if profile_completed else 'true' }}">
+                            {{ profile_percent }}%
+                        </div>
+                    </div>
+                </div>
+                        <div class="modal fade" id="chatModal" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-md">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-primary text-white">
+                                        <h5 class="modal-title" id="chatModalLabel">Live Chat</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <ul class="list-group mb-3" id="chatLog" style="max-height: 280px; overflow-y: auto;"></ul>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="chatInput" placeholder="Type a message...">
+                                            <button class="btn btn-primary" type="button" id="chatSend">Send</button>
+                                        </div>
+                                        <small class="text-muted d-block mt-2">Chat is scoped per mentee. Server-side chat handling is needed for real-time sync.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                <div class="dashboard-section active-section" id="dashboard">
+                    {% if verification_status != 'approved' %}
+                    <div class="alert alert-info alert-dismissible fade show mb-4" role="alert">
+                        <strong>📋 Admin Verification Pending</strong>
+                        <p class="mb-0">Your mentor profile is under admin review. Once verified, you'll gain access to additional features including Mentorship Requests, Active Mentees, Notifications, Schedule, and Feedback sections.</p>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endif %}
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="card p-4 shadow-sm border-0 bg-primary text-white">
+                                <h6>Active Mentees</h6>
+                                <h2>{{ active_sessions|length if active_sessions else 0 }}</h2>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card p-4 shadow-sm border-0 bg-info text-white">
+                                <h6>Pending Requests</h6>
+                                <h2>{{ pending_requests|length if pending_requests else 0 }}</h2>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card p-4 shadow-sm border-0 bg-success text-white">
+                                <h6>Total Sessions</h6>
+                                <h2>{{ (active_sessions|length if active_sessions else 0) + (pending_requests|length if pending_requests else 0) }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="mt-4">
+                        <h5 class="mb-3">Quick Actions</h5>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <a href="/mentor/sessions" class="text-decoration-none">
+                                    <div class="card p-3 shadow-sm border-primary">
+                                        <div class="text-center">
+                                            <i class="bi bi-people" style="font-size: 2rem; color: var(--primary);"></i>
+                                            <h6 class="mt-2 mb-0">All Sessions</h6>
+                                            <small class="text-muted">View & manage</small>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="/mentor/availability" class="text-decoration-none">
+                                    <div class="card p-3 shadow-sm border-success">
+                                        <div class="text-center">
+                                            <i class="bi bi-calendar-check" style="font-size: 2rem; color: var(--success);"></i>
+                                            <h6 class="mt-2 mb-0">Availability</h6>
+                                            <small class="text-muted">Set schedule</small>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="/mentor/analytics" class="text-decoration-none">
+                                    <div class="card p-3 shadow-sm border-warning">
+                                        <div class="text-center">
+                                            <i class="bi bi-graph-up" style="font-size: 2rem; color: var(--warning);"></i>
+                                            <h6 class="mt-2 mb-0">Analytics</h6>
+                                            <small class="text-muted">View insights</small>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="/activity-timeline" class="text-decoration-none">
+                                    <div class="card p-3 shadow-sm border-info">
+                                        <div class="text-center">
+                                            <i class="bi bi-clock-history" style="font-size: 2rem; color: var(--info);"></i>
+                                            <h6 class="mt-2 mb-0">Activity</h6>
+                                            <small class="text-muted">View timeline</small>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 card p-4 shadow-sm">
+                        <h5>Overview</h5>
+                        <p>Welcome to your dashboard. Use the quick actions above or select an option from the sidebar to manage your mentorship journey.</p>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm p-4 dashboard-section" id="profile">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0"><b>My Mentor Profile</b><i class="bi bi-pencil-square ms-2"></i></h4>
+                        <h6 class="mb-0">(All Field are required for verification)</h6>
+                        <div id="profile-actions">
+                            {% if profile %}
+                                <button class="profile-action-btn profile-view-btn" data-bs-toggle="modal" data-bs-target="#viewProfileModal" title="View Profile">
+                                    <i class="bi bi-eye"></i> View
+                                </button>
+                                {% if profile.verification_status == 'rejected' %}
+                                    <button class="profile-action-btn profile-edit-btn profile-feedback-btn" onclick="toggleEditMode(true)" title="Edit Profile According to Feedback">
+                                        <i class="bi bi-pencil-square"></i> Feedback
+                                    </button>
+                                {% endif %}
+                                <button class="profile-action-btn profile-edit-btn" onclick="toggleEditMode(true)" title="Edit Profile">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </button>
+                                <button class="profile-action-btn profile-delete-btn" onclick="confirmDeleteProfile()" title="Delete Profile">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div id="view-mode" class="{% if not profile %}d-none{% endif %}">
+                        <div class="row mb-4">
+                            <div class="col-md-3 text-center">
+                                {% if profile.photo_file %}
+                                    <img src="{{ url_for('static', filename='uploads/' ~ profile.photo_file) }}" alt="Profile Photo" class="img-fluid rounded-circle mb-2" style="width:120px;height:120px;object-fit:cover;">
+                                {% else %}
+                                    <div class="bg-secondary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:120px;height:120px;">No Photo</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                <p class="text-muted mb-1">Expertise</p>
+                                <p class="fw-bold">{{ profile.expertise if profile }}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <p class="text-muted mb-1">Designation</p>
+                                <p class="fw-bold">{{ profile.designation if profile }}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <p class="text-muted mb-1">Company</p>
+                                <p class="fw-bold">{{ profile.company if profile }}</p>
+                            </div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <p class="text-muted mb-1">Short Bio</p>
+                                <p>{{ profile.bio if profile }}</p>
+                            </div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1">LinkedIn Profile</p>
+                                <a href="{{ profile.linkedin if profile }}" target="_blank" class="btn btn-link p-0 text-decoration-none">
+                                    <i class="bi bi-linkedin me-1"></i> View LinkedIn
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1">Mentoring Areas</p>
+                                <p class="fw-semibold">{{ profile.mentoring_areas if profile }}</p>
+                            </div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <p class="text-muted mb-1">Mentor Category</p>
+                                <p class="fw-semibold">
+                                    {% if profile.mentor_category %}
+                                        {% for cat in profile.mentor_category.split(',') %}
+                                            <span class="badge bg-primary me-1">{{ cat }}</span>
+                                        {% endfor %}
+                                    {% else %}N/A{% endif %}
+                                </p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="text-muted mb-1">Highest Qualification</p>
+                                <p class="fw-semibold">{{ profile.highest_qualification or 'N/A' }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="text-muted mb-1">Current Role / Position</p>
+                                <p class="fw-semibold">{{ profile.current_role or 'N/A' }}</p>
+                            </div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <p class="text-muted mb-1">Overall Experience</p>
+                                <p class="fw-semibold">{{ profile.overall_experience or '0' }} Years</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="text-muted mb-1">Session Format</p>
+                                <p class="fw-semibold">{{ profile.session_format or 'N/A' }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="text-muted mb-1">Preferred Communication Languages</p>
+                                <p class="fw-semibold">{{ profile.preferred_languages or 'N/A' }}</p>
+                            </div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <p class="text-muted mb-1">Professional Email</p>
+                                <p class="fw-semibold">{{ profile.professional_email or 'N/A' }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="text-muted mb-1">Mentorship Price</p>
+                                <p class="fw-semibold">₹{{ profile.mentor_price or 99 }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="text-muted mb-1">Declaration</p>
+                                <p class="fw-semibold">{{ 'Confirmed' if profile.mentor_declaration else 'Not Provided' }}</p>
+                            </div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1">UPI ID</p>
+                                <p class="fw-semibold">{{ profile.upi_id or 'N/A' }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1">Agreement Accepted</p>
+                                <p class="fw-semibold">{{ 'Yes' if profile.agreement_accepted else 'No' }}</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <small class="text-muted d-block">Session Mode</small>
+                                <span>{{ profile.mode if profile }}</span>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted d-block">Available Days</small>
+                                <span>{{ profile.available_days if profile }}</span>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted d-block">Time Slot</small>
+                                <span>{{ profile.time_slot if profile }}</span>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted d-block">Experience</small>
+                                <span>{{ profile.experience if profile }} Years</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="edit-mode" class="{% if profile %}d-none{% endif %}">
+                        <form method="POST" action="/mentor-dashboard" enctype="multipart/form-data" id="mentorForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="fw-bold">Expertise</label>
+                                    <input type="text" name="expertise" class="form-control track" value="{{ profile.expertise if profile else '' }}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="fw-bold">Designation</label>
+                                    <input type="text" name="designation" class="form-control track" value="{{ profile.designation if profile else '' }}" required>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="fw-bold">Mentor Category / Domain</label>
+                                    {% set mc = (profile.mentor_category.split(',') if profile and profile.mentor_category else []) %}
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for opt in ['Career','Academic','Leadership','Entrepreneurship','Personal Development','Industry Expert'] %}
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="mentor_category" value="{{ opt }}" id="mc_{{ loop.index }}" {% if opt in mc %}checked{% endif %}>
+                                            <label class="form-check-label" for="mc_{{ loop.index }}">{{ opt }}</label>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="fw-bold">Highest Qualification</label>
+                                    <input type="text" name="highest_qualification" class="form-control track" value="{{ profile.highest_qualification if profile else '' }}" required>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="fw-bold">Current Role / Position</label>
+                                    <input type="text" name="current_role" class="form-control track" value="{{ profile.current_role if profile else '' }}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="fw-bold">Years of Overall Professional Experience</label>
+                                    <input type="number" min="0" name="overall_experience" class="form-control track" value="{{ profile.overall_experience if profile else '' }}" required>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="fw-bold">Company</label>
+                                    <input type="text" name="company" class="form-control track" value="{{ profile.company if profile else '' }}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="fw-bold">LinkedIn Profile</label>
+                                    <input type="url" name="linkedin" class="form-control track" value="{{ profile.linkedin if profile else '' }}" required>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="fw-bold">Industry Exp (Years)</label>
+                                    <input type="number" name="experience" class="form-control track" value="{{ profile.experience if profile else '' }}" min="0">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="fw-bold">Mentoring Exp (Years)</label>
+                                    <input type="number" name="mentoring_experience" class="form-control track" value="{{ profile.mentoring_experience if profile else '' }}" min="0">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="fw-bold">Max Candidates</label>
+                                    <input type="number" name="max_candidates" class="form-control track" value="{{ profile.max_candidates if profile else '' }}" min="1">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="fw-bold">Mentoring Areas</label>
+                                <textarea name="mentoring_areas" class="form-control track" rows="3" required>{{ profile.mentoring_areas if profile else '' }}</textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="fw-bold">Session Mode</label>
+                                    <select name="mode" class="form-select track" required>
+                                        <option value="Online" {% if profile and profile.mode == 'Online' %}selected{% endif %}>Online</option>
+                                        <option value="Offline" {% if profile and profile.mode == 'Offline' %}selected{% endif %}>Offline</option>
+                                        <option value="Hybrid" {% if profile and profile.mode == 'Hybrid' %}selected{% endif %}>Hybrid</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="fw-bold">Session Format</label>
+                                    <select name="session_format" class="form-select track" required>
+                                        {% set sf = profile.session_format if profile else '' %}
+                                        <option value="1:1" {% if sf=='1:1' %}selected{% endif %}>1:1</option>
+                                        <option value="Group" {% if sf=='Group' %}selected{% endif %}>Group</option>
+                                        <option value="Workshop" {% if sf=='Workshop' %}selected{% endif %}>Workshop</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="fw-bold">Available Days</label>
+                                    <select name="available_days" class="form-select track" required>
+                                        <option value="Weekdays" {% if profile and profile.available_days == 'Weekdays' %}selected{% endif %}>Weekdays</option>
+                                        <option value="Weekends" {% if profile and profile.available_days == 'Weekends' %}selected{% endif %}>Weekends</option>
+                                        <option value="All Days" {% if profile and profile.available_days == 'All Days' %}selected{% endif %}>All Days</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="fw-bold">Time Slot</label>
+                                    <input type="text" name="time_slot" class="form-control track" value="{{ profile.time_slot if profile else '' }}" placeholder="6 PM – 9 PM" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="fw-bold">Short Bio</label>
+                                <textarea name="bio" class="form-control track" rows="3" required>{{ profile.bio if profile else '' }}</textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="fw-bold">Verification Type</label>
+                                    <select name="verification_type" class="form-select track" required>
+                                        <option value="Company ID" {% if profile and profile.verification_type == 'Company ID' %}selected{% endif %}>Company ID</option>
+                                        <option value="Degree Certificate" {% if profile and profile.verification_type == 'Degree Certificate' %}selected{% endif %}>Degree Certificate</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="fw-bold">Verification Document</label>
+                                    <input type="file" name="verification_file" class="form-control track" accept=".pdf,.jpg,.jpeg,.png">
+                                    <small class="text-muted">Leave empty to keep existing document</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="fw-bold">Profile Photo</label>
+                                    <input type="file" name="photo" class="form-control track" accept="image/*">
+                                    <small class="text-muted">JPEG/PNG. Leave empty to keep existing photo</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="fw-bold">Professional Email</label>
+                                    <input type="email" name="professional_email" class="form-control track" value="{{ profile.professional_email if profile else '' }}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="fw-bold">Mentorship Price (INR)</label>
+                                    <input type="number" name="mentor_price" min="99" class="form-control track" value="{{ profile.mentor_price if profile else 99 }}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="fw-bold">UPI ID</label>
+                                    <input type="text" name="upi_id" class="form-control track" value="{{ profile.upi_id if profile else '' }}" placeholder="name@bank" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="fw-bold">Preferred Communication Language(s)</label>
+                                    <input type="text" name="preferred_languages" class="form-control track" placeholder="English, Hindi" value="{{ profile.preferred_languages if profile else '' }}">
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="border rounded p-3 mb-3 bg-light">
+                                        <h6 class="fw-bold mb-2">Mentor-Company MOU</h6>
+                                        <p class="small mb-2">Review and sign the digital MOU after saving your profile to enable admin verification and payments.</p>
+                                        {% if profile %}
+                                            <a class="btn btn-outline-primary btn-sm" href="/mentor/mou" target="_blank" rel="noopener">Review MOU</a>
+                                            <div class="small text-muted mt-2">Opens in a new tab so your form edits stay intact.</div>
+                                        {% else %}
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" disabled>Save profile to review MOU</button>
+                                        {% endif %}
+                                        {% if profile and profile.agreement_accepted_at %}
+                                            <div class="small text-success mt-2">Accepted on {{ profile.agreement_accepted_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                                        {% elif profile and profile.agreement_accepted %}
+                                            <div class="small text-success mt-2">Agreement accepted</div>
+                                        {% endif %}
+                                        {% if profile and profile.agreement_pdf_name %}
+                                            <div class="mt-2">
+                                                <a class="btn btn-outline-success btn-sm" href="/mentor/mou/pdf" target="_blank">View Signed PDF</a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-12 mb-2 form-check">
+                                    <input type="checkbox" class="form-check-input" id="mentor_declaration" name="mentor_declaration" {% if profile and profile.mentor_declaration %}checked{% endif %} required>
+                                    <label class="form-check-label" for="mentor_declaration">I confirm that the provided information is accurate to the best of my knowledge.</label>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 d-flex gap-2">
+                                <button type="submit" class="btn btn-primary flex-grow-1">
+                                    <i class="bi bi-save me-1"></i> Save Profile Changes
+                                </button>
+                                {% if profile %}
+                                    <button type="button" class="btn btn-secondary" onclick="toggleEditMode(false)">Cancel</button>
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card p-4 shadow-sm dashboard-section {% if verification_status != 'approved' %}d-none locked-content{% endif %}" id="requests">
+                    <h4 class="mb-3">Mentorship Requests</h4>
+                    {% if pending_requests %}
+                    <div class="table-responsive">
+                        <table class="table table-hover border">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>Message</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in pending_requests %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ r.candidate_name }}</strong><br>
+                                        <small class="text-muted">{{ r.candidate_email }}</small>
+                                    </td>
+                                    <td>{{ r.request_message[:100] }}{% if r.request_message|length > 100 %}...{% endif %}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info mb-1 view-candidate-btn" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#viewProfileModal"
+                                            data-candidate='{{ {"first_name": r.first_name or "", "last_name": r.last_name or "", "candidate_email": r.candidate_email or "", "headline": r.headline or "", "experience": r.experience or "", "bio": r.bio or "", "education": r.education or "", "skills": r.skills or "", "resume_file": r.resume_file or "", "request_message": r.request_message or ""} | tojson }}'>
+                                            <i class="bi bi-eye me-1"></i>View Profile
+                                        </button><br>
+                                        <a href="/mentor/respond-request/{{ r.id }}/accept" class="btn btn-sm btn-success me-1">Accept</a>
+                                        <a href="/mentor/respond-request/{{ r.id }}/reject" class="btn btn-sm btn-danger">Reject</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                        <p class="text-muted">No pending requests</p>
+                    {% endif %}
+                </div>
+
+                <div class="card p-4 shadow-sm dashboard-section {% if verification_status != 'approved' %}d-none locked-content{% endif %}" id="mentees">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">Active Mentorship Sessions</h4>
+                        <small class="text-muted">Chat and feedback with your accepted mentees</small>
+                    </div>
+
+                    {% if active_sessions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Candidate</th>
+                                    <th>Email</th>
+                                    <th>Request</th>
+                                    <th>Started</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in active_sessions %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ s.candidate_name }}</td>
+                                    <td><a href="mailto:{{ s.candidate_email }}">{{ s.candidate_email }}</a></td>
+                                    <td class="text-muted small" style="max-width: 260px;">{{ s.request_message }}</td>
+                                    <td class="text-muted small">{{ s.started_at.strftime('%Y-%m-%d %H:%M') if s.started_at }}</td>
+                                    <td class="d-flex flex-wrap gap-2 align-items-center">
+                                        <a href="/mentor-chat/{{ s.id }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-chat-dots"></i> Chat
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-secondary schedule-btn"
+                                            data-room="mentor_{{ user_id }}_cand_{{ s.candidate_id }}"
+                                            data-mentee="{{ s.candidate_name }}">
+                                            <i class="bi bi-calendar-event"></i> Schedule
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success feedback-btn"
+                                            data-request-id="{{ s.id }}">
+                                            <i class="bi bi-send"></i> Feedback
+                                        </button>
+                                        <span class="badge bg-info text-dark meeting-badge d-none"></span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="alert alert-info small d-flex align-items-center gap-2 mt-3">
+                        <i class="bi bi-info-circle"></i>
+                        Chat is scoped per mentee. Messages stay within each room (mentor + that candidate).
+                    </div>
+                    {% else %}
+                        <p class="text-muted">No active mentorship sessions</p>
+                    {% endif %}
+                </div>
+
+                <div class="card p-4 shadow-sm dashboard-section {% if verification_status != 'approved' %}d-none locked-content{% endif %}" id="schedule">
+                    <h4 class="mb-3">My Schedule</h4>
+                    <div id="scheduleContainer">
+                        <div class="alert alert-secondary">No scheduled meetings yet.</div>
+                    </div>
+                    
+                    <div class="mt-4 alert alert-info">
+                        <strong>Profile Availability:</strong><br>
+                        <small>
+                            Mode: <strong>{{ profile.mode if profile else 'N/A' }}</strong><br>
+                            Days: <strong>{{ profile.available_days if profile else 'N/A' }}</strong><br>
+                            Time Slot: <strong>{{ profile.time_slot if profile else 'N/A' }}</strong>
+                        </small>
+                    </div>
+                </div>
+
+                <div class="card p-4 shadow-sm dashboard-section {% if verification_status != 'approved' %}d-none locked-content{% endif %}" id="feedback">
+                    <h4 class="mb-3">Feedback Given</h4>
+                    <p class="text-muted">History of feedback submitted to mentees.</p>
+                </div>
+
+                <div class="card p-4 shadow-sm dashboard-section {% if verification_status != 'approved' %}d-none locked-content{% endif %}" id="notifications">
+                    <h4 class="mb-3">Notifications</h4>
+                    {% if notifications %}
+                        {% for n in notifications %}
+                            <div class="alert alert-info py-2 shadow-sm">{{ n.message }}</div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No new notifications</p>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="scheduleModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-secondary text-white">
+                    <h5 class="modal-title" id="scheduleModalLabel">Schedule Meeting</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Mode</label>
+                        <select class="form-select" id="meetingMode">
+                            <option value="Zoom Call">Zoom Call</option>
+                            <option value="Google Meet">Google Meet</option>
+                            <option value="Messaging">Messaging</option>
+                            <option value="Phone">Phone</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Date</label>
+                            <input type="date" class="form-control" id="meetingDate">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Time</label>
+                            <input type="time" class="form-control" id="meetingTime">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Meeting Link (Zoom/Meet)</label>
+                        <input type="url" class="form-control" id="meetingLink" placeholder="https://zoom.us/... or https://meet.google.com/...">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" rows="2" id="meetingNotes" placeholder="Agenda, prep notes, etc."></textarea>
+                    </div>
+                    <div class="alert alert-info small">
+                        Saved locally per mentee. Share the link/time via chat or email.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveMeeting">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="viewProfileModal" tabindex="-1" aria-labelledby="viewProfileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title" id="viewProfileModalLabel"><i class="bi bi-person-badge me-2"></i>Candidate Profile</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Personal Information -->
+                    <div class="mb-4">
+                        <h6 class="text-uppercase fw-bold text-primary mb-3">Personal Information</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="text-muted small text-uppercase fw-bold">Name</label>
+                                <p class="fs-6" id="candidateName">-</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small text-uppercase fw-bold">Email</label>
+                                <p class="fs-6" id="candidateEmail">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Professional Information -->
+                    <div class="mb-4">
+                        <h6 class="text-uppercase fw-bold text-primary mb-3">Professional Information</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="text-muted small text-uppercase fw-bold">Headline</label>
+                                <p class="fs-6" id="candidateHeadline">-</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small text-uppercase fw-bold">Experience</label>
+                                <p class="fs-6" id="candidateExperience">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bio -->
+                    <div class="mb-4">
+                        <h6 class="text-uppercase fw-bold text-primary mb-3">About</h6>
+                        <div class="border-start border-3 ps-3 bg-light p-3 rounded">
+                            <p class="mb-0" id="candidateBio">-</p>
+                        </div>
+                    </div>
+
+                    <!-- Education -->
+                    <div class="mb-4">
+                        <h6 class="text-uppercase fw-bold text-primary mb-3">Education</h6>
+                        <p id="candidateEducation">-</p>
+                    </div>
+
+                    <!-- Skills -->
+                    <div class="mb-4">
+                        <h6 class="text-uppercase fw-bold text-primary mb-3">Skills</h6>
+                        <div id="candidateSkills">
+                            <span class="text-muted">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Resume -->
+                    <div class="mb-4">
+                        <h6 class="text-uppercase fw-bold text-primary mb-3">Resume</h6>
+                        <div id="candidateResumeSection">
+                            <p class="text-muted">No resume uploaded</p>
+                        </div>
+                    </div>
+
+                    <!-- Request Message -->
+                    <div class="mb-4 bg-light p-3 rounded">
+                        <h6 class="text-uppercase fw-bold text-primary mb-2">Request Message</h6>
+                        <p class="mb-0 fst-italic" id="candidateRequestMessage">-</p>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <a href="#" id="candidateResumeLink" target="_blank" class="btn btn-primary btn-sm" style="display: none;">
+                        <i class="bi bi-file-earmark-pdf me-1"></i> View Resume
+                    </a>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Function to populate candidate profile modal
+    function viewCandidateProfile(candidate) {
+        document.getElementById('candidateName').textContent = (candidate.first_name || '') + ' ' + (candidate.last_name || '');
+        document.getElementById('candidateEmail').textContent = candidate.candidate_email || '-';
+        document.getElementById('candidateHeadline').textContent = candidate.headline || '-';
+        document.getElementById('candidateExperience').textContent = candidate.experience || '-';
+        document.getElementById('candidateBio').textContent = candidate.bio || '-';
+        document.getElementById('candidateEducation').textContent = candidate.education || '-';
+        
+        // Skills with better formatting
+        const skillsContainer = document.getElementById('candidateSkills');
+        if (candidate.skills && candidate.skills.trim()) {
+            const skillsArray = candidate.skills.split(',').map(s => s.trim()).filter(s => s);
+            if (skillsArray.length > 0) {
+                skillsContainer.innerHTML = skillsArray.map(skill => 
+                    '<span class="badge bg-primary me-1 mb-1">' + skill + '</span>'
+                ).join('');
+            } else {
+                skillsContainer.innerHTML = '<span class="text-muted">No skills listed</span>';
+            }
+        } else {
+            skillsContainer.innerHTML = '<span class="text-muted">No skills listed</span>';
+        }
+        
+        document.getElementById('candidateRequestMessage').textContent = candidate.request_message || 'No message provided';
+        
+        // Resume
+        const resumeSection = document.getElementById('candidateResumeSection');
+        const resumeLink = document.getElementById('candidateResumeLink');
+        
+        if (candidate.resume_file && candidate.resume_file.trim()) {
+            resumeSection.innerHTML = '<p class="text-success"><i class="bi bi-check-circle-fill me-2"></i>Resume uploaded</p>';
+            resumeLink.href = '/static/uploads/' + candidate.resume_file;
+            resumeLink.style.display = 'inline-block';
+        } else {
+            resumeSection.innerHTML = '<p class="text-muted">No resume uploaded</p>';
+            resumeLink.style.display = 'none';
+        }
+    }
+
+    // Attach event listeners to view profile buttons
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.view-candidate-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                try {
+                    const candidateData = JSON.parse(this.getAttribute('data-candidate'));
+                    viewCandidateProfile(candidateData);
+                } catch (e) {
+                    console.error('Error parsing candidate data:', e);
+                }
+            });
+        });
+    });
+    </script>
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+    <script>
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const isActive = sidebar.classList.toggle('active');
+        
+        // Create or remove backdrop overlay for mobile
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            let backdrop = document.getElementById('sidebarBackdrop');
+            if (isActive && !backdrop) {
+                backdrop = document.createElement('div');
+                backdrop.id = 'sidebarBackdrop';
+                backdrop.style.cssText = `
+                    position: fixed;
+                    top: 60px;
+                    left: 0;
+                    width: 100%;
+                    height: calc(100vh - 60px);
+                    background: rgba(0, 0, 0, 0.4);
+                    z-index: 1199;
+                    transition: opacity 0.3s ease;
+                `;
+                backdrop.addEventListener('click', toggleSidebar);
+                document.body.appendChild(backdrop);
+            } else if (!isActive && backdrop) {
+                backdrop.remove();
+            }
+        }
+    }
+
+    // Close sidebar when clicking nav items on mobile
+    function closeSidebarOnNavClick() {
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar.classList.contains('active')) {
+                toggleSidebar();
+            }
+        }
+    }
+
+    // Listen for window resize to handle mobile/desktop switching
+    window.addEventListener('resize', () => {
+        const sidebar = document.querySelector('.sidebar');
+        const backdrop = document.getElementById('sidebarBackdrop');
+        if (window.innerWidth > 768) {
+            sidebar.classList.remove('active');
+            if (backdrop) backdrop.remove();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const socket = io();
+            const userId = {{ user_id | tojson }};
+            const chatModal = document.getElementById('chatModal');
+            const chatTitle = document.getElementById('chatModalLabel');
+            const chatLog = document.getElementById('chatLog');
+            const chatInput = document.getElementById('chatInput');
+            const chatSendBtn = document.getElementById('chatSend');
+            const scheduleModal = document.getElementById('scheduleModal');
+            const scheduleTitle = document.getElementById('scheduleModalLabel');
+            const meetingMode = document.getElementById('meetingMode');
+            const meetingDate = document.getElementById('meetingDate');
+            const meetingTime = document.getElementById('meetingTime');
+            const meetingLink = document.getElementById('meetingLink');
+            const meetingNotes = document.getElementById('meetingNotes');
+            const saveMeetingBtn = document.getElementById('saveMeeting');
+            let currentRoom = null;
+            let currentPeer = '';
+            const localMessages = {}; // simple client-side log per room
+            let meetingCache = {}; // server-backed cache keyed by room
+
+            socket.on('connect', () => {
+                socket.emit('join', { role: 'mentor', id: userId });
+            });
+
+            socket.on('mentor_notification', (data) => {
+                const msg = data.message || 'You have a new notification';
+                const container = document.querySelector('#notifications');
+                if (!container) return;
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-info py-2 shadow-sm';
+                alert.textContent = msg;
+                const cardBody = container.querySelector('.card-body') || container;
+                cardBody.prepend(alert);
+            });
+
+            const loadMeetings = async () => {
+                try {
+                    const res = await fetch('/api/mentor/meetings');
+                    const data = await res.json();
+                    if (data.success && Array.isArray(data.meetings)) {
+                        meetingCache = {};
+                        data.meetings.forEach(m => {
+                            const room = `mentor_${userId}_cand_${m.candidate_id}`;
+                            meetingCache[room] = {
+                                mode: m.mode,
+                                date: m.meeting_date,
+                                time: m.meeting_time,
+                                link: m.meeting_link,
+                                notes: m.notes,
+                                mentee_name: m.candidate_name
+                            };
+                        });
+                        hydrateMeetingBadge();
+                        populateSchedule();
+                    }
+                } catch (e) {
+                    console.warn('Could not load meetings', e);
+                }
+            };
+
+            // Basic chat UI (front-end only unless server handles chat events)
+            const renderMessages = () => {
+                chatLog.innerHTML = '';
+                const msgs = localMessages[currentRoom] || [];
+                msgs.forEach(m => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item py-1';
+                    li.innerHTML = `<strong>${m.author}:</strong> ${m.text}`;
+                    chatLog.appendChild(li);
+                });
+                chatLog.scrollTop = chatLog.scrollHeight;
+            };
+
+            const openChat = (room, peer) => {
+                currentRoom = room;
+                currentPeer = peer;
+                chatTitle.textContent = `Live Chat • ${peer}`;
+                if (!localMessages[currentRoom]) localMessages[currentRoom] = [];
+                renderMessages();
+                const modal = bootstrap.Modal.getOrCreateInstance(chatModal);
+                modal.show();
+            };
+
+            const hydrateMeetingBadge = () => {
+                document.querySelectorAll('.schedule-btn').forEach(btn => {
+                    const room = btn.dataset.room;
+                    const badge = btn.parentElement.querySelector('.meeting-badge');
+                    const entry = meetingCache[room];
+                    if (badge) {
+                        if (entry) {
+                            badge.classList.remove('d-none');
+                            badge.textContent = `${entry.date || ''} ${entry.time || ''} (${entry.mode || ''})`.trim();
+                        } else {
+                            badge.classList.add('d-none');
+                        }
+                    }
+                });
+            };
+
+            const openSchedule = (room, peer) => {
+                currentRoom = room;
+                currentPeer = peer;
+                scheduleTitle.textContent = `Schedule • ${peer}`;
+                const entry = meetingCache[room] || {};
+                meetingMode.value = entry.mode || 'Zoom Call';
+                meetingDate.value = entry.date || '';
+                meetingTime.value = entry.time || '';
+                meetingLink.value = entry.link || '';
+                meetingNotes.value = entry.notes || '';
+                const modal = bootstrap.Modal.getOrCreateInstance(scheduleModal);
+                modal.show();
+            };
+
+            chatSendBtn?.addEventListener('click', () => {
+                const text = chatInput.value.trim();
+                if (!text || !currentRoom) return;
+                // Local echo; replace with socket emit if backend supports chat
+                localMessages[currentRoom].push({ author: 'You', text });
+                renderMessages();
+                chatInput.value = '';
+            });
+
+            saveMeetingBtn?.addEventListener('click', async () => {
+                if (!currentRoom) return;
+                const payload = {
+                    candidate_id: currentRoom.split('_cand_')[1],
+                    mode: meetingMode.value,
+                    date: meetingDate.value,
+                    time: meetingTime.value,
+                    link: meetingLink.value,
+                    notes: meetingNotes.value
+                };
+                try {
+                    const res = await fetch('/api/mentor/meetings', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json();
+                    if (!data.success) throw new Error(data.message || 'Failed to save meeting');
+                    // update cache and UI
+                    meetingCache[currentRoom] = {
+                        mode: payload.mode,
+                        date: payload.date,
+                        time: payload.time,
+                        link: payload.link,
+                        notes: payload.notes,
+                        mentee_name: data.meeting.candidate_name || payload.candidate_id
+                    };
+                    hydrateMeetingBadge();
+                    populateSchedule();
+                    const modal = bootstrap.Modal.getOrCreateInstance(scheduleModal);
+                    modal.hide();
+                } catch (e) {
+                    alert('Could not save meeting: ' + e.message);
+                }
+            });
+
+            document.querySelectorAll('.chat-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const room = btn.dataset.room;
+                    const mentee = btn.dataset.mentee || 'Mentee';
+                    openChat(room, mentee);
+                });
+            });
+
+            document.querySelectorAll('.schedule-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const room = btn.dataset.room;
+                    const mentee = btn.dataset.mentee || 'Mentee';
+                    openSchedule(room, mentee);
+                });
+            });
+
+            await loadMeetings();
+            hydrateMeetingBadge();
+
+        // Populate the My Schedule section with scheduled meetings
+        const populateSchedule = () => {
+        const container = document.getElementById('scheduleContainer');
+        if (!container) return;
+        
+                const meetings = Object.entries(meetingCache || {});
+        if (meetings.length === 0) {
+            container.innerHTML = '<div class="alert alert-secondary">No scheduled meetings yet.</div>';
+            return;
+        }
+        
+        let html = '<div class="table-responsive"><table class="table table-hover align-middle"><thead class="table-light"><tr><th>#</th><th>Mentee</th><th>Mode</th><th>Date & Time</th><th>Link</th><th>Notes</th></tr></thead><tbody>';
+        meetings.forEach((entry, idx) => {
+                    const [room, meeting] = entry;
+                    const menteeMatch = room.match(/_cand_(\d+)$/);
+                    const menteeNum = idx + 1;
+                    const menteeName = meeting.mentee_name || `Mentee ${menteeMatch ? menteeMatch[1] : ''}`;
+            const dateTime = meeting.date && meeting.time ? `${meeting.date} ${meeting.time}` : 'Not set';
+            const link = meeting.link ? `<a href="${meeting.link}" target="_blank" class="btn btn-sm btn-outline-primary">Join</a>` : 'N/A';
+            const notes = meeting.notes ? `<small>${meeting.notes.substring(0, 50)}${meeting.notes.length > 50 ? '...' : ''}</small>` : 'N/A';
+            
+            html += `<tr>
+            <td>${menteeNum}</td>
+                        <td><strong>${menteeName}</strong></td>
+            <td>${meeting.mode || 'N/A'}</td>
+            <td>${dateTime}</td>
+            <td>${link}</td>
+            <td>${notes}</td>
+            </tr>`;
+        });
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+        };
+        
+        populateSchedule();
+
+        } catch (err) {
+            console.error(err);
+        }
+    });
+    </script>
+    <style>
+        /* Section Logic: Hide all by default, show active */
+        .dashboard-section {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .active-section {
+            display: block !important;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Mentor Sidebar Styling */
+        .mentor-sidebar {
+            background: linear-gradient(180deg, #0d6efd, #0b5ed7);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+            position: sticky;
+            top: 0;
+        }
+
+        .sidebar-title {
+            font-weight: 600;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 15px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            color: #e9f0ff;
+            text-decoration: none !important;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+
+        .sidebar-link.active {
+            background: rgba(255, 255, 255, 0.25);
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-link.logout { color: #ffdddd; margin-top: 20px; }
+        .sidebar-link.logout:hover { background: rgba(220, 53, 69, 0.2); }
+        
+        html { scroll-behavior: smooth; }
+        /* Add this to your <style> block in mentor_dashboard.html */
+        .alert {
+            position: relative;
+            z-index: 1050; /* Ensures it stays above other dashboard elements */
+            margin-bottom: 20px;
+        }
+        
+        .hover-shadow {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .hover-shadow:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
+        }
+    </style>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const links = document.querySelectorAll(".nav-item");
+        const sections = document.querySelectorAll(".dashboard-section");
+        const bar = document.getElementById("completion-bar");
+        const fields = document.querySelectorAll(".track");
+
+        // SECTION SWITCHING LOGIC ---
+        function showSection(id) {
+            sections.forEach(sec => sec.classList.remove("active-section"));
+            const target = document.getElementById(id);
+            if (target) {
+                target.classList.add("active-section");
+            }
+            links.forEach(link => {
+                link.classList.remove("active");
+                if(link.getAttribute("href") === "#" + id) {
+                    link.classList.add("active");
+                }
+            });
+        }
+
+        // Handle clicks on sidebar links
+        links.forEach(link => {
+            link.addEventListener("click", e => {
+                const hash = link.getAttribute("href");
+                if (hash && hash.startsWith("#")) {
+                    e.preventDefault();
+                    const id = hash.substring(1);
+                    showSection(id);
+                    closeSidebarOnNavClick();
+                }
+            });
+        });
+        const currentHash = window.location.hash.substring(1);
+        if (currentHash && document.getElementById(currentHash)) {
+            showSection(currentHash);
+        } else {
+            {% if verification_status != 'approved' %}
+            showSection("profile");
+            {% else %}
+            showSection("dashboard");
+            {% endif %}
+        }
+
+        // Initialize tooltips for locked items
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Intercept clicks on locked sidebar items to show popup
+        document.querySelectorAll('.nav-item.locked').forEach(a => {
+            a.addEventListener('click', (e) => {
+                e.preventDefault();
+                const modal = new bootstrap.Modal(document.getElementById('lockedModal'));
+                modal.show();
+            });
+        });
+
+
+        // --- 2. PROGRESS BAR LOGIC ---
+        function updateProgress() {
+            if(bar.dataset.auto === "false") return;
+
+            let filled = 0;
+            fields.forEach(f => {
+                if (f.type === "file") {
+                    if (f.files.length > 0) filled++;
+                } else if (f.value && f.value.trim() !== "") {
+                    filled++;
+                }
+            });
+
+            let percent = Math.round((filled / fields.length) * 100);
+            bar.style.width = percent + "%";
+            bar.innerText = percent + "%";
+        }
+
+        fields.forEach(f => {
+            f.addEventListener("input", updateProgress);
+            f.addEventListener("change", updateProgress);
+        });
+    });
+    function toggleEditMode(showEdit) {
+        const viewMode = document.getElementById('view-mode');
+        const editMode = document.getElementById('edit-mode');
+        const actions = document.getElementById('profile-actions');
+
+        if (showEdit) {
+            viewMode.classList.add('d-none');
+            editMode.classList.remove('d-none');
+            actions.classList.add('d-none');
+        } else {
+            viewMode.classList.remove('d-none');
+            editMode.classList.add('d-none');
+            actions.classList.remove('d-none');
+        }
+    }
+
+    function confirmDeleteProfile() {
+        if (confirm("Are you sure you want to delete your profile? This will hide you from candidates.")) {
+            // Create a hidden form to send a POST request for security
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/mentor/delete-profile';
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+
+    </script>
+
+    <!-- Locked notice modal -->
+    <div class="modal fade" id="lockedModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning-subtle">
+                    <h5 class="modal-title"><i class="bi bi-lock-fill me-2"></i>Feature Locked</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Your profile is pending admin approval. Only "My Profile" is available right now. You can access all features after verification.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+        </div>
+
+            </div><!-- End Content -->
+        </div><!-- End Dashboard Container -->
+
+        <!-- ===== AI CHATBOT WIDGET ===== -->
+        <div id="ai-chatbot">
+            <div class="chat-toggle">
+                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="AI">
+            </div>
+
+            <div class="chat-box">
+                <div class="chat-header">
+                    <div class="chat-title">
+                        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png">
+                        <span>Chat with AI</span>
+                    </div>
+                    <button id="chat-close">✕</button>
+                </div>
+
+                <div class="chat-body" id="chat-body">
+                    <div class="chat-message bot">
+                        👋 Hi! I'm your AI assistant.  
+                        Ask me anything about <b>HireHub</b>.
+                    </div>
+                </div>
+
+                <div class="chat-footer">
+                    <input type="text" id="chat-input" placeholder="Type your question..." />
+                    <button id="chat-send">➤</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        document.addEventListener("DOMContentLoaded", () => {
+
+            const toggle = document.querySelector('.chat-toggle');
+            const chatBox = document.querySelector('.chat-box');
+            const closeBtn = document.getElementById('chat-close');
+            const sendBtn = document.getElementById('chat-send');
+            const input = document.getElementById('chat-input');
+            const body = document.getElementById('chat-body');
+
+            toggle.addEventListener('click', () => {
+                chatBox.style.display = 'flex';
+            });
+
+            closeBtn.addEventListener('click', () => {
+                chatBox.style.display = 'none';
+            });
+
+            sendBtn.addEventListener('click', sendMessage);
+
+            input.addEventListener("keypress", e => {
+                if (e.key === "Enter") sendMessage();
+            });
+
+            function sendMessage() {
+                const text = input.value.trim();
+                if (!text) return;
+
+                addMessage(text, 'user');
+                input.value = '';
+
+                botReply(text);
+            }
+
+            function addMessage(text, type) {
+                const msg = document.createElement('div');
+                msg.className = `chat-message ${type}`;
+                msg.innerText = text;
+                body.appendChild(msg);
+                body.scrollTop = body.scrollHeight;
+            }
+
+            // 🔥 REAL AI BACKEND CALL (ROLE-AWARE)
+            async function botReply(text) {
+                addMessage("Typing...", "bot");
+
+                try {
+                    const res = await fetch("/api/chat", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: text })
+                    });
+
+                    const data = await res.json();
+
+                    // remove "Typing..."
+                    const typingMsg = body.querySelector(".chat-message.bot:last-child");
+                    if (typingMsg) typingMsg.remove();
+
+                    addMessage(data.reply, "bot");
+
+                } catch (error) {
+                    console.error("Chatbot error:", error);
+                    addMessage("Sorry, something went wrong. Please try again.", "bot");
+                }
+            }
+        });
+        </script>
+    
+    {% if user_role != 'admin' %}
+        <script>
+            async function showMaintenanceAlertIfNeeded() {
+                try {
+                    const res = await fetch('/api/maintenance-status');
+                    const data = await res.json();
+                    if (data.maintenance) {
+                        alert('The platform is currently under maintenance. Some features may be unavailable.');
+                    }
+                } catch (e) {}
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', showMaintenanceAlertIfNeeded);
+            } else {
+                showMaintenanceAlertIfNeeded();
+            }
+        </script>
+        {% endif %}
+
+        <!-- FEEDBACK MODAL -->
+        <div id="feedbackModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; overflow-y: auto; padding: 1rem;">
+            <div style="background: white; padding: 2rem; border-radius: 12px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); margin: auto;">
+                <h3 style="margin-top: 0; color: var(--primary);">Share Your Feedback</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Help us improve the platform. Your feedback is valuable to our admin team.</p>
+                
+                <form id="feedbackForm">
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.75rem; color: var(--primary);">Rating</label>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(44px, 1fr)); gap: 0.5rem; align-items: center;">
+                            <label style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem; cursor: pointer;">
+                                <input type="radio" name="rating" value="1" style="cursor: pointer;" required>
+                                <span style="cursor: pointer; user-select: none; font-size: 1.4rem; line-height: 1;">⭐</span>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary);">1</span>
+                            </label>
+                            <label style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem; cursor: pointer;">
+                                <input type="radio" name="rating" value="2" style="cursor: pointer;">
+                                <span style="cursor: pointer; user-select: none; font-size: 1.4rem; line-height: 1;">⭐</span>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary);">2</span>
+                            </label>
+                            <label style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem; cursor: pointer;">
+                                <input type="radio" name="rating" value="3" style="cursor: pointer;">
+                                <span style="cursor: pointer; user-select: none; font-size: 1.4rem; line-height: 1;">⭐</span>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary);">3</span>
+                            </label>
+                            <label style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem; cursor: pointer;">
+                                <input type="radio" name="rating" value="4" style="cursor: pointer;">
+                                <span style="cursor: pointer; user-select: none; font-size: 1.4rem; line-height: 1;">⭐</span>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary);">4</span>
+                            </label>
+                            <label style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem; cursor: pointer;">
+                                <input type="radio" name="rating" value="5" style="cursor: pointer;">
+                                <span style="cursor: pointer; user-select: none; font-size: 1.4rem; line-height: 1;">⭐</span>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary);">5</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--primary);">Your Feedback</label>
+                        <textarea name="comment" placeholder="Tell us what you think..." required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; resize: vertical; min-height: 120px;"></textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <button type="submit" style="flex: 1 1 160px; padding: 0.75rem; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Send Feedback</button>
+                        <button type="button" onclick="closeFeedbackModal()" style="flex: 1 1 160px; padding: 0.75rem; background: var(--border); color: var(--text-primary); border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            function showFeedbackModal() {
+                document.getElementById('feedbackModal').style.display = 'flex';
+            }
+
+            function closeFeedbackModal() {
+                document.getElementById('feedbackModal').style.display = 'none';
+                document.getElementById('feedbackForm').reset();
+            }
+
+            document.getElementById('feedbackForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(document.getElementById('feedbackForm'));
+                
+                try {
+                    const res = await fetch('/submit-feedback', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        alert('Thank you for your feedback! We appreciate your input.');
+                        closeFeedbackModal();
+                    } else {
+                        alert('Error: ' + (data.error || 'Failed to submit feedback'));
+                    }
+                } catch (error) {
+                    alert('Error submitting feedback: ' + error.message);
+                }
+            });
+
+            // Close modal when clicking outside
+            document.getElementById('feedbackModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeFeedbackModal();
+                }
+            });
+        </script>
+    
+
+<script>
+    (function () {
+        if (window.__professionalAlertInstalled) return;
+        window.__professionalAlertInstalled = true;
+
+        const style = document.createElement('style');
+        style.textContent = `
+            #pro-alert-container { position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 12px; max-width: min(420px, calc(100vw - 24px)); }
+            .pro-alert { background: #fff; border-radius: 14px; box-shadow: 0 16px 40px rgba(15,42,68,.18); border-left: 5px solid #4FB6E8; padding: 14px 14px 14px 16px; color: #1F2933; font: 500 14px/1.45 Inter,Segoe UI,sans-serif; transform: translateY(-10px); opacity: 0; transition: all .22s ease; white-space: pre-line; display:flex; gap:10px; align-items:flex-start; }
+            .pro-alert.show { opacity: 1; transform: translateY(0); }
+            .pro-alert.success { border-left-color: #10b981; }
+            .pro-alert.error { border-left-color: #ef4444; }
+            .pro-alert.warning { border-left-color: #f59e0b; }
+            .pro-alert .icon { font-size: 16px; margin-top: 1px; }
+            .pro-alert .content { flex: 1; }
+            .pro-alert .close-btn { border: 0; background: transparent; color: #64748b; font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px; }
+            @media (max-width: 768px) { #pro-alert-container { left: 10px; right: 10px; top: 10px; max-width: none; } }
+        `;
+        document.head.appendChild(style);
+
+        const typeOf = (message) => {
+            const text = String(message || '').toLowerCase();
+            if (text.includes('error') || text.includes('failed') || text.includes('not found') || text.includes('could not')) return 'error';
+            if (text.includes('warning') || text.includes('please') || text.includes('required') || text.includes('invalid')) return 'warning';
+            if (text.includes('success') || text.includes('submitted') || text.includes('saved') || text.includes('generated') || text.includes('approved')) return 'success';
+            return 'info';
+        };
+
+        const iconOf = (type) => type === 'success' ? '✅' : (type === 'error' || type === 'warning') ? '⚠️' : 'ℹ️';
+
+        window.alert = function (message) {
+            let container = document.getElementById('pro-alert-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'pro-alert-container';
+                document.body.appendChild(container);
+            }
+
+            const type = typeOf(message);
+            const toast = document.createElement('div');
+            toast.className = `pro-alert ${type}`;
+            toast.innerHTML = `<div class="icon">${iconOf(type)}</div><div class="content">${String(message || '')}</div><button class="close-btn" aria-label="Close">×</button>`;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+
+            const close = () => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 220); };
+            toast.querySelector('.close-btn').addEventListener('click', close);
+            setTimeout(close, 5000);
+        };
+    })();
+</script>
+</body>
+</html>

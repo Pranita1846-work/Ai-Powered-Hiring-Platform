@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HireHub - Connecting Talent, Opportunity & Mentorship{% endblock %}</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- AOS Animation (Optional - for pages that need it) -->
+    {% block aos_css %}{% endblock %}
+    
+    <!-- Chart.js (Optional - for analytics pages) -->
+    {% block chartjs %}{% endblock %}
+
+    <!-- Inline CSS - Corporate Theme -->
+    <style>
+        /* ===== CSS VARIABLES - CORPORATE THEME ===== */
+        :root {
+            /* Primary Colors */
+            --primary: #0F2A44;
+            --primary-dark: #081624;
+            --primary-light: #17385A;
+
+            /* Secondary Colors */
+            --secondary: #13233A;
+            --secondary-dark: #0B1320;
+            --secondary-light: #1C3556;
+
+            /* Accent Colors */
+            --accent: #4FB6E8;
+            --accent-dark: #2F9FD9;
+            --accent-light: #7ED3F5;
+
+            /* Background Colors */
+            --bg-main: #F5F7FB;
+            --bg-card: #FFFFFF;
+
+            /* Text Colors */
+            --text-primary: #172033;
+            --text-secondary: #64748B;
+
+            /* Shadows */
+            --shadow-sm: 0 2px 10px rgba(15, 42, 68, 0.06);
+            --shadow-md: 0 14px 34px rgba(15, 42, 68, 0.10);
+            --shadow-lg: 0 24px 54px rgba(15, 42, 68, 0.14);
+            
+            /* Legacy names for compatibility */
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --gray: #64748b;
+            --light: #f8fafc;
+            --light-gray: #f1f5f9;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Global */
+        body {
+            font-family: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+        }
+
+        /* Navbar */
+        .navbar {
+            background: rgba(255, 255, 255, 0.88) !important;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Hero Section */
+        .hero-section {
+            padding: 90px 0;
+            background: linear-gradient(135deg, #EAF2FF 0%, #EEF7FF 45%, #E8FCFB 100%);
+            border-radius: 24px;
+            margin-top: 40px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(79, 182, 232, 0.15);
+            color: var(--accent-dark);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        /* Headings */
+        .hero-title {
+            font-size: 52px;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 16px;
+        }
+
+        .hero-title span {
+            color: var(--primary);
+        }
+        
+        .hero-text {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 520px;
+        }
+
+        .hero-image {
+            max-width: 420px;
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--accent);
+            border: none;
+        }
+
+        .btn-outline-primary {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--accent);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-dark);
+        }
+
+        /* Choose Path Section */
+        .path-section {
+            background: var(--bg-card);
+            padding: 70px 0;
+            margin-top: 60px;
+            border-radius: 40px 40px 0 0;
+        }
+
+        /* Cards */
+        .path-card {
+            padding: 30px 20px;
+            border-radius: 18px;
+            border: none;
+            background: var(--bg-card);
+            box-shadow: var(--shadow-md);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-align: center;
+        }
+        
+        .path-card h5 {
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .path-card p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 18px;
+        }
+
+        .path-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--primary);
+            color: #E5E7EB;
+            padding: 30px 0;
+            margin-top: 60px;
+        }
+        /* ================= GLOBAL MOBILE RESPONSIVE ================= */
+        @media (max-width: 768px) {
+        
+            /* Body */
+            body {
+                overflow-x: hidden;
+            }
+        
+            /* Hero Section */
+            .hero-section {
+                padding: 50px 20px;
+                margin-top: 20px;
+                border-radius: 16px;
+                text-align: center;
+            }
+        
+            .hero-title {
+                font-size: 32px;
+                line-height: 1.2;
+            }
+        
+            .hero-text {
+                font-size: 16px;
+                margin: 0 auto;
+            }
+        
+            .hero-image {
+                max-width: 100%;
+                margin-top: 20px;
+            }
+        
+            /* Sections */
+            .path-section {
+                padding: 40px 20px;
+                margin-top: 40px;
+                border-radius: 24px 24px 0 0;
+            }
+        
+            /* Cards */
+            .path-card {
+                padding: 24px 16px;
+            }
+        
+            .path-card:hover {
+                transform: none;
+            }
+        
+            /* Buttons */
+            .btn,
+            .btn-primary,
+            .btn-outline-primary {
+                font-size: 0.9rem;
+                padding: 10px 16px;
+            }
+        
+            /* Footer */
+            .footer {
+                padding: 24px 16px;
+                text-align: center;
+            }
+        
+        }
+
+        /* ================= DASHBOARD MOBILE FIX ================= */
+        
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar default (desktop) */
+        .sidebar {
+            width: 260px;
+            background: #0f2a44;
+            transition: transform 0.3s ease;
+        }
+        
+        /* Main content */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+        }
+        
+        /* ===== ELEGANT ALERTS & NOTIFICATIONS ===== */
+        
+        /* Base Alert Styling */
+        .alert {
+            border: none;
+            border-radius: 12px;
+            padding: 16px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(10px);
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+            animation: slideInDown 0.4s ease-out;
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Success Alert - Green */
+        .alert-success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%);
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .alert-success .btn-close {
+            filter: invert(0.25);
+        }
+
+        /* Danger Alert - Red */
+        .alert-danger {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.04) 100%);
+            color: #7c2d12;
+            border-left: 4px solid #ef4444;
+        }
+
+        .alert-danger .btn-close {
+            filter: invert(0.1);
+        }
+
+        /* Warning Alert - Orange */
+        .alert-warning {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.04) 100%);
+            color: #78350f;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .alert-warning .btn-close {
+            filter: invert(0.2);
+        }
+
+        /* Info Alert - Blue */
+        .alert-info {
+            background: linear-gradient(135deg, rgba(79, 182, 232, 0.08) 0%, rgba(79, 182, 232, 0.04) 100%);
+            color: #164e63;
+            border-left: 4px solid #4fb6e8;
+        }
+
+        .alert-info .btn-close {
+            filter: invert(0.3);
+        }
+
+        /* Secondary Alert - Gray */
+        .alert-secondary {
+            background: linear-gradient(135deg, rgba(107, 114, 128, 0.08) 0%, rgba(107, 114, 128, 0.04) 100%);
+            color: #374151;
+            border-left: 4px solid #6b7280;
+        }
+
+        /* Light Alert */
+        .alert-light {
+            background: linear-gradient(135deg, rgba(248, 250, 252, 0.5) 0%, rgba(241, 245, 249, 0.5) 100%);
+            color: #0f172a;
+            border-left: 4px solid #cbd5e1;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Dismissible Alert */
+        .alert-dismissible {
+            padding-right: 48px;
+        }
+
+        .alert .btn-close {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.6;
+            transition: all 0.3s ease;
+        }
+
+        .alert .btn-close:hover {
+            opacity: 1;
+        }
+
+        /* Alert Icons */
+        .alert i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        /* Alert Fade Out Animation */
+        .alert.fade.show {
+            display: block;
+        }
+
+        /* Fixed Top Alerts */
+        .alert.fixed-top {
+            position: fixed;
+            top: 80px;
+            left: 20px;
+            right: auto;
+            max-width: 500px;
+            z-index: 9999;
+            animation: slideInDown 0.4s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            .alert.fixed-top {
+                left: 10px;
+                right: 10px;
+                max-width: none;
+                top: 70px;
+            }
+        }
+
+        
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                transform: translateX(-100%);
+                z-index: 1200;
+            }
+        
+            .sidebar.active {
+                transform: translateX(0);
+            }
+        
+            .main-content {
+                width: 100%;
+                padding: 15px;
+            }
+        }
+
+    </style>
+
+    <!-- Page-specific styles -->
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Optional navbar block -->
+    {% block navbar %}{% endblock %}
+
+    <!-- Main Content -->
+    {% block content %}{% endblock %}
+
+    <!-- Bootstrap Bundle JS (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- jQuery (if needed by specific pages) -->
+    {% block jquery %}{% endblock %}
+    
+    <!-- Socket.IO (if needed by specific pages) -->
+    {% block socketio %}{% endblock %}
+    
+    <!-- AOS Animation JS (Optional) -->
+    {% block aos_js %}{% endblock %}
+
+    <!-- Location Autocomplete Script -->
+    <script>
+        // Initialize location autocomplete for any input with class 'location-autocomplete'
+        function initLocationAutocomplete() {
+            const locationInputs = document.querySelectorAll('.location-autocomplete');
+            
+            locationInputs.forEach(input => {
+                let autocompleteList = null;
+                let debounceTimer = null;
+                
+                // Create autocomplete container
+                const container = document.createElement('div');
+                container.className = 'location-autocomplete-container';
+                container.style.cssText = 'position: relative;';
+                input.parentNode.insertBefore(container, input);
+                container.appendChild(input);
+                
+                // Create results dropdown
+                const resultsDiv = document.createElement('div');
+                resultsDiv.className = 'location-autocomplete-results';
+                resultsDiv.style.cssText = `
+                    position: absolute;
+                    top: 100%;
+                    left: 0;
+                    right: 0;
+                    background: white;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                    max-height: 300px;
+                    overflow-y: auto;
+                    z-index: 1000;
+                    display: none;
+                    margin-top: 4px;
+                `;
+                container.appendChild(resultsDiv);
+                
+                // Input event handler
+                input.addEventListener('input', function() {
+                    clearTimeout(debounceTimer);
+                    const query = this.value.trim();
+                    
+                    if (query.length < 2) {
+                        resultsDiv.style.display = 'none';
+                        return;
+                    }
+                    
+                    // Debounce API calls
+                    debounceTimer = setTimeout(() => {
+                        fetchLocationSuggestions(query, resultsDiv, input);
+                    }, 300);
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!container.contains(e.target)) {
+                        resultsDiv.style.display = 'none';
+                    }
+                });
+            });
+        }
+        
+        // Fetch location suggestions from Nominatim (OpenStreetMap)
+        async function fetchLocationSuggestions(query, resultsDiv, input) {
+            try {
+                // Using Nominatim (free, no API key required)
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=8&addressdetails=1`,
+                    {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    }
+                );
+                
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const data = await response.json();
+                displaySuggestions(data, resultsDiv, input);
+            } catch (error) {
+                console.error('Error fetching location suggestions:', error);
+                resultsDiv.innerHTML = '<div style="padding: 12px; color: #ef4444; font-size: 0.875rem;"><i class="bi bi-exclamation-circle"></i> Unable to load suggestions</div>';
+                resultsDiv.style.display = 'block';
+            }
+        }
+        
+        // Display location suggestions
+        function displaySuggestions(locations, resultsDiv, input) {
+            if (!locations || locations.length === 0) {
+                resultsDiv.innerHTML = '<div style="padding: 12px; color: #6b7280; font-size: 0.875rem;"><i class="bi bi-info-circle"></i> No locations found</div>';
+                resultsDiv.style.display = 'block';
+                return;
+            }
+            
+            resultsDiv.innerHTML = '';
+            
+            locations.forEach(location => {
+                const item = document.createElement('div');
+                item.className = 'location-autocomplete-item';
+                item.style.cssText = `
+                    padding: 12px 16px;
+                    cursor: pointer;
+                    transition: background 0.2s;
+                    border-bottom: 1px solid #f1f5f9;
+                    font-size: 0.9rem;
+                `;
+                
+                // Format the display name
+                let displayName = location.display_name;
+                const parts = displayName.split(',').map(p => p.trim());
+                
+                // Create a shorter, more readable format
+                let shortName = '';
+                if (parts.length > 0) {
+                    // Show city/town, state/region, country
+                    if (parts.length >= 3) {
+                        shortName = `${parts[0]}, ${parts[parts.length-2]}, ${parts[parts.length-1]}`;
+                    } else {
+                        shortName = displayName;
+                    }
+                }
+                
+                item.innerHTML = `
+                    <div style="font-weight: 500; color: #1f2933; margin-bottom: 2px;">
+                        <i class="bi bi-geo-alt-fill" style="color: #4fb6e8; margin-right: 6px;"></i>
+                        ${shortName}
+                    </div>
+                    <div style="font-size: 0.75rem; color: #6b7280; margin-left: 22px;">
+                        ${location.type ? location.type.charAt(0).toUpperCase() + location.type.slice(1) : 'Location'}
+                    </div>
+                `;
+                
+                // Hover effect
+                item.addEventListener('mouseenter', function() {
+                    this.style.background = '#f8fafc';
+                });
+                item.addEventListener('mouseleave', function() {
+                    this.style.background = 'white';
+                });
+                
+                // Click handler
+                item.addEventListener('click', function() {
+                    input.value = shortName;
+                    resultsDiv.style.display = 'none';
+                    
+                    // Trigger change event
+                    const event = new Event('change', { bubbles: true });
+                    input.dispatchEvent(event);
+                });
+                
+                resultsDiv.appendChild(item);
+            });
+            
+            resultsDiv.style.display = 'block';
+        }
+        
+        // Initialize on page load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initLocationAutocomplete);
+        } else {
+            initLocationAutocomplete();
+        }
+    </script>
+
+    <!-- Page-specific scripts -->
+    {% block extra_js %}{% endblock %}
+<script>
+    (function () {
+        if (window.__professionalAlertInstalled) return;
+        window.__professionalAlertInstalled = true;
+
+        const style = document.createElement('style');
+        style.textContent = `
+            #pro-alert-container {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 99999;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                max-width: min(420px, calc(100vw - 24px));
+            }
+            .pro-alert {
+                background: #ffffff;
+                border-radius: 14px;
+                box-shadow: 0 16px 40px rgba(15, 42, 68, 0.18);
+                border-left: 5px solid #4FB6E8;
+                padding: 14px 14px 14px 16px;
+                color: #1F2933;
+                font: 500 14px/1.45 Inter, Segoe UI, sans-serif;
+                transform: translateY(-10px);
+                opacity: 0;
+                transition: all .22s ease;
+                white-space: pre-line;
+                display: flex;
+                gap: 10px;
+                align-items: flex-start;
+            }
+            .pro-alert.show { opacity: 1; transform: translateY(0); }
+            .pro-alert.success { border-left-color: #10b981; }
+            .pro-alert.error { border-left-color: #ef4444; }
+            .pro-alert.warning { border-left-color: #f59e0b; }
+            .pro-alert .icon { font-size: 16px; margin-top: 1px; }
+            .pro-alert .content { flex: 1; }
+            .pro-alert .close-btn {
+                border: 0;
+                background: transparent;
+                color: #64748b;
+                font-size: 18px;
+                line-height: 1;
+                cursor: pointer;
+                padding: 0 2px;
+            }
+            @media (max-width: 768px) {
+                #pro-alert-container { left: 10px; right: 10px; top: 10px; max-width: none; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        function getType(message) {
+            const text = String(message || '').toLowerCase();
+            if (text.includes('error') || text.includes('failed') || text.includes('not found') || text.includes('could not')) return 'error';
+            if (text.includes('warning') || text.includes('please') || text.includes('required') || text.includes('invalid')) return 'warning';
+            if (text.includes('success') || text.includes('submitted') || text.includes('saved') || text.includes('generated') || text.includes('approved')) return 'success';
+            return 'info';
+        }
+
+        function getIcon(type) {
+            if (type === 'error') return '⚠️';
+            if (type === 'warning') return '⚠️';
+            if (type === 'success') return '✅';
+            return 'ℹ️';
+        }
+
+        window.alert = function (message) {
+            let container = document.getElementById('pro-alert-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'pro-alert-container';
+                document.body.appendChild(container);
+            }
+
+            const type = getType(message);
+            const toast = document.createElement('div');
+            toast.className = `pro-alert ${type}`;
+            toast.innerHTML = `
+                <div class="icon">${getIcon(type)}</div>
+                <div class="content">${String(message || '')}</div>
+                <button class="close-btn" aria-label="Close">×</button>
+            `;
+
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+
+            const removeToast = () => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 220);
+            };
+
+            toast.querySelector('.close-btn').addEventListener('click', removeToast);
+            setTimeout(removeToast, 5000);
+        };
+    })();
+</script>
+</body>
+</html>

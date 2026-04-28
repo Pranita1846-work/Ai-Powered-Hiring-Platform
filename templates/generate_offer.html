@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}Generate Offer Letter | HireHub{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="mb-4">
+                <a href="/recruiter-dashboard#applications" class="btn btn-outline-secondary mb-3">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Applications
+                </a>
+                <h2 class="fw-bold mb-2">Generate Offer Letter</h2>
+                <p class="text-muted">Create an official offer letter for the selected candidate.</p>
+            </div>
+
+            <!-- Candidate Info -->
+            <div class="card border-0 shadow-sm mb-4 bg-success-subtle">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-success text-white rounded-circle p-3 me-3">
+                            <i class="bi bi-trophy-fill fs-4"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0 text-success">Congratulations!</h5>
+                            <p class="mb-0 text-muted">You're about to make an offer to this candidate</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Candidate Name</small>
+                            <strong>{{ application.candidate_name }}</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Position</small>
+                            <strong>{{ application.job_title }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Offer Form -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4">
+                        <i class="bi bi-file-earmark-text text-primary me-2"></i>Offer Details
+                    </h5>
+
+                    <form method="POST" action="/generate-offer/{{ application.id }}">
+                        <div class="row">
+                            <!-- Salary -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    Annual Salary (CTC) <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" class="form-control" name="salary" required
+                                           min="{{ application.salary_min or 300000 }}" 
+                                           max="{{ application.salary_max or 5000000 }}"
+                                           value="{{ application.salary_min or 500000 }}"
+                                           placeholder="e.g., 600000">
+                                </div>
+                                <small class="text-muted">
+                                    {% if application.salary_min and application.salary_max %}
+                                    Suggested range: ₹{{ application.salary_min }} - ₹{{ application.salary_max }}
+                                    {% else %}
+                                    Enter the annual compensation package
+                                    {% endif %}
+                                </small>
+                            </div>
+
+                            <!-- Employment Type -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    Employment Type <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" name="employment_type" required>
+                                    <option value="Full-time">Full-time</option>
+                                    <option value="Part-time">Part-time</option>
+                                    <option value="Contract">Contract</option>
+                                    <option value="Internship">Internship</option>
+                                </select>
+                            </div>
+
+                            <!-- Joining Date -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    Expected Joining Date <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" class="form-control" name="joining_date" required
+                                       min="{{ (datetime.now() + timedelta(days=15)).strftime('%Y-%m-%d') }}">
+                                <small class="text-muted">At least 15 days from today</small>
+                            </div>
+
+                            <!-- Location -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    Work Location
+                                </label>
+                                <input type="text" class="form-control location-autocomplete" name="work_location" 
+                                       value="{{ application.location }}">
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle"></i> Edit or type to see location suggestions
+                                </small>
+                            </div>
+
+                            <!-- Benefits Section (Optional) -->
+                            <div class="col-12 mb-3">
+                                <label class="form-label fw-semibold">
+                                    Additional Benefits & Perks (Optional)
+                                </label>
+                                <textarea class="form-control" name="benefits" rows="3" 
+                                          placeholder="e.g., Health insurance, Flexible work hours, Remote work option, Performance bonuses..."></textarea>
+                                <small class="text-muted">These will be included in the offer letter</small>
+                            </div>
+                        </div>
+
+                        <!-- Preview Info -->
+                        <div class="alert alert-info mt-3">
+                            <h6 class="fw-bold mb-2">
+                                <i class="bi bi-info-circle-fill me-2"></i>What happens next?
+                            </h6>
+                            <ul class="mb-0">
+                                <li>A PDF offer letter will be auto-generated with your company details</li>
+                                <li>The candidate will receive a notification with download link</li>
+                                <li>Application status will be updated to "Selected"</li>
+                                <li>You can track offer acceptance status in your dashboard</li>
+                            </ul>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <a href="/recruiter-dashboard#applications" class="btn btn-outline-secondary px-4">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success px-4">
+                                <i class="bi bi-file-earmark-check me-2"></i>Generate Offer Letter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Important Notice -->
+            <div class="alert alert-warning mt-4">
+                <h6 class="fw-bold mb-2">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Important Notes
+                </h6>
+                <ul class="mb-0">
+                    <li>Ensure all salary and benefit details are accurate before generating</li>
+                    <li>The offer letter is legally binding - review company policies</li>
+                    <li>Candidate can download the offer letter from their dashboard</li>
+                    <li>You can track if the candidate accepts or rejects the offer</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-calculate and display salary breakup (optional enhancement)
+document.querySelector('input[name="salary"]').addEventListener('input', function(e) {
+    const salary = parseInt(e.target.value);
+    if (salary > 0) {
+        const monthly = Math.round(salary / 12);
+        const info = e.target.parentElement.nextElementSibling;
+        if (info && salary >= 300000) {
+            info.innerHTML = `Suggested range or ₹${monthly.toLocaleString('en-IN')}/month`;
+        }
+    }
+});
+</script>
+{% endblock %}

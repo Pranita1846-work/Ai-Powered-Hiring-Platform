@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}Mentor Availability{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4"><i class="fas fa-calendar-check"></i> Manage Your Availability</h2>
+        </div>
+    </div>
+
+    <!-- Add Availability Form -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-plus"></i> Add Availability</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="/mentor/availability">
+                        <input type="hidden" name="action" value="add">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="day_of_week">Day of Week *</label>
+                                    <select class="form-control" id="day_of_week" name="day_of_week" required>
+                                        <option value="Monday">Monday</option>
+                                        <option value="Tuesday">Tuesday</option>
+                                        <option value="Wednesday">Wednesday</option>
+                                        <option value="Thursday">Thursday</option>
+                                        <option value="Friday">Friday</option>
+                                        <option value="Saturday">Saturday</option>
+                                        <option value="Sunday">Sunday</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="start_time">Start Time *</label>
+                                    <input type="time" class="form-control" id="start_time" name="start_time" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="end_time">End Time *</label>
+                                    <input type="time" class="form-control" id="end_time" name="end_time" required>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="max_sessions">Max Sessions/Day *</label>
+                                    <input type="number" class="form-control" id="max_sessions" 
+                                           name="max_sessions" min="1" max="10" value="3" required>
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <div class="form-group">
+                                    <label>&nbsp;</label>
+                                    <button type="submit" class="btn btn-success btn-block">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Availability -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-list"></i> Your Current Availability</h5>
+                </div>
+                <div class="card-body">
+                    {% if availability %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Time Slot</th>
+                                    <th>Max Sessions/Day</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for slot in availability %}
+                                <tr>
+                                    <td><strong>{{ slot.day_of_week }}</strong></td>
+                                    <td>
+                                        {{ slot.start_time.strftime('%H:%M') if slot.start_time else 'N/A' }} - 
+                                        {{ slot.end_time.strftime('%H:%M') if slot.end_time else 'N/A' }}
+                                    </td>
+                                    <td>{{ slot.max_sessions_per_day }}</td>
+                                    <td>
+                                        {% if slot.is_available %}
+                                        <span class="badge badge-success">Available</span>
+                                        {% else %}
+                                        <span class="badge badge-secondary">Unavailable</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <form method="POST" action="/mentor/availability" style="display:inline;">
+                                            <input type="hidden" name="action" value="toggle">
+                                            <input type="hidden" name="availability_id" value="{{ slot.id }}">
+                                            <button type="submit" class="btn btn-sm btn-warning" title="Toggle availability">
+                                                <i class="fas fa-toggle-on"></i>
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="/mentor/availability" style="display:inline;">
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="availability_id" value="{{ slot.id }}">
+                                            <button type="submit" class="btn btn-sm btn-danger" 
+                                                    onclick="return confirm('Are you sure you want to delete this availability slot?');">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">You haven't set any availability yet</p>
+                        <p class="text-muted">Add your available time slots above to start accepting mentorship sessions</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Section -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h6><i class="fas fa-info-circle"></i> How Availability Works</h6>
+                    <ul class="mb-0">
+                        <li><strong>Day & Time:</strong> Set specific days and times when you're available for mentorship sessions</li>
+                        <li><strong>Max Sessions:</strong> Limit the number of sessions per day to manage your workload</li>
+                        <li><strong>Toggle Status:</strong> Temporarily disable slots without deleting them (e.g., for holidays)</li>
+                        <li><strong>Multiple Slots:</strong> You can add multiple time slots for the same day</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3 mb-4">
+        <div class="col-12 text-center">
+            <a href="/mentor/sessions" class="btn btn-primary mx-2">
+                <i class="fas fa-users"></i> View Sessions
+            </a>
+            <a href="/mentor-dashboard" class="btn btn-secondary mx-2">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

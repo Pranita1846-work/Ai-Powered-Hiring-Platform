@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+
+{% block title %}Mentor Analytics{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4"><i class="fas fa-chart-line"></i> Mentorship Analytics</h2>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <h3 class="text-primary">{{ stats.total_sessions }}</h3>
+                    <p class="mb-1"><strong>Total Sessions</strong></p>
+                    <small class="text-muted">All time</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <h3 class="text-success">{{ stats.completed }}</h3>
+                    <p class="mb-1"><strong>Completed</strong></p>
+                    <small class="text-muted">{{ ((stats.completed / stats.total_sessions) * 100)|round(1) if stats.total_sessions > 0 else 0 }}% completion rate</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <h3 class="text-warning">
+                        {% if rating_stats.avg_rating %}
+                        {{ "%.1f"|format(rating_stats.avg_rating) }} <i class="fas fa-star"></i>
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </h3>
+                    <p class="mb-1"><strong>Average Rating</strong></p>
+                    <small class="text-muted">{{ rating_stats.total_ratings }} ratings</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <h3 class="text-info">
+                        {{ (rating_stats.total_hours or 0) // 60 }}h {{ (rating_stats.total_hours or 0) % 60 }}m
+                    </h3>
+                    <p class="mb-1"><strong>Total Time</strong></p>
+                    <small class="text-muted">Spent mentoring</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <!-- Monthly Sessions Chart -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Sessions Over Time (Last 6 Months)</h5>
+                </div>
+                <div class="card-body">
+                    {% if monthly_sessions %}
+                    <canvas id="monthlyChart"></canvas>
+                    <script>
+                        var ctx = document.getElementById('monthlyChart').getContext('2d');
+                        var monthlyChart = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: {{ monthly_sessions|map(attribute='month')|reverse|list|tojson }},
+                                datasets: [{
+                                    label: 'Sessions',
+                                    data: {{ monthly_sessions|map(attribute='count')|reverse|list|tojson }},
+                                    borderColor: 'rgb(75, 192, 192)',
+                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                    tension: 0.3,
+                                    fill: true
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        display: true
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true
+                                    }
+                                }
+                            }
+                        });
+                    </script>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <p class="text-muted">No session data available yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Skills Chart -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-star"></i> Top Focus Areas</h5>
+                </div>
+                <div class="card-body">
+                    {% if top_areas %}
+                    <div class="list-group list-group-flush">
+                        {% for area in top_areas %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ area.primary_skills or 'General' }}
+                            <span class="badge badge-primary badge-pill">{{ area.count }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <p class="text-muted">No data available</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Feedback -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-comments"></i> Recent Session Feedback</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_feedback %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>Rating</th>
+                                    <th>Duration</th>
+                                    <th>Areas Covered</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for feedback in recent_feedback %}
+                                <tr>
+                                    <td>{{ feedback.candidate_name }}</td>
+                                    <td>
+                                        <span class="text-warning">
+                                            {% for i in range(feedback.rating) %}<i class="fas fa-star"></i>{% endfor %}
+                                        </span>
+                                    </td>
+                                    <td>{{ feedback.session_duration }} min</td>
+                                    <td>
+                                        <small>{{ feedback.areas_improved|truncate(50) }}</small>
+                                    </td>
+                                    <td>{{ feedback.created_at.strftime('%Y-%m-%d') if feedback.created_at else 'N/A' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No feedback received yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mt-4 mb-4">
+        <div class="col-12 text-center">
+            <a href="/mentor/sessions" class="btn btn-primary mx-2">
+                <i class="fas fa-users"></i> View All Sessions
+            </a>
+            <a href="/mentor/availability" class="btn btn-success mx-2">
+                <i class="fas fa-calendar"></i> Manage Availability
+            </a>
+            <a href="/mentor-dashboard" class="btn btn-secondary mx-2">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+{% endblock %}

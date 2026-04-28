@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | HireHub</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* ================= RESET ================= */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* ================= PAGE CONTAINER ================= */
+        .register-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 12% 18%, rgba(79, 182, 232, 0.22), transparent 30%),
+                        radial-gradient(circle at 87% 80%, rgba(15, 42, 68, 0.16), transparent 34%),
+                        linear-gradient(145deg, #f2f7fd 0%, #ffffff 52%, #f5f9ff 100%);
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        .register-container::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image: linear-gradient(rgba(15, 42, 68, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(15, 42, 68, 0.03) 1px, transparent 1px);
+            background-size: 34px 34px;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        /* ================= MAIN CARD (LOGIN WIDTH) ================= */
+        .register-card-layout {
+            display: flex;
+            width: 100%;
+            max-width: 1100px;            
+            background: rgba(255, 255, 255, 0.78);
+            border-radius: 20px;
+            box-shadow: 0 22px 64px rgba(15, 42, 68, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ================= LEFT PANEL ================= */
+        .register-left {
+            width: 42%;
+            background: linear-gradient(160deg, #123252 0%, #1a4873 48%, #2b6491 100%);
+            padding: 36px 32px;
+            display: flex;
+            flex-direction: column;
+            color: #eaf5ff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .register-left::before {
+            content: '';
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            right: -100px;
+            top: -90px;
+            background: rgba(126, 211, 245, 0.24);
+        }
+
+        .register-left::after {
+            content: '';
+            position: absolute;
+            width: 230px;
+            height: 230px;
+            border-radius: 50%;
+            left: -90px;
+            bottom: -90px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .left-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            width: fit-content;
+            padding: 0.36rem 0.72rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.26);
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 0.9rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .register-left h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: #ffffff;
+            position: relative;
+            z-index: 2;
+        }
+
+        .register-left p {
+        margin-bottom: 28px;
+        color: rgba(234, 245, 255, 0.93);
+        position: relative;
+        z-index: 2;
+        }
+
+        /* ================= FEATURES ================= */
+        .features-list {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            margin-top: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .feature-item {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .feature-icon {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.24);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            color: #ffffff;
+        }
+
+        /* ================= ABSTRACT INSIGHT BOARD ================= */
+        .register-insight-board {
+            margin-top: auto;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.32);
+            background: linear-gradient(150deg, rgba(255,255,255,0.22), rgba(255,255,255,0.08));
+            padding: 0.95rem;
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        .register-insight-board::before {
+            content: '';
+            position: absolute;
+            width: 170px;
+            height: 170px;
+            right: -60px;
+            top: -60px;
+            border-radius: 50%;
+            background: rgba(126, 211, 245, 0.3);
+            filter: blur(10px);
+        }
+
+        .insight-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.6rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .insight-box {
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.24);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.62rem;
+        }
+
+        .insight-box strong {
+            display: block;
+            font-size: 0.92rem;
+            color: #fff;
+            line-height: 1.1;
+        }
+
+        .insight-box span {
+            font-size: 0.72rem;
+            color: rgba(234, 245, 255, 0.92);
+        }
+
+        .insight-track {
+            margin-top: 0.72rem;
+            height: 7px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.18);
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .insight-track-fill {
+            width: 74%;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #7ed3f5, #ffffff);
+            animation: insightFlow 3s ease-in-out infinite;
+        }
+
+        @keyframes insightFlow {
+            0%, 100% { width: 70%; }
+            50% { width: 86%; }
+        }
+
+        /* ================= RIGHT PANEL ================= */
+        .register-right {
+            width: 58%;
+            padding: 36px 40px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(248,252,255,0.95) 100%);
+        }
+
+        /* ================= BRAND HEADER ================= */
+        .brand-header h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #0F2A44;
+        }
+
+        .brand-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            border: 1px solid rgba(15, 42, 68, 0.15);
+            background: rgba(15, 42, 68, 0.05);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #0f2a44;
+            margin-bottom: 0.5rem;
+        }
+
+        .brand-header p {
+            color: #64748b;
+            margin-bottom: 22px;
+        }
+
+        /* ================= ROLE SELECTION ================= */
+        .role-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .role-card {
+            background: linear-gradient(165deg, #ffffff 0%, #f7fbff 100%);
+            border: 1.8px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 18px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.25s ease;
+            position: relative;
+            z-index: 10;
+            pointer-events: auto;
+        }
+        
+        .role-card:hover {
+            border-color: #66C3EC;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 195, 236, 0.2);
+        }
+
+
+        .role-card.active {
+            border-color: #0F2A44;
+            background: linear-gradient(145deg, rgba(15, 42, 68, 0.1), rgba(79, 182, 232, 0.14));
+            box-shadow: 0 10px 24px rgba(15, 42, 68, 0.16);
+        }
+
+        .role-card i {
+            font-size: 1.6rem;
+            color: #0F2A44;
+        }
+
+        .role-card span {
+            display: block;
+            margin-top: 6px;
+            font-weight: 600;
+        }
+
+        /* ================= FORM ================= */
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #0F2A44;
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1.8px solid #e3eaf2;
+            background: #ffffff;
+        }
+
+        .form-control:focus {
+            border-color: #66C3EC;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 195, 236, 0.25);
+        }
+
+        /* ================= PASSWORD ================= */
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        /* ================= TERMS ================= */
+        .terms {
+            font-size: 0.85rem;
+            color: #475569;
+            margin: 14px 0;
+        }
+
+        .terms a {
+            color: #0F2A44;
+            font-weight: 600;
+        }
+
+        /* ================= BUTTON ================= */
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #0F2A44, #19466f);
+            color: #ffffff;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(15, 42, 68, 0.3);
+        }
+
+        .google-link {
+            transition: all 0.25s ease;
+            background: linear-gradient(160deg, #ffffff 0%, #f8fbff 100%);
+        }
+
+        .google-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(15, 42, 68, 0.14);
+        }
+
+        /* ================= LOGIN LINK ================= */
+        .login-link {
+            margin-top: 14px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .login-link a {
+            color: #0F2A44;
+            font-weight: 700;
+        }
+
+        /* ================= BACK HOME ================= */
+        .back-home {
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .back-home a {
+            font-size: 0.85rem;
+            color: #64748b;
+            text-decoration: none;
+        }
+
+        .back-home a:hover {
+            color: #0F2A44;
+        }
+
+        /* ================= MODAL STYLES ================= */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 28px;
+            border-bottom: 2px solid #e5e7eb;
+            position: sticky;
+            top: 0;
+            background: white;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #0F2A44;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            font-size: 2rem;
+            color: #64748b;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: #0F2A44;
+        }
+
+        .modal-body {
+            padding: 28px;
+            color: #475569;
+            line-height: 1.7;
+        }
+
+        .modal-body h5 {
+            color: #0F2A44;
+            font-weight: 700;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .modal-body h5:first-child {
+            margin-top: 0;
+        }
+
+        .modal-body p {
+            margin-bottom: 14px;
+        }
+
+        .modal-body ul {
+            margin-left: 20px;
+            margin-bottom: 14px;
+        }
+
+        .modal-body ul li {
+            margin-bottom: 8px;
+        }
+
+        /* ================= MOBILE ================= */
+        @media (max-width: 992px) {
+            .register-card-layout {
+                flex-direction: column;
+                max-width: 520px;
+            }
+
+            .register-left {
+                display: none;
+            }
+
+            .register-right {
+                width: 100%;
+                padding: 30px 24px;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="register-container">
+    <div class="row g-0 register-card-layout">
+
+        <!-- ================= LEFT PANEL (LOGIN STYLE) ================= -->
+        <div class="col-lg-5 register-left">
+            <h2>Create Your Account <i class="bi bi-rocket-takeoff"></i></h2>
+            <span class="left-badge"><i class="bi bi-stars"></i> Personalized onboarding</span>
+            <p>
+                Join HireHub to explore career opportunities,
+                internships, and AI-powered hiring support.
+            </p>
+
+            <div class="features-list">
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="bi bi-person-plus"></i>
+                    </div>
+                    <div>
+                        <strong>Quick Registration</strong><br>
+                        <small>Create your account in minutes</small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="bi bi-briefcase"></i>
+                    </div>
+                    <div>
+                        <strong>Career Opportunities</strong><br>
+                        <small>Jobs & internships tailored for you</small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="bi bi-mortarboard"></i>
+                    </div>
+                    <div>
+                        <strong>Career Growth</strong><br>
+                        <small>Build skills with practical assessments</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="register-insight-board" aria-hidden="true">
+                <div class="insight-grid">
+                    <div class="insight-box"><strong>2 min</strong><span>Setup time</span></div>
+                    <div class="insight-box"><strong>Smart</strong><span>Role guidance</span></div>
+                    <div class="insight-box"><strong>AI</strong><span>Profile recommendations</span></div>
+                    <div class="insight-box"><strong>Secure</strong><span>Account protection</span></div>
+                </div>
+                <div class="insight-track">
+                    <div class="insight-track-fill"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= RIGHT PANEL (REGISTER FORM) ================= -->
+        <div class="col-lg-7 register-right">
+
+            <div class="brand-header">
+                <div class="brand-chip"><i class="bi bi-lightning-charge-fill"></i> Quick setup</div>
+                <h1>HireHub</h1>
+                <p>Create your account to get started</p>
+                <p>Select your role to continue</p>
+            </div>
+
+            <!-- Role Selection -->
+            <div class="role-options">
+                <div class="role-card {% if role == 'candidate' or not role %}active{% endif %}" onclick="selectRole('candidate', this)" style="pointer-events: auto;">
+                    <i class="bi bi-person-circle"></i>
+                    <span>Candidate</span>
+                </div>
+
+                <div class="role-card {% if role == 'recruiter' %}active{% endif %}" onclick="selectRole('recruiter', this)" style="pointer-events: auto;">
+                    <i class="bi bi-building"></i>
+                    <span>Recruiter</span>
+                </div>
+
+            </div> <br>
+            <div class="mb-3">
+    <a href="/register/google?role={{ role or 'candidate' }}" class="btn btn-light w-100 d-flex align-items-center justify-content-center gap-2 google-link"
+       style="border:2px solid #e5e7eb; border-radius:10px; padding:10px;">
+        <img src="https://developers.google.com/identity/images/g-logo.png" width="18">
+        <span style="font-weight:600;">Continue with Google</span>
+    </a>
+</div>
+
+<div class="text-center my-2 text-muted" style="font-size:0.85rem;">OR</div>
+
+            <!-- Register Form -->
+            <form method="POST" action="/register" id="registerForm">
+                <input type="hidden" name="role" id="roleInput" value="{{ role or 'candidate' }}">
+                <!-- Error Message Display -->
+                {% if error %}
+                <div class="alert alert-danger shadow-sm" role="alert" style="margin-bottom: 20px;">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>{{ error }}</strong>
+                </div>
+                {% endif %}
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" class="form-control" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" class="form-control" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" class="form-control" id="password" name="password" required>
+                        <i class="bi bi-eye password-toggle" onclick="togglePassword('password')"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" class="form-control" id="confirm" name="confirm_password" required>
+                        <i class="bi bi-eye password-toggle" onclick="togglePassword('confirm')"></i>
+                    </div>
+                </div>
+
+                <div class="terms">
+                    <input type="checkbox" required>
+                    <span>I agree to the <a href="#" onclick="openTermsModal(event)">Terms of Service</a> & <a href="#" onclick="openPrivacyModal(event)">Privacy Policy</a></span>
+                </div>
+
+                <button class="btn-submit" type="submit">
+                    Create Account
+                </button>
+
+                <div class="login-link">
+                    Already have an account? <a href="/login">Sign In</a>
+                </div>
+                <div class="back-home">
+                    <a href="/"><i class="bi bi-arrow-left"></i> Back to Home</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Terms of Service Modal -->
+<div id="termsModal" class="modal-overlay" onclick="closeModal('termsModal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3>Terms of Service</h3>
+            <span class="modal-close" onclick="closeModal('termsModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <h5>1. Acceptance of Terms</h5>
+            <p>By accessing and using HireHub platform, you accept and agree to be bound by the terms and provision of this agreement.</p>
+            
+            <h5>2. Use License</h5>
+            <p>Permission is granted to temporarily access the materials on HireHub for personal, non-commercial transitory viewing only.</p>
+            
+            <h5>3. User Accounts</h5>
+            <p>You are responsible for maintaining the confidentiality of your account and password. You agree to accept responsibility for all activities that occur under your account.</p>
+            
+            <h5>4. Job Postings and Applications</h5>
+            <p>Employers must ensure all job postings are legitimate and accurate. Candidates must provide truthful information in their applications and profiles.</p>
+            
+            <h5>5. Privacy and Data Protection</h5>
+            <p>We respect your privacy and are committed to protecting your personal data. Please review our Privacy Policy for details on how we collect, use, and protect your information.</p>
+            
+            <h5>6. Prohibited Activities</h5>
+            <p>You may not use the platform to: post false or misleading information, harass other users, engage in fraudulent activities, or violate any applicable laws.</p>
+            
+            <h5>7. Intellectual Property</h5>
+            <p>All content on this platform, including text, graphics, logos, and software, is the property of HireHub and protected by copyright laws.</p>
+            
+            <h5>8. Limitation of Liability</h5>
+            <p>HireHub shall not be liable for any damages arising from the use or inability to use the platform or materials on the platform.</p>
+            
+            <h5>9. Modifications to Terms</h5>
+            <p>We reserve the right to modify these terms at any time. Your continued use of the platform constitutes acceptance of any changes.</p>
+            
+            <h5>10. Contact Information</h5>
+            <p>For questions about these Terms of Service, please contact us at support@hirehub.com</p>
+        </div>
+    </div>
+</div>
+
+<!-- Privacy Policy Modal -->
+<div id="privacyModal" class="modal-overlay" onclick="closeModal('privacyModal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3>Privacy Policy</h3>
+            <span class="modal-close" onclick="closeModal('privacyModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <h5>1. Information We Collect</h5>
+            <p>We collect information you provide directly to us, including name, email address, phone number, resume, work experience, education, and other profile information.</p>
+            
+            <h5>2. How We Use Your Information</h5>
+            <p>We use the information we collect to:</p>
+            <ul>
+                <li>Provide, maintain, and improve our services</li>
+                <li>Match candidates with suitable job opportunities</li>
+                <li>Send you technical notices and support messages</li>
+                <li>Respond to your comments and questions</li>
+                <li>Facilitate hiring workflow operations</li>
+            </ul>
+            
+            <h5>3. Information Sharing</h5>
+            <p>We may share your information with:</p>
+            <ul>
+                <li>Potential employers when you apply for jobs</li>
+                <li>Authorized internal teams for platform operations</li>
+                <li>Service providers who assist in our operations</li>
+                <li>Law enforcement when required by law</li>
+            </ul>
+            
+            <h5>4. Data Security</h5>
+            <p>We implement appropriate security measures to protect your personal information from unauthorized access, alteration, disclosure, or destruction.</p>
+            
+            <h5>5. Your Rights</h5>
+            <p>You have the right to:</p>
+            <ul>
+                <li>Access your personal data</li>
+                <li>Correct inaccurate data</li>
+                <li>Request deletion of your data</li>
+                <li>Object to processing of your data</li>
+                <li>Export your data</li>
+            </ul>
+            
+            <h5>6. Cookies and Tracking</h5>
+            <p>We use cookies and similar tracking technologies to track activity on our platform and hold certain information to improve user experience.</p>
+            
+            <h5>7. Third-Party Links</h5>
+            <p>Our platform may contain links to third-party websites. We are not responsible for the privacy practices of these external sites.</p>
+            
+            <h5>8. Children's Privacy</h5>
+            <p>Our platform is not intended for users under the age of 16. We do not knowingly collect personal information from children.</p>
+            
+            <h5>9. Changes to Privacy Policy</h5>
+            <p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page.</p>
+            
+            <h5>10. Contact Us</h5>
+            <p>If you have questions about this Privacy Policy, please contact us at privacy@hirehub.com</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Initialize with default role on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const initialRole = document.getElementById('roleInput').value || 'candidate';
+        updateGoogleLinks(initialRole);
+        document.querySelectorAll('.google-link').forEach(link => link.classList.add('google-link'));
+    });
+
+    function selectRole(role, el) {
+        console.log('selectRole called with:', role); // Debug log
+        document.getElementById('roleInput').value = role;
+        document.querySelectorAll('.role-card').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+
+        // Keep Google OAuth buttons synced with the selected role
+        updateGoogleLinks(role);
+    }
+    
+    function updateGoogleLinks(role) {
+        document.querySelectorAll('.google-link').forEach(link => {
+            link.href = `/register/google?role=${role}`;
+        });
+    }
+    function togglePassword(id) {
+        const input = document.getElementById(id);
+        input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    function openTermsModal(event) {
+        event.preventDefault();
+        document.getElementById('termsModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function openPrivacyModal(event) {
+        event.preventDefault();
+        document.getElementById('privacyModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    // Ensure role is set before form submission
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        const roleInput = document.getElementById('roleInput');
+        const selectedRole = document.querySelector('.role-card.active');
+        
+        if (!roleInput.value || roleInput.value.trim() === '') {
+            e.preventDefault();
+            alert('Please select a role (Candidate or Recruiter)');
+            return false;
+        }
+        
+        // Double check the value is set
+        console.log('Submitting form with role:', roleInput.value);
+        return true;
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeModal('termsModal');
+            closeModal('privacyModal');
+        }
+    });
+</script>
+<script>
+    (function () {
+        if (window.__professionalAlertInstalled) return;
+        window.__professionalAlertInstalled = true;
+
+        const style = document.createElement('style');
+        style.textContent = `
+            #pro-alert-container { position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 12px; max-width: min(420px, calc(100vw - 24px)); }
+            .pro-alert { background: #fff; border-radius: 14px; box-shadow: 0 16px 40px rgba(15,42,68,.18); border-left: 5px solid #4FB6E8; padding: 14px 14px 14px 16px; color: #1F2933; font: 500 14px/1.45 Inter,Segoe UI,sans-serif; transform: translateY(-10px); opacity: 0; transition: all .22s ease; white-space: pre-line; display:flex; gap:10px; align-items:flex-start; }
+            .pro-alert.show { opacity: 1; transform: translateY(0); }
+            .pro-alert.success { border-left-color: #10b981; }
+            .pro-alert.error { border-left-color: #ef4444; }
+            .pro-alert.warning { border-left-color: #f59e0b; }
+            .pro-alert .icon { font-size: 16px; margin-top: 1px; }
+            .pro-alert .content { flex: 1; }
+            .pro-alert .close-btn { border: 0; background: transparent; color: #64748b; font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px; }
+            @media (max-width: 768px) { #pro-alert-container { left: 10px; right: 10px; top: 10px; max-width: none; } }
+        `;
+        document.head.appendChild(style);
+
+        const typeOf = (message) => {
+            const text = String(message || '').toLowerCase();
+            if (text.includes('error') || text.includes('failed') || text.includes('not found') || text.includes('could not')) return 'error';
+            if (text.includes('warning') || text.includes('please') || text.includes('required') || text.includes('invalid')) return 'warning';
+            if (text.includes('success') || text.includes('submitted') || text.includes('saved') || text.includes('generated') || text.includes('approved')) return 'success';
+            return 'info';
+        };
+
+        const iconOf = (type) => type === 'success' ? '✅' : (type === 'error' || type === 'warning') ? '⚠️' : 'ℹ️';
+
+        window.alert = function (message) {
+            let container = document.getElementById('pro-alert-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'pro-alert-container';
+                document.body.appendChild(container);
+            }
+
+            const type = typeOf(message);
+            const toast = document.createElement('div');
+            toast.className = `pro-alert ${type}`;
+            toast.innerHTML = `<div class="icon">${iconOf(type)}</div><div class="content">${String(message || '')}</div><button class="close-btn" aria-label="Close">×</button>`;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+
+            const close = () => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 220); };
+            toast.querySelector('.close-btn').addEventListener('click', close);
+            setTimeout(close, 5000);
+        };
+    })();
+</script>
+</body>
+</html>

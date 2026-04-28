@@ -1,0 +1,430 @@
+{% extends "base.html" %}
+{% block title %}Schedule Interview | HireHub{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="mb-4">
+                <a href="/recruiter-dashboard?tab=applications" class="btn btn-outline-secondary mb-3">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Applications
+                </a>
+                <h2 class="fw-bold mb-2">Schedule Interview</h2>
+                <p class="text-muted">Schedule interviews with the candidate for your job opening.</p>
+            </div>
+
+            <!-- Candidate & Job Info -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">
+                        <i class="bi bi-person-circle text-primary me-2"></i>Candidate Information
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <small class="text-muted d-block">Candidate Name</small>
+                            <strong>{{ application.candidate_name }}</strong>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <small class="text-muted d-block">Email</small>
+                            <strong>{{ application.candidate_email }}</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Position</small>
+                            <strong>{{ application.job_title }}</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Job Location</small>
+                            <strong>{{ application.job_location }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interview Setup Form -->
+            <div class="card border-0 shadow-sm mb-4" id="roundsSetupCard">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4">
+                        <i class="bi bi-gear text-primary me-2"></i>Interview Process Setup
+                    </h5>
+                    <p class="text-muted mb-3">First, specify how many rounds of interview will be conducted for this position.</p>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            Total Number of Interview Rounds <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <button class="btn btn-outline-secondary" type="button" id="decreaseRounds">
+                                <i class="bi bi-dash-lg"></i>
+                            </button>
+                            <input type="number" class="form-control text-center" id="totalRounds" value="1" min="1" max="10" style="max-width: 80px;">
+                            <button class="btn btn-outline-secondary" type="button" id="increaseRounds">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted d-block mt-2">Select between 1-10 rounds. You can define names and schedules for each round.</small>
+                    </div>
+
+                    <!-- Round Names Input -->
+                    <div class="mb-4" id="roundNamesSection" style="display: none;">
+                        <h6 class="fw-semibold mb-3">Define Interview Round Names</h6>
+                        <div id="roundNamesContainer"></div>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end mt-4">
+                        <button type="button" class="btn btn-outline-secondary" onclick="goBackToApplications()">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="proceedBtn" onclick="proceedToScheduling()" style="display: none;">
+                            Proceed to Schedule Rounds <i class="bi bi-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interview Scheduling Form (shown after setup) -->
+            <div id="interviewSchedulingCard" style="display: none;">
+                <!-- Tabs for each round -->
+                <ul class="nav nav-tabs mb-3" id="interviewRoundTabs" role="tablist"></ul>
+                <div class="tab-content" id="interviewRoundContent"></div>
+            </div>
+
+            <!-- Tips -->
+            <div class="alert alert-info mt-4">
+                <h6 class="fw-bold mb-2">
+                    <i class="bi bi-lightbulb-fill me-2"></i>Interview Scheduling Tips
+                </h6>
+                <ul class="mb-0">
+                    <li>Define interview rounds to organize different stages of your hiring process</li>
+                    <li>Examples: Technical Round, HR Round, Manager Round, Final Round, etc.</li>
+                    <li>Schedule at least 24 hours in advance for each round</li>
+                    <li>For online interviews, test your meeting link before scheduling</li>
+                    <li>The candidate will receive notifications for each scheduled round</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const applicantId = {{ application.id }};
+let totalRoundsNumber = 1;
+let roundNames = {};
+let scheduledInterviews = {};
+
+// Round management
+document.getElementById('increaseRounds').addEventListener('click', () => {
+    const input = document.getElementById('totalRounds');
+    if (parseInt(input.value) < 10) {
+        input.value = parseInt(input.value) + 1;
+        updateRoundNamesSection();
+    }
+});
+
+document.getElementById('decreaseRounds').addEventListener('click', () => {
+    const input = document.getElementById('totalRounds');
+    if (parseInt(input.value) > 1) {
+        input.value = parseInt(input.value) - 1;
+        updateRoundNamesSection();
+    }
+});
+
+document.getElementById('totalRounds').addEventListener('change', updateRoundNamesSection);
+
+function updateRoundNamesSection() {
+    totalRoundsNumber = parseInt(document.getElementById('totalRounds').value);
+    const container = document.getElementById('roundNamesContainer');
+    const section = document.getElementById('roundNamesSection');
+    
+    if (totalRoundsNumber > 1) {
+        section.style.display = 'block';
+        container.innerHTML = '';
+        
+        // Default round names
+        const defaultNames = [
+            'Technical Round',
+            'HR Round',
+            'Manager Round',
+            'Final Round',
+            'Executive Round',
+            'Assessment Round',
+            'Culture Fit Round',
+            'Team Lead Round',
+            'Director Round',
+            'Board Round'
+        ];
+        
+        for (let i = 1; i <= totalRoundsNumber; i++) {
+            const roundDiv = document.createElement('div');
+            roundDiv.className = 'mb-3';
+            roundDiv.innerHTML = `
+                <label class="form-label">Round ${i} Name</label>
+                <input type="text" class="form-control round-name-input" data-round="${i}" 
+                       value="${defaultNames[i-1]}" placeholder="e.g., Technical Round, HR Round, etc.">
+            `;
+            container.appendChild(roundDiv);
+            roundNames[i] = defaultNames[i-1];
+        }
+        
+        // Update round names on input change
+        document.querySelectorAll('.round-name-input').forEach(input => {
+            input.addEventListener('change', (e) => {
+                const round = parseInt(e.target.getAttribute('data-round'));
+                roundNames[round] = e.target.value;
+            });
+        });
+    } else {
+        section.style.display = 'none';
+        roundNames[1] = 'Round 1';
+    }
+    
+    // Show proceed button if more than 1 round
+    document.getElementById('proceedBtn').style.display = totalRoundsNumber > 1 ? 'block' : 'none';
+}
+
+function proceedToScheduling() {
+    // Hide setup card
+    document.getElementById('roundsSetupCard').style.display = 'none';
+    document.getElementById('interviewSchedulingCard').style.display = 'block';
+    
+    const tabsContainer = document.getElementById('interviewRoundTabs');
+    const contentContainer = document.getElementById('interviewRoundContent');
+    
+    tabsContainer.innerHTML = '';
+    contentContainer.innerHTML = '';
+    
+    for (let round = 1; round <= totalRoundsNumber; round++) {
+        const roundName = roundNames[round] || `Round ${round}`;
+        
+        // Add tab
+        const tabItem = document.createElement('li');
+        tabItem.className = 'nav-item';
+        tabItem.innerHTML = `
+            <button class="nav-link ${round === 1 ? 'active' : ''}" data-bs-toggle="tab" 
+                    data-bs-target="#round${round}-content" type="button" role="tab">
+                <i class="bi bi-calendar-event me-2"></i>${roundName}
+            </button>
+        `;
+        tabsContainer.appendChild(tabItem);
+        
+        // Add content
+        const content = document.createElement('div');
+        content.className = `tab-pane fade ${round === 1 ? 'show active' : ''}`;
+        content.id = `round${round}-content`;
+        content.innerHTML = createRoundSchedulingForm(round, roundName);
+        contentContainer.appendChild(content);
+    }
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function createRoundSchedulingForm(round, roundName) {
+    return `
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="bi bi-calendar-check text-primary me-2"></i>Schedule ${roundName}
+                </h5>
+
+                <form class="interview-round-form" data-round="${round}">
+                    <div class="row">
+                        <!-- Interview Date -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">
+                                Interview Date <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" class="form-control interview-date" required
+                                   min="${getMinDate()}">
+                            <small class="text-muted">Select a date at least 24 hours from now</small>
+                        </div>
+
+                        <!-- Interview Time -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">
+                                Interview Time <span class="text-danger">*</span>
+                            </label>
+                            <input type="time" class="form-control interview-time" required>
+                            <small class="text-muted">In 24-hour format</small>
+                        </div>
+
+                        <!-- Interview Mode -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">
+                                Interview Mode <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select interview-mode" required onchange="toggleModeFields(this)">
+                                <option value="">Select Mode</option>
+                                <option value="Online">Online (Video Call)</option>
+                                <option value="In-Person">In-Person</option>
+                                <option value="Phone">Phone Call</option>
+                            </select>
+                        </div>
+
+                        <!-- Interview Type -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">
+                                Interview Type <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select interview-type" required>
+                                <option value="">Select Type</option>
+                                <option value="Technical">Technical Round</option>
+                                <option value="HR">HR Round</option>
+                                <option value="Managerial">Managerial Round</option>
+                                <option value="Final">Final Round</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <!-- Interview Link (for online) -->
+                        <div class="col-12 mb-3 link-field" style="display: none;">
+                            <label class="form-label fw-semibold">
+                                Meeting Link <span class="text-danger">*</span>
+                            </label>
+                            <input type="url" class="form-control interview-link" 
+                                   placeholder="https://meet.google.com/xxx-xxxx-xxx">
+                            <small class="text-muted">Provide Google Meet, Zoom, or Teams link</small>
+                        </div>
+
+                        <!-- Location (for in-person) -->
+                        <div class="col-12 mb-3 location-field" style="display: none;">
+                            <label class="form-label fw-semibold">
+                                Interview Location <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control interview-location" 
+                                   placeholder="Start typing address or city...">
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle"></i> Enter office address or city
+                            </small>
+                        </div>
+
+                        <!-- Interviewer Name -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">
+                                Interviewer Name <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control interview-interviewer" required
+                                   placeholder="e.g., John Doe - Tech Lead">
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-semibold">
+                                Additional Instructions (Optional)
+                            </label>
+                            <textarea class="form-control interview-notes" rows="3" 
+                                      placeholder="Any special instructions for the candidate..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end mt-4">
+                        <button type="button" class="btn btn-outline-secondary" onclick="showRoundsSetup()">
+                            Back to Setup
+                        </button>
+                        <button type="button" class="btn btn-primary schedule-round-btn" onclick="scheduleRound(${round})">
+                            <i class="bi bi-calendar-check me-2"></i>Schedule ${roundName}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+}
+
+function getMinDate() {
+    const date = new Date();
+    date.setDate(date.getDate() + 1);
+    return date.toISOString().split('T')[0];
+}
+
+function toggleModeFields(selectElement) {
+    const form = selectElement.closest('.interview-round-form');
+    const mode = selectElement.value;
+    const linkField = form.querySelector('.link-field');
+    const locationField = form.querySelector('.location-field');
+    const linkInput = form.querySelector('.interview-link');
+    const locationInput = form.querySelector('.interview-location');
+    
+    linkField.style.display = 'none';
+    locationField.style.display = 'none';
+    linkInput.required = false;
+    locationInput.required = false;
+    
+    if (mode === 'Online') {
+        linkField.style.display = 'block';
+        linkInput.required = true;
+    } else if (mode === 'In-Person') {
+        locationField.style.display = 'block';
+        locationInput.required = true;
+    }
+}
+
+function scheduleRound(round) {
+    const form = document.querySelector(`form[data-round="${round}"]`);
+    if (!form.checkValidity()) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    const interviewData = {
+        interview_date: form.querySelector('.interview-date').value,
+        interview_time: form.querySelector('.interview-time').value,
+        interview_mode: form.querySelector('.interview-mode').value,
+        interview_type: form.querySelector('.interview-type').value,
+        interview_link: form.querySelector('.interview-link').value,
+        location: form.querySelector('.interview-location').value,
+        interviewer_name: form.querySelector('.interview-interviewer').value,
+        notes: form.querySelector('.interview-notes').value,
+        interview_round: round,
+        round_name: roundNames[round],
+        total_rounds: totalRoundsNumber,
+        send_email: true
+    };
+    
+    fetch(`/schedule-interview/${applicantId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(interviewData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`${roundNames[round]} scheduled successfully!`);
+            scheduledInterviews[round] = interviewData;
+            
+            // If all rounds scheduled, go back to applications
+            if (round === totalRoundsNumber) {
+                setTimeout(() => {
+                    window.location.href = '/recruiter-dashboard?tab=applications';
+                }, 1500);
+            } else {
+                // Move to next round
+                const nextRound = round + 1;
+                const tabBtn = document.querySelector(`button[data-bs-target="#round${nextRound}-content"]`);
+                if (tabBtn) {
+                    tabBtn.click();
+                }
+            }
+        } else {
+            alert(`Error scheduling interview: ${data.error}`);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while scheduling the interview');
+    });
+}
+
+function showRoundsSetup() {
+    document.getElementById('roundsSetupCard').style.display = 'block';
+    document.getElementById('interviewSchedulingCard').style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goBackToApplications() {
+    window.location.href = '/recruiter-dashboard?tab=applications';
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', updateRoundNamesSection);
+</script>
+{% endblock %}

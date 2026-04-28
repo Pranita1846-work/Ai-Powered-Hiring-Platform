@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | HireHub - Access Your Account</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #0F2A44;
+            --primary-dark: #0A1F33;
+            --primary-light: #1A3A5A;
+            --secondary: #2E3A46;
+            --secondary-dark: #1F2933;
+            --secondary-light: #3D4A56;
+            --accent: #4FB6E8;
+            --accent-dark: #3A9FD5;
+            --accent-light: #6BC5ED;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --background: #F6F8FB;
+            --card: #FFFFFF;
+            --text-primary: #1F2933;
+            --text-secondary: #6B7280;
+            --border: #E5EAF0;
+            --dark: #0F2A44;
+            --gray: #6B7280;
+            --light-gray: #F6F8FB;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: radial-gradient(circle at 12% 15%, rgba(79, 182, 232, 0.2), transparent 30%),
+                        radial-gradient(circle at 88% 78%, rgba(15, 42, 68, 0.16), transparent 32%),
+                        linear-gradient(145deg, #f2f7fd 0%, #ffffff 48%, #f5f9ff 100%);
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image: linear-gradient(rgba(15, 42, 68, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(15, 42, 68, 0.03) 1px, transparent 1px);
+            background-size: 32px 32px;
+            opacity: 0.35;
+            z-index: 0;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-radius: 20px;
+            box-shadow: 0 22px 62px rgba(15, 42, 68, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            overflow: hidden;
+            animation: slideUp 0.6s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-left {
+            background: linear-gradient(160deg, #123252 0%, #1a4873 48%, #2b6491 100%);
+            padding: 32px 26px;
+            color: #eaf5ff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-left::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: rgba(126, 211, 245, 0.2);
+            border-radius: 50%;
+            top: -100px;
+            right: -100px;
+        }
+
+        .login-left::after {
+            content: '';
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            left: -90px;
+            bottom: -90px;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .left-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.38rem 0.75rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.26);
+            background: rgba(255, 255, 255, 0.1);
+            color: #eaf5ff;
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 0.9rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .login-left h2 {
+            font-size: 1.9rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 2;
+            color: #ffffff;
+        }
+
+        .login-left p {
+            font-size: 0.93rem;
+            opacity: 0.95;
+            line-height: 1.6;
+            position: relative;
+            z-index: 2;
+            color: rgba(234, 245, 255, 0.94);
+        }
+
+        .features-list {
+            margin-top: 18px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.24);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.2rem;
+            color: #ffffff;
+        }
+
+        .login-right {
+            padding: 32px 26px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(248,252,255,0.96) 100%);
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .brand-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            border: 1px solid rgba(15, 42, 68, 0.15);
+            background: rgba(15, 42, 68, 0.05);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.55rem;
+        }
+
+        .brand-logo {
+            font-size: 1.65rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 6px;
+        }
+
+        .brand-tagline {
+            color: var(--gray);
+            font-size: 0.86rem;
+        }
+
+        .role-selector {
+            margin-bottom: 18px;
+        }
+
+        .role-selector label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+
+        .role-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .role-option {
+            position: relative;
+        }
+
+        .role-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .role-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 13px 10px;
+            border: 1.8px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(170deg, #ffffff 0%, #f7fbff 100%);
+        }
+
+        .role-option input[type="radio"]:checked + .role-label {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(15, 42, 68, 0.1), rgba(79, 182, 232, 0.1));
+        }
+
+        .role-label:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .role-icon {
+            font-size: 1.65rem;
+            margin-bottom: 6px;
+        }
+
+        .role-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.8px solid #e3eaf2;
+            border-radius: 10px;
+            font-size: 14.6px;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(15, 42, 68, 0.1);
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+        }
+
+        .remember-me input {
+            margin-right: 6px;
+        }
+
+        .forgot-password {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.86rem;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 11px;
+            background: linear-gradient(135deg, #0f2a44, #19466f);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(15, 42, 68, 0.35);
+        }
+
+        .google-link {
+            transition: all 0.25s ease;
+            background: linear-gradient(160deg, #ffffff 0%, #f8fbff 100%);
+        }
+
+        .google-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(15, 42, 68, 0.14);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 16px;
+            color: var(--gray);
+        }
+
+        .register-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .back-home {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-home a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-home a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .login-left {
+                display: none;
+            }
+
+            .login-right {
+                padding: 40px 30px;
+            }
+
+            .role-options {
+                grid-template-columns: 1fr;
+            }
+
+            .login-card {
+                border-radius: 16px;
+            }
+        }
+
+        .login-left {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .left-signal-board {
+            margin-top: auto;
+            width: 100%;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: linear-gradient(150deg, rgba(255,255,255,0.2), rgba(255,255,255,0.06));
+            padding: 0.95rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .left-signal-board::before {
+            content: '';
+            position: absolute;
+            width: 160px;
+            height: 160px;
+            right: -50px;
+            top: -50px;
+            border-radius: 50%;
+            background: rgba(126, 211, 245, 0.32);
+            filter: blur(10px);
+        }
+
+        .signal-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.6rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .signal-box {
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.62rem;
+        }
+
+        .signal-box strong {
+            display: block;
+            font-size: 0.92rem;
+            color: #fff;
+            line-height: 1.1;
+        }
+
+        .signal-box span {
+            font-size: 0.72rem;
+            color: rgba(234, 245, 255, 0.92);
+        }
+
+        .signal-track {
+            margin-top: 0.7rem;
+            height: 7px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.18);
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .signal-track-fill {
+            width: 76%;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #7ed3f5, #ffffff);
+            animation: pulseFlow 2.8s ease-in-out infinite;
+        }
+
+        @keyframes pulseFlow {
+            0%, 100% { width: 72%; }
+            50% { width: 88%; }
+        }
+        /* ================= LOGIN PAGE – FINAL MOBILE FIXES ================= */
+        
+        /* Improve small mobile scrolling */
+        @media (max-width: 480px) {
+        
+            body {
+                align-items: flex-start;
+                padding-top: 20px;
+            }
+        
+            .login-container {
+                padding: 0;
+            }
+        
+            .login-card {
+                border-radius: 12px;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            }
+        
+            .login-right {
+                padding: 28px 20px;
+            }
+        
+            /* Role selector spacing */
+            .role-label {
+                padding: 16px 12px;
+            }
+        
+            .role-icon {
+                font-size: 1.8rem;
+            }
+        
+            .role-name {
+                font-size: 0.9rem;
+            }
+        
+            /* Buttons */
+            .btn-login {
+                font-size: 14px;
+                padding: 12px;
+            }
+        
+            /* Back to home visibility */
+            .back-home a {
+                color: var(--primary);
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Prevent keyboard overlap on small height screens */
+        @media (max-height: 700px) {
+            body {
+                align-items: flex-start;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="row g-0">
+                <!-- Left Panel -->
+                <div class="col-lg-5 login-left">
+                    <span class="left-badge"><i class="bi bi-stars"></i> Secure sign-in experience</span>
+                    <h2>Welcome Back! <i class="bi bi-hand-thumbs-up ms-2" aria-hidden="true"></i></h2>
+                    <p>Sign in to access your personalized dashboard and continue your career journey with HireHub.</p>
+
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="bi bi-briefcase"></i>
+                            </div>
+                            <div>
+                                <strong>Access Opportunities</strong><br>
+                                <small>Browse thousands of jobs & internships</small>
+                            </div>
+                        </div>
+
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="bi bi-robot"></i>
+                            </div>
+                            <div>
+                                <strong>AI-Powered Tools</strong><br>
+                                <small>Smart matching & skill assessments</small>
+                            </div>
+                        </div>
+
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <div>
+                                <strong>Career Guidance</strong><br>
+                                <small>Grow with interview-focused resources</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="left-signal-board" aria-hidden="true">
+                        <div class="signal-grid">
+                            <div class="signal-box"><strong>96%</strong><span>Profile strength</span></div>
+                            <div class="signal-box"><strong>24/7</strong><span>Discovery engine</span></div>
+                            <div class="signal-box"><strong>Live</strong><span>Role intelligence</span></div>
+                            <div class="signal-box"><strong>Fast</strong><span>Application flow</span></div>
+                        </div>
+                        <div class="signal-track">
+                            <div class="signal-track-fill"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel - Login Form -->
+                <div class="col-lg-7 login-right">
+                    <div class="brand-header">
+                        <div class="brand-chip"><i class="bi bi-lightning-charge-fill"></i> Fast login</div>
+                        <div class="brand-logo">HireHub</div>
+                        <div class="brand-tagline">Sign in to your account</div>
+                    </div>
+                    
+                    {% if error %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        {{ error }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endif %}
+                    
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{% if category == 'error' %}danger{% elif category == 'success' %}success{% elif category == 'warning' %}warning{% elif category == 'info' %}info{% else %}{{ category }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+                            <i class="bi bi-{% if category == 'error' or category == 'danger' %}exclamation-circle-fill{% elif category == 'success' %}check-circle-fill{% elif category == 'warning' %}exclamation-triangle-fill{% else %}info-circle-fill{% endif %} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="/login">
+                        
+                        <!-- Role Selection -->
+                        <div class="role-selector">
+                            <label>Select Your Role</label>
+                            <div class="role-options">
+                                <div class="role-option">
+                                    <input type="radio" name="role" value="candidate" id="role-candidate" 
+                                           {% if role == 'candidate' %}checked{% endif %} required>
+                                    <label for="role-candidate" class="role-label">
+                                        <div class="role-icon"><i class="bi bi-person-circle"></i></div>
+                                        <div class="role-name">Candidate</div>
+                                    </label>
+                                </div>
+
+                                <div class="role-option">
+                                    <input type="radio" name="role" value="recruiter" id="role-recruiter"
+                                           {% if role == 'recruiter' %}checked{% endif %}>
+                                    <label for="role-recruiter" class="role-label">
+                                        <div class="role-icon"><i class="bi bi-building"></i></div>
+                                        <div class="role-name">Recruiter</div>
+                                    </label>
+                                </div>
+
+                                <div class="role-option">
+                                    <input type="radio" name="role" value="admin" id="role-admin"
+                                           {% if role == 'admin' %}checked{% endif %}>
+                                    <label for="role-admin" class="role-label">
+                                        <div class="role-icon"><i class="bi bi-shield-lock"></i></div>
+                                        <div class="role-name">Admin</div>
+                                    </label>
+                                </div>
+                            </div>
+                                 <div class="mb-3"><br>
+    <a href="/login/google?role={{ role or 'candidate' }}" class="btn btn-light w-100 d-flex align-items-center justify-content-center gap-2 google-link"
+       style="border:2px solid #e5e7eb; border-radius:10px; padding:10px;">
+        <img src="https://developers.google.com/identity/images/g-logo.png" width="18">
+        <span style="font-weight:600;">Continue with Google</span>
+    </a>
+</div>
+
+<div class="text-center my-2 text-muted" style="font-size:0.85rem;">OR</div>
+
+                        </div>
+
+                        <!-- Email -->
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" class="form-control" 
+                                   placeholder="Enter your email" required>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="password" name="password" class="form-control" 
+                                       placeholder="Enter your password" required>
+                                <i class="bi bi-eye password-toggle" onclick="togglePassword()"></i>
+                            </div>
+                        </div>
+
+                        <!-- Options -->
+                        <div class="form-options">
+                            <label class="remember-me">
+                                <input type="checkbox" name="remember">
+                                <span>Remember me</span>
+                            </label>
+                            <a href="/forgot-password" class="forgot-password">Forgot password?</a>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn-login">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                        </button>
+
+                        <!-- Register Link -->
+                        <div class="register-link">
+                            Don't have an account? <a href="/register">Create Account</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="back-home">
+            <a href="/">
+                <i class="bi bi-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.querySelector('.password-toggle');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('bi-eye');
+                toggleIcon.classList.add('bi-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('bi-eye-slash');
+                toggleIcon.classList.add('bi-eye');
+            }
+        }
+
+        document.querySelectorAll('.google-link').forEach(link => {
+            link.classList.add('google-link');
+        });
+        // Update Google OAuth button URLs when role changes
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Google links with the default/selected role
+            const selectedRadio = document.querySelector('input[name="role"]:checked');
+            if (selectedRadio) {
+                const initialRole = selectedRadio.value;
+                document.querySelectorAll('.google-link').forEach(link => {
+                    link.href = `/login/google?role=${initialRole}`;
+                });
+            }
+        });
+        document.querySelectorAll('input[name="role"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const selectedRole = this.value;
+                document.querySelectorAll('.google-link').forEach(link => {
+                    link.href = `/login/google?role=${selectedRole}`;
+                });
+            });
+        });
+    </script>
+{% raw %}
+<script>
+    (function () {
+        if (window.__professionalAlertInstalled) return;
+        window.__professionalAlertInstalled = true;
+        const style = document.createElement('style');
+        style.textContent = `#pro-alert-container{position:fixed;top:20px;right:20px;z-index:99999;display:flex;flex-direction:column;gap:12px;max-width:min(420px,calc(100vw - 24px));}.pro-alert{background:#fff;border-radius:14px;box-shadow:0 16px 40px rgba(15,42,68,.18);border-left:5px solid #4FB6E8;padding:14px 14px 14px 16px;color:#1F2933;font:500 14px/1.45 Inter,Segoe UI,sans-serif;transform:translateY(-10px);opacity:0;transition:all .22s ease;white-space:pre-line;display:flex;gap:10px;align-items:flex-start;}.pro-alert.show{opacity:1;transform:translateY(0);}.pro-alert.success{border-left-color:#10b981;}.pro-alert.error{border-left-color:#ef4444;}.pro-alert.warning{border-left-color:#f59e0b;}.pro-alert .icon{font-size:16px;margin-top:1px;}.pro-alert .content{flex:1;}.pro-alert .close-btn{border:0;background:transparent;color:#64748b;font-size:18px;line-height:1;cursor:pointer;padding:0 2px;}@media (max-width:768px){#pro-alert-container{left:10px;right:10px;top:10px;max-width:none;}}`;
+        document.head.appendChild(style);
+        const typeOf = (message) => { const text = String(message || '').toLowerCase(); if (text.includes('error') || text.includes('failed') || text.includes('not found') || text.includes('could not')) return 'error'; if (text.includes('warning') || text.includes('please') || text.includes('required') || text.includes('invalid')) return 'warning'; if (text.includes('success') || text.includes('submitted') || text.includes('saved') || text.includes('generated') || text.includes('approved')) return 'success'; return 'info'; };
+        const iconOf = (type) => type === 'success' ? '✅' : (type === 'error' || type === 'warning') ? '⚠️' : 'ℹ️';
+        window.alert = function (message) { let container = document.getElementById('pro-alert-container'); if (!container) { container = document.createElement('div'); container.id = 'pro-alert-container'; document.body.appendChild(container); } const type = typeOf(message); const toast = document.createElement('div'); toast.className = `pro-alert ${type}`; toast.innerHTML = `<div class="icon">${iconOf(type)}</div><div class="content">${String(message || '')}</div><button class="close-btn" aria-label="Close">×</button>`; container.appendChild(toast); requestAnimationFrame(() => toast.classList.add('show')); const close = () => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 220); }; toast.querySelector('.close-btn').addEventListener('click', close); setTimeout(close, 5000); };
+    })();
+</script>
+{% endraw %}
+</body>
+</html>

@@ -1,0 +1,266 @@
+{% extends "recruiter_dashboard.html" %}
+
+{% block dashboard_content %}
+<div class="container-fluid mt-2">
+    <h3 class="fw-bold mb-4">Applications</h3>
+
+    {% if applications %}
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-muted small">
+                        <tr>
+                            <th class="ps-4">Candidate</th>
+                            <th class="py-3">Job Role</th>
+                            <th class="py-3">Applied Date</th>
+                            <th class="py-3">AI Score</th>
+                            <th class="py-3">Skill Match</th>
+                            <th class="py-3">Status</th>
+                            <th class="py-3">Resume</th>
+                            <th class="pe-4 text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-semibold text-dark">
+                                    {{ app.candidate_name }}
+                                </div>
+                                <div class="small text-muted">
+                                    {{ app.candidate_email }}
+                                </div>
+                            </td>
+                            <td>{{ app.job_title }}</td>
+                            <td>{{ app.applied_at.strftime('%d %b %Y') if app.applied_at else '-' }}</td>
+                            <td>
+                                <div class="fw-semibold text-dark">{{ app.ai_score }}%</div>
+                                <div class="progress mt-1" style="height:6px;">
+                                    <div class="progress-bar bg-primary"
+                                        style="width: {{ app.ai_score }}%">
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if app.skill_match >= 70 %}
+                                    <span class="badge bg-success-subtle text-success">
+                                        {{ app.skill_match }}% Match
+                                    </span>
+                                {% elif app.skill_match >= 40 %}
+                                    <span class="badge bg-warning-subtle text-warning">
+                                        {{ app.skill_match }}% Match
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger">
+                                        {{ app.skill_match }}% Match
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if app.status == 'Applied' %}
+                                    <span class="badge bg-secondary-subtle text-secondary">Applied</span>
+                                {% elif app.status == 'Accepted' %}
+                                    <span class="badge bg-primary-subtle text-primary">Accepted</span>
+                                {% elif app.status == 'Test Sent' %}
+                                    <span class="badge bg-info-subtle text-info">Test Sent</span>
+                                {% elif app.status == 'Test Completed' %}
+                                    <span class="badge bg-success-subtle text-success">Test Completed</span>
+                                {% elif app.status == 'Shortlisted' %}
+                                    <span class="badge bg-info-subtle text-info">Shortlisted</span>
+                                {% elif app.status == 'Interview' %}
+                                    <span class="badge bg-warning-subtle text-warning">Interview</span>
+                                {% elif app.status == 'Interview Completed' %}
+                                    <span class="badge bg-warning-subtle text-warning">Interview Done</span>
+                                {% elif app.status == 'Group Discussion' %}
+                                    <span class="badge bg-purple-subtle text-purple">Group Discussion</span>
+                                {% elif app.status == 'GD Completed' %}
+                                    <span class="badge bg-purple-subtle text-purple">GD Completed</span>
+                                {% elif app.status == 'Selected' %}
+                                    <span class="badge bg-success-subtle text-success">Selected</span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger">Rejected</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if app.resume_file %}
+                                <a href="{{ url_for('static', filename='uploads/' + app.resume_file) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-file-earmark-pdf"></i> View
+                                </a>
+                                {% else %}
+                                <span class="text-muted small">No Resume</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-primary dropdown-toggle"
+                                            data-bs-toggle="dropdown">
+                                        Update
+                                    </button>
+
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                        {% if app.status == 'Applied' %}
+                                        <li>
+                                            <a class="dropdown-item accept-application" 
+                                               href="#" 
+                                               data-app-id="{{ app.id }}"
+                                               data-candidate-name="{{ app.candidate_name }}">
+                                                <i class="bi bi-check2-circle"></i> Accept & Generate Test
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        {% elif app.status == 'Test Completed' %}
+                                        <li>
+                                            <a class="dropdown-item"
+                                            href="/schedule-interview/{{ app.id }}">
+                                                <i class="bi bi-calendar-event"></i> Schedule Interview
+                                            </a>
+                                        </li>
+                                        {% elif app.status == 'Interview Completed' %}
+                                        <li>
+                                            <a class="dropdown-item"
+                                            href="/schedule-group-discussion/{{ app.candidate_id }}/{{ app.job_id }}">
+                                                <i class="bi bi-people"></i> Schedule Group Discussion
+                                            </a>
+                                        </li>
+                                        {% elif app.status == 'GD Completed' %}
+                                        <li>
+                                            <a class="dropdown-item final-selection"
+                                               href="#"
+                                               data-candidate-id="{{ app.candidate_id }}"
+                                               data-job-id="{{ app.job_id }}"
+                                               data-candidate-name="{{ app.candidate_name }}">
+                                                <i class="bi bi-trophy"></i> Final Selection
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        {% endif %}
+                                        <li>
+                                            <a class="dropdown-item"
+                                            href="/update-application/{{ app.id }}/shortlist">
+                                                <i class="bi bi-check-circle"></i> Shortlist
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                            href="/update-application/{{ app.id }}/interview">
+                                                <i class="bi bi-calendar-event"></i> Schedule Interview
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                            href="/update-application/{{ app.id }}/offer">
+                                                <i class="bi bi-envelope"></i> Send Offer
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item text-danger"
+                                            href="/update-application/{{ app.id }}/reject">
+                                                <i class="bi bi-x-circle"></i> Reject
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">No applications received yet.</div>
+    {% endif %}
+</div>
+
+<script>
+// Handle Accept Application
+document.querySelectorAll('.accept-application').forEach(btn => {
+    btn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        const appId = this.dataset.appId;
+        const candidateName = this.dataset.candidateName;
+        
+        if (!confirm(`Accept ${candidateName}'s application and proceed to test configuration?`)) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/accept-application/${appId}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Redirect to test editor page
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    alert(data.message);
+                    location.reload();
+                }
+            } else {
+                alert('Error: ' + (data.error || 'Failed to accept application'));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to accept application');
+        }
+    });
+});
+
+// Handle Final Selection
+document.querySelectorAll('.final-selection').forEach(btn => {
+    btn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        const candidateId = this.dataset.candidateId;
+        const jobId = this.dataset.jobId;
+        const candidateName = this.dataset.candidateName;
+        
+        const decision = confirm(`Select ${candidateName} for this position?\n\nClick OK to SELECT or Cancel to REJECT`);
+        let rejectionReason = '';
+        
+        if (!decision) {
+            rejectionReason = prompt('Please provide a reason for rejection (optional):') || 'Not suitable for the position';
+        }
+        
+        try {
+            const response = await fetch(`/final-selection/${candidateId}/${jobId}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    decision: decision ? 'select' : 'reject',
+                    rejection_reason: rejectionReason
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                let message = data.message;
+                if (data.combined_score) {
+                    message += `\n\nCombined Score: ${data.combined_score}%`;
+                    if (data.breakdown) {
+                        message += `\nTest: ${data.breakdown.test_score}%`;
+                        message += `\nInterview: ${data.breakdown.interview_score}%`;
+                        message += `\nGD: ${data.breakdown.gd_score}%`;
+                    }
+                }
+                alert(message);
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Failed to process selection'));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to process selection');
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends "recruiter_dashboard.html" %}
+
+{% block dashboard_content %}
+<div class="container-fluid mt-2">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white border-0 p-4">
+                    <h3 class="fw-bold mb-0">Schedule Group Discussion</h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-info rounded-3 mb-4">
+                        <strong>Candidate:</strong> {{ candidate_name }}<br>
+                        <strong>Position:</strong> {{ job_title }}
+                    </div>
+
+                    <form method="POST" action="/schedule-group-discussion/{{ candidate_id }}/{{ job_id }}">
+                        <div class="mb-3">
+                            <label for="discussion_topic" class="form-label fw-semibold">Discussion Topic</label>
+                            <input type="text" class="form-control" id="discussion_topic" name="discussion_topic" 
+                                   placeholder="e.g., Impact of AI on Future Workforce" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="discussion_date" class="form-label fw-semibold">Discussion Date</label>
+                                <input type="date" class="form-control" id="discussion_date" name="discussion_date" 
+                                       min="{{ today }}" required>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="discussion_time" class="form-label fw-semibold">Discussion Time</label>
+                                <input type="time" class="form-control" id="discussion_time" name="discussion_time" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="mode" class="form-label fw-semibold">Mode</label>
+                            <select class="form-select" id="mode" name="mode" required onchange="toggleModeFields()">
+                                <option value="">Select mode</option>
+                                <option value="Online">Online</option>
+                                <option value="In-Person">In-Person</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="meeting_link_div" style="display:none;">
+                            <label for="meeting_link" class="form-label fw-semibold">Meeting Link</label>
+                            <input type="url" class="form-control" id="meeting_link" name="meeting_link" 
+                                   placeholder="https://meet.google.com/...">
+                        </div>
+
+                        <div class="mb-3" id="location_div" style="display:none;">
+                            <label for="location" class="form-label fw-semibold">Location</label>
+                            <input type="text" class="form-control" id="location" name="location" 
+                                   placeholder="Office address or venue">
+                        </div>
+
+                        <div class="d-flex gap-2 justify-content-end mt-4">
+                            <a href="/interviews" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-calendar-check"></i> Schedule Group Discussion
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Set minimum date to today
+document.getElementById('discussion_date').min = new Date().toISOString().split('T')[0];
+
+function toggleModeFields() {
+    const mode = document.getElementById('mode').value;
+    const meetingLinkDiv = document.getElementById('meeting_link_div');
+    const locationDiv = document.getElementById('location_div');
+    const meetingLinkInput = document.getElementById('meeting_link');
+    const locationInput = document.getElementById('location');
+
+    if (mode === 'Online') {
+        meetingLinkDiv.style.display = 'block';
+        locationDiv.style.display = 'none';
+        meetingLinkInput.required = true;
+        locationInput.required = false;
+    } else if (mode === 'In-Person') {
+        meetingLinkDiv.style.display = 'none';
+        locationDiv.style.display = 'block';
+        meetingLinkInput.required = false;
+        locationInput.required = true;
+    } else {
+        meetingLinkDiv.style.display = 'none';
+        locationDiv.style.display = 'none';
+        meetingLinkInput.required = false;
+        locationInput.required = false;
+    }
+}
+</script>
+<!-- Bootstrap JavaScript (required for dropdowns) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+{% endblock %}

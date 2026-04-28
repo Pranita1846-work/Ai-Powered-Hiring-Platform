@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% block title %}Test Details | HireHub{% endblock %}
+
+{% block content %}
+<style>
+    .test-details-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 30px;
+    }
+    
+    .test-header-card {
+        background: linear-gradient(135deg, #0F2A44 0%, #2E3A46 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .score-display {
+        font-size: 3rem;
+        font-weight: bold;
+        margin: 15px 0;
+    }
+    
+    .question-detail-card {
+        background: white;
+        border-radius: 10px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border-left: 4px solid #e2e8f0;
+    }
+    
+    .question-detail-card.correct {
+        border-left-color: #48bb78;
+        background: #f0fff4;
+    }
+    
+    .question-detail-card.incorrect {
+        border-left-color: #f56565;
+        background: #fff5f5;
+    }
+    
+    .question-detail-card.unanswered {
+        border-left-color: #cbd5e0;
+        background: #f7fafc;
+    }
+    
+    .option-box {
+        padding: 12px 15px;
+        margin: 8px 0;
+        border-radius: 8px;
+        border: 2px solid #e2e8f0;
+        background: white;
+    }
+    
+    .option-box.correct-answer {
+        border-color: #48bb78;
+        background: #c6f6d5;
+    }
+    
+    .option-box.candidate-answer {
+        border-color: #f56565;
+        background: #fed7d7;
+    }
+    
+    .option-box.candidate-correct {
+        border-color: #48bb78;
+        background: #c6f6d5;
+    }
+
+    /* ================= TEST DETAILS – MOBILE RESPONSIVE FIX ================= */
+    
+    @media (max-width: 576px) {
+    
+        /* Container */
+        .test-details-container {
+            padding: 15px;
+        }
+    
+        /* Header card */
+        .test-header-card {
+            padding: 20px;
+            text-align: center;
+        }
+    
+        .test-header-card h2 {
+            font-size: 18px;
+        }
+    
+        .test-header-card p {
+            font-size: 13px;
+        }
+    
+        /* Score */
+        .score-display {
+            font-size: 2.2rem;
+            margin: 10px 0;
+        }
+    
+        /* Question cards */
+        .question-detail-card {
+            padding: 18px;
+        }
+    
+        .question-detail-card h5 {
+            font-size: 15px;
+            line-height: 1.5;
+        }
+    
+        /* Badges wrap properly */
+        .question-detail-card .badge {
+            margin-bottom: 6px;
+            display: inline-block;
+        }
+    
+        /* Options */
+        .option-box {
+            font-size: 14px;
+            padding: 12px;
+            position: relative;
+        }
+    
+        .option-box .badge {
+            float: none !important;
+            display: inline-block;
+            margin-top: 8px;
+        }
+    
+        /* Marks text */
+        .question-detail-card .text-muted {
+            font-size: 12px;
+        }
+    
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 14px;
+        }
+    }
+
+</style>
+
+<div class="test-details-container">
+    <div class="test-header-card">
+        <div class="row">
+            <div class="col-md-8">
+                <h2><i class="bi bi-person-circle me-2"></i>{{ candidate.name }}'s Test Results</h2>
+                <p class="mb-2 opacity-75">Test Type: {{ test.test_type }}</p>
+                <p class="mb-0 opacity-75">Skills Tested: {{ test.skills_tested }}</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="score-display">{{ test.obtained_marks }}/{{ test.total_marks }}</div>
+                <h4>{{ test.percentage }}%</h4>
+                <p class="small opacity-75 mb-0">Completed: {{ test.completed_at.strftime('%d %b %Y, %I:%M %p') if test.completed_at else 'N/A' }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mb-4">
+        <h4 class="mb-3"><i class="bi bi-list-check me-2"></i>Question-by-Question Analysis</h4>
+        <div class="alert alert-info">
+            <strong>{{ questions|selectattr('is_correct')|list|length }}</strong> correct answers out of <strong>{{ questions|length }}</strong> questions
+        </div>
+    </div>
+    
+    {% for question in questions %}
+    <div class="question-detail-card {% if question.candidate_answer %}{% if question.is_correct %}correct{% else %}incorrect{% endif %}{% else %}unanswered{% endif %}">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+                <span class="badge bg-primary me-2">Question {{ question.question_number }}</span>
+                {% if question.candidate_answer %}
+                    {% if question.is_correct %}
+                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Correct</span>
+                    {% else %}
+                        <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Incorrect</span>
+                    {% endif %}
+                {% else %}
+                    <span class="badge bg-secondary"><i class="bi bi-dash-circle me-1"></i>Not Answered</span>
+                {% endif %}
+            </div>
+            <span class="text-muted small">{{ question.marks }} marks</span>
+        </div>
+        
+        <h5 class="mb-3">{{ question.question_text }}</h5>
+        
+        <div class="options">
+            <div class="option-box {% if question.correct_answer == 'A' %}{% if question.candidate_answer == 'A' %}candidate-correct{% else %}correct-answer{% endif %}{% elif question.candidate_answer == 'A' %}candidate-answer{% endif %}">
+                <strong>A:</strong> {{ question.option_a }}
+                {% if question.correct_answer == 'A' %}
+                    <span class="badge bg-success float-end"><i class="bi bi-check-lg"></i> Correct Answer</span>
+                {% elif question.candidate_answer == 'A' %}
+                    <span class="badge bg-danger float-end"><i class="bi bi-person"></i> Your Answer</span>
+                {% endif %}
+            </div>
+            
+            <div class="option-box {% if question.correct_answer == 'B' %}{% if question.candidate_answer == 'B' %}candidate-correct{% else %}correct-answer{% endif %}{% elif question.candidate_answer == 'B' %}candidate-answer{% endif %}">
+                <strong>B:</strong> {{ question.option_b }}
+                {% if question.correct_answer == 'B' %}
+                    <span class="badge bg-success float-end"><i class="bi bi-check-lg"></i> Correct Answer</span>
+                {% elif question.candidate_answer == 'B' %}
+                    <span class="badge bg-danger float-end"><i class="bi bi-person"></i> Your Answer</span>
+                {% endif %}
+            </div>
+            
+            <div class="option-box {% if question.correct_answer == 'C' %}{% if question.candidate_answer == 'C' %}candidate-correct{% else %}correct-answer{% endif %}{% elif question.candidate_answer == 'C' %}candidate-answer{% endif %}">
+                <strong>C:</strong> {{ question.option_c }}
+                {% if question.correct_answer == 'C' %}
+                    <span class="badge bg-success float-end"><i class="bi bi-check-lg"></i> Correct Answer</span>
+                {% elif question.candidate_answer == 'C' %}
+                    <span class="badge bg-danger float-end"><i class="bi bi-person"></i> Your Answer</span>
+                {% endif %}
+            </div>
+            
+            <div class="option-box {% if question.correct_answer == 'D' %}{% if question.candidate_answer == 'D' %}candidate-correct{% else %}correct-answer{% endif %}{% elif question.candidate_answer == 'D' %}candidate-answer{% endif %}">
+                <strong>D:</strong> {{ question.option_d }}
+                {% if question.correct_answer == 'D' %}
+                    <span class="badge bg-success float-end"><i class="bi bi-check-lg"></i> Correct Answer</span>
+                {% elif question.candidate_answer == 'D' %}
+                    <span class="badge bg-danger float-end"><i class="bi bi-person"></i> Your Answer</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    
+    <div class="text-center mt-4">
+        {% if session.role == 'candidate' %}
+            <a href="/candidate-dashboard#ai-assessments" class="btn btn-primary px-4">
+                <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        {% else %}
+            <a href="/applications" class="btn btn-primary px-4">
+                <i class="bi bi-arrow-left me-2"></i>Back to Applications
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

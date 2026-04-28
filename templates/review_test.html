@@ -1,0 +1,384 @@
+{% extends "recruiter_dashboard.html" %}
+
+{% block dashboard_content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="fw-bold">Review Test Before Sending</h2>
+            <p class="text-muted">Job: <strong>{{ job_title }}</strong></p>
+        </div>
+        <div class="col-md-4 text-end">
+            <span class="badge bg-info">{{ candidate_count }} Candidate(s) Assigned</span>
+        </div>
+    </div>
+
+    <!-- Test Summary -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0">Test Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <small class="text-muted">Total Questions</small>
+                            <h4>{{ test.total_questions }}</h4>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Total Marks</small>
+                            <h4>{{ test.total_marks }}</h4>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Status</small>
+                            <h4><span class="badge bg-warning">Pending Review</span></h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Questions Preview -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0">Test Questions</h5>
+                </div>
+                <div class="card-body">
+                    <div id="questionsContainer">
+                        {% set section_titles = {'technical': 'Technical', 'aptitude': 'Aptitude', 'general_knowledge': 'General Knowledge'} %}
+                        {% for section_key in ['technical', 'aptitude', 'general_knowledge'] %}
+                            <div class="section-heading mb-3 mt-2">
+                                <h5 class="mb-0">
+                                    {{ section_titles[section_key] }}
+                                    <span class="badge bg-secondary ms-2">{{ sectioned_questions[section_key]|length }} Questions</span>
+                                </h5>
+                            </div>
+
+                            {% if sectioned_questions[section_key]|length == 0 %}
+                                <div class="alert alert-light border mb-3">No questions in this section.</div>
+                            {% endif %}
+
+                            {% for question in sectioned_questions[section_key] %}
+                            <div class="card mb-3 border-left-3" style="border-left: 4px solid #007bff;">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title">Q{{ question.question_number }}: {{ question.question_text }}</h6>
+                                        <div>
+                                            <span class="badge bg-light text-dark me-2">1 Mark</span>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleQuestionEdit({{ question.question_number }})">
+                                                <i class="bi bi-pencil-square me-1"></i>Edit
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="options mt-3">
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="radio" disabled {% if question.correct_answer == 'A' %}checked{% endif %}>
+                                            <label class="form-check-label">
+                                                <strong>A:</strong> {{ question.option_a }}
+                                                {% if question.correct_answer == 'A' %}
+                                                <span class="badge bg-success ms-2">Correct Answer</span>
+                                                {% endif %}
+                                            </label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="radio" disabled {% if question.correct_answer == 'B' %}checked{% endif %}>
+                                            <label class="form-check-label">
+                                                <strong>B:</strong> {{ question.option_b }}
+                                                {% if question.correct_answer == 'B' %}
+                                                <span class="badge bg-success ms-2">Correct Answer</span>
+                                                {% endif %}
+                                            </label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="radio" disabled {% if question.correct_answer == 'C' %}checked{% endif %}>
+                                            <label class="form-check-label">
+                                                <strong>C:</strong> {{ question.option_c }}
+                                                {% if question.correct_answer == 'C' %}
+                                                <span class="badge bg-success ms-2">Correct Answer</span>
+                                                {% endif %}
+                                            </label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="radio" disabled {% if question.correct_answer == 'D' %}checked{% endif %}>
+                                            <label class="form-check-label">
+                                                <strong>D:</strong> {{ question.option_d }}
+                                                {% if question.correct_answer == 'D' %}
+                                                <span class="badge bg-success ms-2">Correct Answer</span>
+                                                {% endif %}
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div id="editForm{{ question.question_number }}" class="edit-form mt-3 d-none">
+                                        <div class="row g-2">
+                                            <div class="col-12">
+                                                <label class="form-label">Question</label>
+                                                <textarea class="form-control" id="questionText{{ question.question_number }}" rows="2">{{ question.question_text }}</textarea>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Option A</label>
+                                                <input type="text" class="form-control" id="optionA{{ question.question_number }}" value="{{ question.option_a }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Option B</label>
+                                                <input type="text" class="form-control" id="optionB{{ question.question_number }}" value="{{ question.option_b }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Option C</label>
+                                                <input type="text" class="form-control" id="optionC{{ question.question_number }}" value="{{ question.option_c }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Option D</label>
+                                                <input type="text" class="form-control" id="optionD{{ question.question_number }}" value="{{ question.option_d }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Correct Answer</label>
+                                                <select class="form-select" id="correctAnswer{{ question.question_number }}">
+                                                    <option value="A" {% if question.correct_answer == 'A' %}selected{% endif %}>A</option>
+                                                    <option value="B" {% if question.correct_answer == 'B' %}selected{% endif %}>B</option>
+                                                    <option value="C" {% if question.correct_answer == 'C' %}selected{% endif %}>C</option>
+                                                    <option value="D" {% if question.correct_answer == 'D' %}selected{% endif %}>D</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Section</label>
+                                                <select class="form-select" id="section{{ question.question_number }}">
+                                                    <option value="technical" {% if question.section == 'technical' %}selected{% endif %}>Technical</option>
+                                                    <option value="aptitude" {% if question.section == 'aptitude' %}selected{% endif %}>Aptitude</option>
+                                                    <option value="general_knowledge" {% if question.section == 'general_knowledge' %}selected{% endif %}>General Knowledge</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-12 text-end mt-2">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary me-2" onclick="toggleQuestionEdit({{ question.question_number }})">Cancel</button>
+                                                <button type="button" class="btn btn-sm btn-primary" onclick="saveQuestionEdit({{ test.id }}, {{ question.question_number }})">Save</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p class="text-muted mb-0">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Review the test questions above. You can now send this test to the {{ candidate_count }} assigned candidate(s).
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="/applications" class="btn btn-outline-secondary me-2">
+                                <i class="bi bi-arrow-left me-1"></i>Back
+                            </a>
+                            <button class="btn btn-primary" onclick="approveAndSendTest()">
+                                <i class="bi bi-send me-1"></i>Approve & Send Test
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function approveAndSendTest() {
+    const jobId = {{ job_id }};
+    const testId = {{ test.id }};
+    
+    if (!confirm('Send this test to {{ candidate_count }} candidate(s)?')) {
+        return;
+    }
+    
+    const loadingAlert = showLoadingAlert('Sending test to candidates...');
+    
+    fetch(`/send-test-to-candidates/${testId}/${jobId}`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({})
+    })
+    .then(r => r.json())
+    .then(data => {
+        loadingAlert.remove();
+        if (data.success) {
+            showSuccessAlert(`Test sent to ${data.candidate_count} candidates successfully!`);
+            setTimeout(() => {
+                window.location.href = '/applications';
+            }, 2000);
+        } else {
+            showErrorAlert(data.error || 'Failed to send test');
+        }
+    })
+    .catch(error => {
+        loadingAlert.remove();
+        console.error('Error:', error);
+        showErrorAlert('Failed to send test');
+    });
+}
+
+function toggleQuestionEdit(questionNumber) {
+    const editForm = document.getElementById(`editForm${questionNumber}`);
+    if (!editForm) return;
+    editForm.classList.toggle('d-none');
+}
+
+function saveQuestionEdit(testId, questionNumber) {
+    const payload = {
+        question_text: document.getElementById(`questionText${questionNumber}`).value,
+        option_a: document.getElementById(`optionA${questionNumber}`).value,
+        option_b: document.getElementById(`optionB${questionNumber}`).value,
+        option_c: document.getElementById(`optionC${questionNumber}`).value,
+        option_d: document.getElementById(`optionD${questionNumber}`).value,
+        correct_answer: document.getElementById(`correctAnswer${questionNumber}`).value,
+        section: document.getElementById(`section${questionNumber}`).value
+    };
+
+    fetch(`/update-test-question/${testId}/${questionNumber}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessAlert('Question updated successfully. Refreshing sections...');
+            setTimeout(() => window.location.reload(), 600);
+        } else {
+            showErrorAlert(data.error || 'Failed to update question');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showErrorAlert('Failed to update question');
+    });
+}
+
+function getReviewAlertContainer() {
+    let container = document.getElementById('review-pro-alert-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'review-pro-alert-container';
+        container.style.position = 'fixed';
+        container.style.top = '20px';
+        container.style.right = '20px';
+        container.style.zIndex = '99999';
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.gap = '12px';
+        container.style.maxWidth = 'min(420px, calc(100vw - 24px))';
+        document.body.appendChild(container);
+    }
+    return container;
+}
+
+function createReviewAlert(message, type = 'info', { loading = false, autoClose = true } = {}) {
+    const container = getReviewAlertContainer();
+    const toast = document.createElement('div');
+
+    const borderColor = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#4FB6E8';
+    const icon = loading
+        ? '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>'
+        : type === 'success'
+            ? '✅'
+            : type === 'error'
+                ? '⚠️'
+                : 'ℹ️';
+
+    toast.style.background = '#ffffff';
+    toast.style.borderRadius = '14px';
+    toast.style.boxShadow = '0 16px 40px rgba(15, 42, 68, 0.18)';
+    toast.style.borderLeft = `5px solid ${borderColor}`;
+    toast.style.padding = '14px 14px 14px 16px';
+    toast.style.color = '#1F2933';
+    toast.style.font = '500 14px/1.45 Inter, Segoe UI, sans-serif';
+    toast.style.whiteSpace = 'pre-line';
+    toast.style.display = 'flex';
+    toast.style.gap = '10px';
+    toast.style.alignItems = 'flex-start';
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(-10px)';
+    toast.style.transition = 'all .22s ease';
+
+    toast.innerHTML = `
+        <div style="font-size:16px;margin-top:1px;min-width:16px;">${icon}</div>
+        <div style="flex:1;">${String(message || '')}</div>
+        ${loading ? '' : '<button type="button" aria-label="Close" style="border:0;background:transparent;color:#64748b;font-size:18px;line-height:1;cursor:pointer;padding:0 2px;">×</button>'}
+    `;
+
+    container.appendChild(toast);
+    requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+    });
+
+    const removeToast = () => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        setTimeout(() => toast.remove(), 220);
+    };
+
+    if (!loading) {
+        const closeButton = toast.querySelector('button');
+        if (closeButton) closeButton.addEventListener('click', removeToast);
+        if (autoClose) setTimeout(removeToast, 5000);
+    }
+
+    return toast;
+}
+
+function showLoadingAlert(message) {
+    return createReviewAlert(message, 'info', { loading: true, autoClose: false });
+}
+
+function showSuccessAlert(message) {
+    createReviewAlert(message, 'success');
+}
+
+function showErrorAlert(message) {
+    createReviewAlert(message, 'error');
+}
+</script>
+
+<style>
+    .card-header {
+        background-color: #f8f9fa !important;
+    }
+    
+    .form-check-label {
+        margin-left: 0.5rem;
+        cursor: pointer;
+    }
+    
+    .options {
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+
+    .section-heading {
+        padding: 0.6rem 0.8rem;
+        background: #f8f9fa;
+        border-left: 4px solid #0d6efd;
+        border-radius: 4px;
+    }
+
+    .edit-form {
+        border-top: 1px solid #e9ecef;
+        padding-top: 1rem;
+    }
+</style>
+{% endblock %}

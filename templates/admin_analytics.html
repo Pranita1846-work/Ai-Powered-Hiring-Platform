@@ -1,0 +1,198 @@
+<!-- Analytics & Trends Section -->
+<div class="mt-5 mb-5">
+    <h4 class="fw-bold mb-4">Analytics & Trends</h4>
+    
+    <!-- Platform Growth Chart (Full Width) -->
+    <div class="card mb-4 p-4 border-0 shadow-sm">
+        <h6 class="fw-bold mb-3">Platform Growth (Users per Month)</h6>
+        <div style="position: relative; height: 300px;">
+            <canvas id="growthChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Two Charts in One Row -->
+    <div class="row g-4 mb-4">
+        <!-- User Role Distribution -->
+        <div class="col-lg-6">
+            <div class="card p-4 border-0 shadow-sm h-100">
+                <h6 class="fw-bold mb-3">User Role Distribution</h6>
+                <div style="position: relative; height: 300px;">
+                    <canvas id="rolesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Jobs Overview -->
+        <div class="col-lg-6">
+            <div class="card p-4 border-0 shadow-sm h-100">
+                <h6 class="fw-bold mb-3">Jobs Overview</h6>
+                <div style="position: relative; height: 300px;">
+                    <canvas id="jobsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('Analytics script loaded');
+
+    const fallbackAnalytics = {
+        success: true,
+        growth: {
+            months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            users: [0, 1, 2, 3, 4, 5]
+        },
+        roles: {
+            labels: ['Candidates', 'Mentors', 'Recruiters'],
+            data: [0, 0, 0]
+        },
+        jobs: {
+            labels: ['Active Jobs', 'Closed Jobs'],
+            data: [0, 0]
+        }
+    };
+
+    function ensureChartLibrary() {
+        if (typeof window.Chart !== 'undefined') {
+            return Promise.resolve();
+        }
+
+        const chartScript = document.querySelector('script[src*="chart.js"]');
+        if (chartScript) {
+            return new Promise((resolve) => {
+                chartScript.addEventListener('load', () => resolve(), { once: true });
+                chartScript.addEventListener('error', () => resolve(), { once: true });
+            });
+        }
+
+        return Promise.resolve();
+    }
+
+    function buildCommonOptions(showLegend = false) {
+        return {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: showLegend, position: 'bottom', labels: { color: '#172033' } }
+            },
+            scales: {
+                x: { ticks: { color: '#334155' }, grid: { display: false } },
+                y: { beginAtZero: true, ticks: { color: '#334155' }, grid: { color: 'rgba(15, 42, 68, 0.08)' } }
+            }
+        };
+    }
+
+    function renderCharts(analytics) {
+        if (typeof window.Chart === 'undefined') {
+            console.error('Chart.js unavailable; cannot render analytics charts.');
+            return;
+        }
+
+        const growthCtx = document.getElementById('growthChart');
+        if (growthCtx) {
+            new Chart(growthCtx, {
+                type: 'line',
+                data: {
+                    labels: (analytics.growth && analytics.growth.months) || fallbackAnalytics.growth.months,
+                    datasets: [{
+                        label: 'Registered Users',
+                        data: (analytics.growth && analytics.growth.users) || fallbackAnalytics.growth.users,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: buildCommonOptions(true)
+            });
+        }
+
+        const rolesCtx = document.getElementById('rolesChart');
+        if (rolesCtx) {
+            new Chart(rolesCtx, {
+                type: 'bar',
+                data: {
+                    labels: (analytics.roles && analytics.roles.labels) || fallbackAnalytics.roles.labels,
+                    datasets: [{
+                        label: 'Users',
+                        data: (analytics.roles && analytics.roles.data) || fallbackAnalytics.roles.data,
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }]
+                },
+                options: buildCommonOptions(false)
+            });
+        }
+
+        const jobsCtx = document.getElementById('jobsChart');
+        if (jobsCtx) {
+            new Chart(jobsCtx, {
+                type: 'bar',
+                data: {
+                    labels: (analytics.jobs && analytics.jobs.labels) || fallbackAnalytics.jobs.labels,
+                    datasets: [{
+                        label: 'Jobs',
+                        data: (analytics.jobs && analytics.jobs.data) || fallbackAnalytics.jobs.data,
+                        backgroundColor: ['#6366f1', '#94a3b8'],
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }]
+                },
+                options: buildCommonOptions(false)
+            });
+        }
+    }
+
+    ensureChartLibrary().then(() => {
+        return fetch('/api/analytics', { cache: 'no-store' })
+            .then(response => response.json().catch(() => ({ success: false, error: 'Invalid JSON response' })))
+            .then(data => {
+                if (!data || !data.success) {
+                    console.error('Analytics API failed, using fallback data:', data && data.error ? data.error : 'Unknown error');
+                    renderCharts(fallbackAnalytics);
+                    return;
+                }
+                renderCharts(data);
+            })
+            .catch(error => {
+                console.error('Error fetching analytics, using fallback:', error);
+                renderCharts(fallbackAnalytics);
+            });
+    });
+});
+</script>
+<style>
+    @media (max-width: 768px) {
+        .mt-5.mb-5 {
+            margin-top: 2rem !important;
+            margin-bottom: 2rem !important;
+        }
+        .card.p-4 {
+            padding: 1rem !important;
+        }
+        canvas {
+            max-height: 220px;
+        }
+        #skillsChart {
+            max-height: 260px;
+        }
+        h4 {
+            font-size: 1.25rem;
+        }
+        h6 {
+            font-size: 1rem;
+        }
+    }
+ 
+</style>
