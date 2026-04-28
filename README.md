@@ -1,4 +1,4 @@
-# AI Powered Hiring Platform
+﻿# AI Powered Hiring Platform
 
 An AI-assisted recruitment and career development platform that connects candidates, recruiters, mentors, and admins in one workflow. The app streamlines job discovery, application tracking, resume analysis, interview management, and skill recommendations.
 
@@ -34,13 +34,13 @@ An AI-assisted recruitment and career development platform that connects candida
 
 ## Tech stack
 
-- **Backend:** Flask, Python
-- **Database:** PostgreSQL (`psycopg2-binary`)
-- **Frontend:** HTML templates, CSS, Bootstrap-style components
-- **AI:** Google Generative AI
-- **Auth:** Flask session authentication plus OAuth support via `authlib` and `flask-dance`
-- **Documents:** PyMuPDF, PyPDF2, pdfplumber, reportlab, python-docx, openpyxl
-- **Realtime/async:** Flask-SocketIO, eventlet
+- Backend: Flask, Python
+- Database: PostgreSQL (psycopg2-binary)
+- Frontend: HTML templates, CSS, Bootstrap-style components
+- AI: Google Generative AI
+- Auth: Flask session authentication plus OAuth support via authlib and flask-dance
+- Documents: PyMuPDF, PyPDF2, pdfplumber, reportlab, python-docx, openpyxl
+- Realtime/async: Flask-SocketIO, eventlet
 
 ## Prerequisites
 
@@ -79,12 +79,12 @@ Copy `.env.example` to `.env` and fill in your values.
 
 Common settings:
 
-- `SECRET_KEY`
-- `MAIL_USERNAME`
-- `MAIL_PASSWORD`
-- `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET`
-- `DATABASE_URL` or your local PostgreSQL settings, if applicable
+- SECRET_KEY
+- MAIL_USERNAME
+- MAIL_PASSWORD
+- GOOGLE_CLIENT_ID
+- GOOGLE_CLIENT_SECRET
+- DATABASE_URL or your local PostgreSQL settings, if applicable
 
 > Never commit `.env` with real secrets.
 
@@ -118,14 +118,14 @@ gunicorn wsgi:app
 
 ## Project structure
 
-- `app.py` — main Flask application and routes
-- `database.py` — database helpers and connection logic
-- `wsgi.py` — production WSGI entry point
-- `passenger_wsgi.py` — Passenger deployment entry point
-- `templates/` — HTML templates
-- `static/` — images, uploads, and static assets
-- `requirements.txt` — Python dependencies
-- `init_database.py` — database initialization helper
+- `app.py` - main Flask application and routes
+- `database.py` - database helpers and connection logic
+- `wsgi.py` - production WSGI entry point
+- `passenger_wsgi.py` - Passenger deployment entry point
+- `templates/` - HTML templates
+- `static/` - images, uploads, and static assets
+- `requirements.txt` - Python dependencies
+- `init_database.py` - database initialization helper
 
 ## Notes
 

@@ -12,9 +12,23 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def _env_flag(name: str, default: bool = False) -> bool:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return str(value).strip().lower() in {"1", "true", "yes", "on"}
+
+
 def _resolve_database_url():
     """Resolve DATABASE_URL and ensure sslmode is present for cloud databases."""
-    database_url = os.environ.get("DATABASE_URL")
+    database_url = (
+        os.environ.get("DATABASE_URL")
+        or os.environ.get("POSTGRES_URL")
+        or os.environ.get("SUPABASE_DATABASE_URL")
+        or os.environ.get("SUPABASE_DB_URL")
+        or os.environ.get("DATABASE_URI")
+        or os.environ.get("SQLALCHEMY_DATABASE_URI")
+    )
     if not database_url:
         return None
 
@@ -29,6 +43,12 @@ def _resolve_database_url():
 
 DATABASE_URL = _resolve_database_url()
 
+IS_PRODUCTION = _env_flag("IS_PRODUCTION", False)
+
+def _resolve_sslmode(default_for_cloud: str = "require"):
+    return os.environ.get("DB_SSLMODE", default_for_cloud)
+
+
 # Load database configuration from environment variable
 if DATABASE_URL:
     DB_CONFIG = {
@@ -38,17 +58,35 @@ if DATABASE_URL:
         "uses_dsn": True
     }
 else:
+    db_host = os.environ.get("DB_HOST") or os.environ.get("PGHOST")
+    db_user = os.environ.get("DB_USER") or os.environ.get("PGUSER")
+    db_password = os.environ.get("DB_PASSWORD") or os.environ.get("PGPASSWORD")
+    db_name = os.environ.get("DB_NAME") or os.environ.get("PGDATABASE")
+    db_port = os.environ.get("DB_PORT") or os.environ.get("PGPORT")
+
+    # In production, avoid silently pointing at localhost unless the deployer
+    # explicitly configured local database values.
+    if IS_PRODUCTION and not db_host:
+        db_host = ""
+
     DB_CONFIG = {
-        "host": os.environ.get("DB_HOST", "localhost"),
-        "user": os.environ.get("DB_USER", "postgres"),
-        "password": os.environ.get("DB_PASSWORD", "root"),
-        "database": os.environ.get("DB_NAME", "hiring_platform"),
-        "port": os.environ.get("DB_PORT", "5432"),
+        "host": db_host or ("localhost" if not IS_PRODUCTION else ""),
+        "user": db_user or ("postgres" if not IS_PRODUCTION else ""),
+        "password": db_password or ("root" if not IS_PRODUCTION else ""),
+        "database": db_name or ("hiring_platform" if not IS_PRODUCTION else ""),
+        "port": db_port or ("5432" if not IS_PRODUCTION else ""),
         "driver": "PostgreSQL",
         "connection_timeout": 30,
-        "sslmode": os.environ.get("DB_SSLMODE", "require"),  # Use 'disable' for local PostgreSQL, 'require' for cloud
+        "sslmode": _resolve_sslmode("require" if IS_PRODUCTION else "disable"),
         "uses_dsn": False
     }
+
+
+def _database_config_is_valid() -> bool:
+    if DB_CONFIG.get("uses_dsn"):
+        return bool(DB_CONFIG.get("dsn"))
+    required = ["host", "user", "password", "database", "port"]
+    return all(str(DB_CONFIG.get(key) or "").strip() for key in required)
 
 # Create connection pool for better performance
 connection_pool = None
@@ -80,6 +118,14 @@ def init_connection_pool():
     """Initialize PostgreSQL connection pool"""
     global connection_pool
     try:
+        if not _database_config_is_valid():
+            _safe_log(
+                "[WARNING] Database configuration is incomplete. "
+                "Set DATABASE_URL (recommended) or DB_HOST/DB_USER/DB_PASSWORD/DB_NAME/DB_PORT."
+            )
+            connection_pool = None
+            return
+
         if _is_supabase_dsn():
             default_min = 1
             default_max = 3
@@ -123,6 +169,12 @@ def get_connection():
     global connection_pool
     if connection_pool is None:
         init_connection_pool()
+
+    if not _database_config_is_valid():
+        raise Exception(
+            "Database configuration is incomplete. Set DATABASE_URL (recommended) or "
+            "DB_HOST/DB_USER/DB_PASSWORD/DB_NAME/DB_PORT in the deployment environment."
+        )
     
     max_retries = int(os.environ.get("DB_CONNECT_RETRIES", "2"))
     retry_count = 0

@@ -979,10 +979,17 @@ def login():
                     return render_template("login.html", role=role, error=error_msg)
 
         except Exception as e:
-            import traceback
-            error_details = traceback.format_exc()
-            print(f"Error during login: {e}\n{error_details}")
-            error_message = f"An error occurred. Please try again.<br><pre>{error_details}</pre>"
+            print(f"Error during login: {e}")
+            if "Database configuration is incomplete" in str(e):
+                error_message = (
+                    "Database is not configured for this deployment yet. "
+                    "Please set DATABASE_URL or DB_HOST/DB_USER/DB_PASSWORD/DB_NAME/DB_PORT in the hosting environment."
+                )
+            else:
+                error_message = (
+                    "We couldn’t sign you in right now because the database is unavailable. "
+                    "Please try again in a moment or contact support."
+                )
             return render_template("login.html", role=role, error=error_message)
 
         if user and check_password_hash(user["password"], password):
