@@ -146,7 +146,10 @@ app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HT
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)  # adjustable via admin settings
 
 RENDER_DISK_MOUNT = "/var/data"
-UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
+IS_VERCEL = bool(os.environ.get("VERCEL") or os.environ.get("VERCEL_ENV"))
+UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER") or (
+    os.path.join("/tmp", "uploads") if IS_VERCEL else os.path.join(BASE_DIR, "static", "uploads")
+)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
@@ -166,6 +169,22 @@ def get_upload_directories():
         directories.append(legacy_upload_dir)
 
     return directories
+
+
+def _save_recruiter_upload(uploaded_file, existing_filename=None):
+    """Persist a recruiter upload in the active writable upload folder.
+
+    On serverless deployments, the writable location is usually /tmp so we keep
+    the same filename handling but avoid writing into read-only static folders.
+    """
+    if not uploaded_file or not getattr(uploaded_file, "filename", "").strip():
+        return existing_filename
+
+    filename = secure_filename(uploaded_file.filename)
+    target_dir = os.path.abspath(app.config["UPLOAD_FOLDER"])
+    os.makedirs(target_dir, exist_ok=True)
+    uploaded_file.save(os.path.join(target_dir, filename))
+    return filename
 
 
 @app.route('/uploads/<path:filename>')
@@ -4533,13 +4552,18 @@ def save_recruiter_profile():
 
     recruiting_experience_val = _to_int(recruiting_experience)
     founded_year_val = _to_int(founded_year)
-    
-    db = get_connection()
+
+    try:
+        db = get_connection()
+    except Exception as e:
+        print(f"Database connection error while saving recruiter profile: {e}")
+        flash("We couldn't save your recruiter profile right now because the database is unavailable.", "danger")
+        return redirect('/recruiter-dashboard?tab=profile')
+
     # Fetch existing profile to preserve files when not re-uploaded
     existing_cursor = db.cursor(cursor_factory=RealDictCursor)
     existing_cursor.execute("SELECT * FROM recruiter_profiles WHERE recruiter_id = %s", (user_id,))
     existing_profile = existing_cursor.fetchone()
-    existing_cursor.fetchall()
     existing_cursor.close()
 
     # Track if major changes occurred (company name or documents)
@@ -4560,8 +4584,7 @@ def save_recruiter_profile():
     comp_filename = existing_profile['company_doc'] if existing_profile else None
     # Check if company doc was actually uploaded (not just an empty file input)
     if company_doc and company_doc.filename and company_doc.filename.strip() != '':
-        new_comp_filename = secure_filename(company_doc.filename)
-        company_doc.save(os.path.join(UPLOAD_FOLDER, new_comp_filename))
+        new_comp_filename = _save_recruiter_upload(company_doc)
         # Major change ONLY if filename is different from existing (actual replacement)
         if existing_profile and existing_profile.get('company_doc') and existing_profile.get('company_doc') != new_comp_filename:
             print(f"[MAJOR CHANGE] Company doc changed: {existing_profile.get('company_doc')} -> {new_comp_filename}")
@@ -4571,8 +4594,7 @@ def save_recruiter_profile():
     auth_filename = existing_profile['auth_doc'] if existing_profile else None
     # Check if auth doc was actually uploaded (not just an empty file input)
     if auth_doc and auth_doc.filename and auth_doc.filename.strip() != '':
-        new_auth_filename = secure_filename(auth_doc.filename)
-        auth_doc.save(os.path.join(UPLOAD_FOLDER, new_auth_filename))
+        new_auth_filename = _save_recruiter_upload(auth_doc)
         # Major change ONLY if filename is different from existing (actual replacement)
         if existing_profile and existing_profile.get('auth_doc') and existing_profile.get('auth_doc') != new_auth_filename:
             print(f"[MAJOR CHANGE] Auth doc changed: {existing_profile.get('auth_doc')} -> {new_auth_filename}")
@@ -4586,69 +4608,72 @@ def save_recruiter_profile():
 
     logo_filename = existing_profile['logo_file'] if existing_profile else None
     if logo and logo.filename != '':
-        logo_filename = secure_filename(logo.filename)
-        logo.save(os.path.join(UPLOAD_FOLDER, logo_filename))
+        logo_filename = _save_recruiter_upload(logo)
 
     geo_tag_pdf_filename = existing_profile['geo_tag_pdf'] if existing_profile else None
     if geo_tag_pdf and geo_tag_pdf.filename != '':
-        geo_tag_pdf_filename = secure_filename(geo_tag_pdf.filename)
-        geo_tag_pdf.save(os.path.join(UPLOAD_FOLDER, geo_tag_pdf_filename))
+        geo_tag_pdf_filename = _save_recruiter_upload(geo_tag_pdf)
 
     cursor = db.cursor(cursor_factory=RealDictCursor)
     
     try:
-        # Ensure new columns exist - check before adding to avoid transaction errors
-        cursor.execute("""
-            SELECT column_name FROM information_schema.columns 
-            WHERE table_name = 'recruiter_profiles'
-        """)
-        existing_cols = {row['column_name'] for row in cursor.fetchall()}
-        
-        new_columns = [
-            ("linkedin", "VARCHAR(255)"),
-            ("company_type", "VARCHAR(100)"),
-            ("company_size", "VARCHAR(50)"),
-            ("industry", "VARCHAR(100)"),
-            ("address", "VARCHAR(255)"),
-            ("logo_file", "VARCHAR(255)"),
-            ("roles", "TEXT"),
-            ("experience_levels", "TEXT"),
-            ("job_types", "TEXT"),
-            ("profile_percent", "INT DEFAULT 0"),
-            ("verification_status", "VARCHAR(20) DEFAULT 'pending'"),
-            ("work_email", "VARCHAR(255)"),
-            ("recruiting_experience", "INT"),
-            ("specialization", "TEXT"),
-            ("languages", "TEXT"),
-            ("company_registration", "VARCHAR(21)"),
-            ("founded_year", "INT"),
-            ("headquarters_location", "VARCHAR(255)"),
-            ("company_linkedin", "VARCHAR(255)"),
-            ("hiring_locations", "TEXT"),
-            ("specific_locations", "TEXT"),
-            ("interview_mode", "VARCHAR(50)"),
-            ("geo_tag_pdf", "VARCHAR(255)"),
-            ("agreement_accepted", "BOOLEAN DEFAULT FALSE"),
-            ("agreement_accepted_at", "TIMESTAMP"),
-            ("agreement_signature_name", "VARCHAR(255)"),
-            ("agreement_signature_at", "TIMESTAMP"),
-            ("agreement_signature_image", "BYTEA"),
-            ("agreement_signature_image_mime", "VARCHAR(100)"),
-            ("agreement_signature_image_name", "VARCHAR(255)"),
-            ("agreement_pdf", "BYTEA"),
-            ("agreement_pdf_mime", "VARCHAR(100)"),
-            ("agreement_pdf_name", "VARCHAR(255)"),
-            ("admin_countersigned", "BOOLEAN DEFAULT FALSE"),
-            ("admin_countersigned_at", "TIMESTAMP"),
-            ("admin_countersigned_by", "VARCHAR(255)"),
-            ("mou_reset_reason", "VARCHAR(50)")
-        ]
-        
-        for col_name, col_type in new_columns:
-            if col_name not in existing_cols:
-                cursor.execute(f"ALTER TABLE recruiter_profiles ADD COLUMN {col_name} {col_type}")
-        
-        db.commit()  # Commit column additions before proceeding
+        # Avoid expensive schema migration work on every serverless request.
+        # Run these only in local/dev or when explicitly enabled.
+        run_schema_migration = os.environ.get("RUN_PROFILE_SCHEMA_MIGRATION_ON_SAVE", "false").lower() == "true"
+        if run_schema_migration:
+            cursor.execute("""
+                SELECT column_name FROM information_schema.columns 
+                WHERE table_name = 'recruiter_profiles'
+            """)
+            existing_cols = {row['column_name'] for row in cursor.fetchall()}
+
+            new_columns = [
+                ("linkedin", "VARCHAR(255)"),
+                ("company_type", "VARCHAR(100)"),
+                ("company_size", "VARCHAR(50)"),
+                ("industry", "VARCHAR(100)"),
+                ("address", "VARCHAR(255)"),
+                ("logo_file", "VARCHAR(255)"),
+                ("roles", "TEXT"),
+                ("experience_levels", "TEXT"),
+                ("job_types", "TEXT"),
+                ("profile_percent", "INT DEFAULT 0"),
+                ("verification_status", "VARCHAR(20) DEFAULT 'pending'"),
+                ("work_email", "VARCHAR(255)"),
+                ("recruiting_experience", "INT"),
+                ("specialization", "TEXT"),
+                ("languages", "TEXT"),
+                ("company_registration", "VARCHAR(21)"),
+                ("founded_year", "INT"),
+                ("headquarters_location", "VARCHAR(255)"),
+                ("company_linkedin", "VARCHAR(255)"),
+                ("hiring_locations", "TEXT"),
+                ("specific_locations", "TEXT"),
+                ("interview_mode", "VARCHAR(50)"),
+                ("geo_tag_pdf", "VARCHAR(255)"),
+                ("agreement_accepted", "BOOLEAN DEFAULT FALSE"),
+                ("agreement_accepted_at", "TIMESTAMP"),
+                ("agreement_signature_name", "VARCHAR(255)"),
+                ("agreement_signature_at", "TIMESTAMP"),
+                ("agreement_signature_image", "BYTEA"),
+                ("agreement_signature_image_mime", "VARCHAR(100)"),
+                ("agreement_signature_image_name", "VARCHAR(255)"),
+                ("agreement_pdf", "BYTEA"),
+                ("agreement_pdf_mime", "VARCHAR(100)"),
+                ("agreement_pdf_name", "VARCHAR(255)"),
+                ("admin_countersigned", "BOOLEAN DEFAULT FALSE"),
+                ("admin_countersigned_at", "TIMESTAMP"),
+                ("admin_countersigned_by", "VARCHAR(255)"),
+                ("mou_reset_reason", "VARCHAR(50)")
+            ]
+
+            for col_name, col_type in new_columns:
+                if col_name not in existing_cols:
+                    cursor.execute(f"ALTER TABLE recruiter_profiles ADD COLUMN {col_name} {col_type}")
+
+            db.commit()  # Commit column additions before proceeding
+        else:
+            print("[INFO] Skipping recruiter profile schema migration on save (set RUN_PROFILE_SCHEMA_MIGRATION_ON_SAVE=true to enable).")
         
         # Compute profile_percent based on only essential required fields (excluding CIN)
         required_values = {
