@@ -19,7 +19,7 @@ The platform combines **AI-powered resume analysis, candidate-job matching, skil
 **Live Application:**
 [AI-Powered Hiring Platform — Live Demo](https://hiringplatform-git-main-thosarpranita1846-7356s-projects.vercel.app/)
 
-> Replace the `#` above with your deployed Vercel URL if you want the link embedded directly in GitHub.
+
 
 **Deployment:** Vercel
 **Backend:** Flask + Python
